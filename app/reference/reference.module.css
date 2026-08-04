@@ -1,0 +1,11 @@
+/* Shared mat for the reference posters. Each poster keeps the fixed width and
+   padding its own design specifies — this only supplies the canvas backdrop
+   they were authored against. */
+
+.frame {
+  min-height: 100%;
+  background: var(--neutral-100);
+  /* The posters are wider than most viewports. Scrolling the mat keeps the left
+     edge reachable, which centring via flexbox would clip away. */
+  overflow-x: auto;
+}

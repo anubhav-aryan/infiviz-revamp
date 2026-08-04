@@ -1,0 +1,652 @@
+/* Platform readiness map — styles transcribed from the design doc's inline
+   styles. The poster is the page: there is no card to strip, so the root keeps
+   the fixed width and padding the design specifies. */
+
+.poster {
+  width: 1480px;
+  margin: 0 auto;
+  padding: 36px 40px 44px;
+  background: var(--neutral-50);
+  font-family: var(--font-ui);
+  color: var(--text-body);
+  /* Authored for print — the matrix is unreadable without its fills. */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ---------- header ---------- */
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--indigo-600);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 38px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0;
+}
+
+.lede {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 760px;
+}
+
+.client {
+  text-align: right;
+  flex: none;
+}
+
+.clientName {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-heading);
+  font-weight: 600;
+}
+
+.clientNote {
+  font-size: 12px;
+  color: var(--text-caption);
+  margin-top: 2px;
+}
+
+/* ---------- the five readiness treatments ----------
+   One palette shown at three sizes — matrix cell, legend chip, condition
+   marker — so the kind carries only colour and each consumer sets its own
+   geometry. The diagonal stripes are how Hidden and Internal are read; they
+   are not decoration. */
+
+.poster [data-kind="live"] {
+  --kind-bg: var(--indigo-600);
+  --kind-fg: var(--neutral-0);
+  --kind-border: 1px solid var(--indigo-600);
+  --kind-stripe: none;
+}
+
+.poster [data-kind="partial"] {
+  --kind-bg: var(--neutral-0);
+  --kind-fg: var(--indigo-700);
+  --kind-border: 2px solid var(--indigo-400);
+  --kind-stripe: none;
+}
+
+.poster [data-kind="locked"] {
+  --kind-bg: var(--neutral-100);
+  --kind-fg: var(--neutral-500);
+  --kind-border: 1.5px dashed var(--neutral-400);
+  --kind-stripe: none;
+}
+
+.poster [data-kind="hidden"] {
+  --kind-bg: var(--neutral-50);
+  --kind-fg: var(--neutral-400);
+  --kind-border: 1px dashed var(--neutral-300);
+  --kind-stripe: repeating-linear-gradient(
+    45deg,
+    var(--neutral-200) 0,
+    var(--neutral-200) 1px,
+    transparent 1px,
+    transparent 7px
+  );
+}
+
+.poster [data-kind="internal"] {
+  --kind-bg: var(--neutral-800);
+  --kind-fg: var(--neutral-100);
+  --kind-border: 1px solid var(--neutral-900);
+  --kind-stripe: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 0,
+    rgba(255, 255, 255, 0.1) 2px,
+    transparent 2px,
+    transparent 9px
+  );
+}
+
+/* ---------- legend ---------- */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0 22px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 8px 14px 8px 8px;
+}
+
+.legendChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 62px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  background-color: var(--kind-bg);
+  background-image: var(--kind-stripe);
+  color: var(--kind-fg);
+  border: var(--kind-border);
+}
+
+.legendName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.legendDesc {
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+/* ---------- matrix + day-one panel ---------- */
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  align-items: start;
+}
+
+.matrixCard {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  padding: 18px 18px 20px;
+}
+
+.matrixHead {
+  display: grid;
+  grid-template-columns: 150px repeat(11, 1fr);
+  gap: 6px;
+  align-items: end;
+  margin-bottom: 6px;
+}
+
+.matrixCorner {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-caption);
+  font-weight: 600;
+  align-self: end;
+  padding-bottom: 6px;
+}
+
+.columnHead {
+  font-size: 10.5px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 0 2px 6px;
+  min-height: 44px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-bottom: 2px solid var(--indigo-200);
+}
+
+.columnHead[data-internal="true"] {
+  border-bottom-color: var(--neutral-800);
+}
+
+.matrixRow {
+  display: grid;
+  grid-template-columns: 150px repeat(11, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.rowHead {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6px 10px 6px 0;
+}
+
+.rowTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowNum {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 6px;
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rowName {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-heading);
+  letter-spacing: -0.01em;
+}
+
+.rowNote {
+  font-size: 10.5px;
+  color: var(--text-caption);
+  line-height: 1.3;
+  margin-top: 4px;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 8px;
+  min-height: 52px;
+  padding: 6px 4px;
+  background-color: var(--kind-bg);
+  background-image: var(--kind-stripe);
+  color: var(--kind-fg);
+  border: var(--kind-border);
+}
+
+.cell[data-kind="locked"],
+.cell[data-kind="hidden"] {
+  font-weight: 600;
+}
+
+/* ---------- conditions & notes ---------- */
+
+.conditions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline);
+}
+
+.conditionsHeading {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-caption);
+  font-weight: 600;
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.condition {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  max-width: 340px;
+}
+
+.conditionMarker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: 54px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  background-color: var(--kind-bg);
+  color: var(--kind-fg);
+  border: var(--kind-border);
+  /* At marker size the notes list drops the stripe the Hidden chip carries. */
+  background-image: none;
+}
+
+/* ---------- day-one panel ---------- */
+
+.dayOne {
+  background: var(--indigo-900);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 22px 20px 24px;
+  color: var(--neutral-100);
+}
+
+.dayOneKicker {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--indigo-300);
+  font-weight: 600;
+}
+
+.dayOneTitle {
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 700;
+  margin: 6px 0 4px;
+  color: var(--neutral-0);
+}
+
+.dayOneLede {
+  font-size: 12px;
+  color: var(--indigo-200);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.dayOneRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dayOneDot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 999px;
+}
+
+/* The glow is authored as a raw rgba ring, not a token. */
+.dayOneDot[data-tone="live"] {
+  background: var(--indigo-300);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.25);
+}
+
+.dayOneDot[data-tone="partial"] {
+  background: transparent;
+  border: 2px solid var(--indigo-300);
+}
+
+.dayOneName {
+  flex: 1;
+  font-size: 13px;
+  color: var(--neutral-0);
+  font-weight: 500;
+}
+
+.dayOneTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.dayOneTag[data-tone="live"] {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--neutral-0);
+}
+
+.dayOneTag[data-tone="partial"] {
+  background: transparent;
+  color: var(--indigo-200);
+  border: 1px solid rgba(199, 210, 254, 0.5);
+}
+
+.dayOneTag[data-tone="locked"] {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--indigo-300);
+  border: 1px dashed rgba(165, 180, 252, 0.5);
+}
+
+.dayOneTag[data-tone="hidden"] {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--indigo-300);
+  border: 1px dashed rgba(129, 140, 248, 0.35);
+}
+
+.dayOneTag[data-tone="internal"] {
+  background: rgba(15, 23, 41, 0.5);
+  color: var(--neutral-300);
+}
+
+.dayOneLater {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.dayOneLaterHeading {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--indigo-300);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.dayOneLaterRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+}
+
+.dayOneLaterName {
+  font-size: 12.5px;
+  color: var(--indigo-200);
+}
+
+/* ---------- phase cards ---------- */
+
+.phases {
+  margin-top: 26px;
+}
+
+.phasesHead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.phasesTitle {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.phasesSub {
+  font-size: 13px;
+  color: var(--text-caption);
+}
+
+.phaseGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.phaseCard {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.phaseCard[data-theme="dark"] {
+  border-color: var(--neutral-800);
+}
+
+.phaseCard[data-theme="indigo"] {
+  border-color: var(--indigo-200);
+}
+
+.phaseHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.phaseCard[data-theme="dark"] .phaseHeader {
+  background-color: var(--neutral-800);
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.06) 0,
+    rgba(255, 255, 255, 0.06) 2px,
+    transparent 2px,
+    transparent 10px
+  );
+  border-bottom-color: var(--neutral-900);
+}
+
+.phaseCard[data-theme="indigo"] .phaseHeader {
+  background: var(--indigo-50);
+  border-bottom-color: var(--indigo-100);
+}
+
+.phaseBadge {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 7px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+}
+
+.phaseCard[data-theme="dark"] .phaseBadge {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--neutral-0);
+}
+
+.phaseCard[data-theme="indigo"] .phaseBadge {
+  background: var(--indigo-600);
+  color: var(--neutral-0);
+}
+
+.phaseName {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-heading);
+}
+
+.phaseCard[data-theme="dark"] .phaseName {
+  color: var(--neutral-0);
+}
+
+.phaseCard[data-theme="indigo"] .phaseName {
+  color: var(--indigo-900);
+}
+
+.phaseTag {
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.phaseCard[data-theme="dark"] .phaseTag {
+  color: var(--neutral-400);
+}
+
+.phaseCard[data-theme="indigo"] .phaseTag {
+  color: var(--indigo-500);
+}
+
+.phaseBody {
+  padding: 16px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.phaseFieldLabel {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-caption);
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.phaseFieldValue {
+  font-size: 12.5px;
+  color: var(--text-body);
+  line-height: 1.45;
+}
+
+.phaseTrigger {
+  margin-top: 2px;
+  padding: 10px 12px;
+  background: var(--indigo-50);
+  border: 1px solid var(--indigo-100);
+  border-radius: 10px;
+}
+
+.phaseTriggerLabel {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--indigo-600);
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.phaseTriggerValue {
+  font-size: 12.5px;
+  color: var(--indigo-800);
+  line-height: 1.4;
+  font-weight: 500;
+}

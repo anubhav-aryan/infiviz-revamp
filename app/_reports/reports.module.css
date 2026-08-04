@@ -1,0 +1,393 @@
+/* Operational reports — the chrome and primitives both report routes share.
+   Photo quality and Merchandiser activity were one tabbed shell in the design,
+   so the header, the tab bar, the card atoms and the bar/meter/delta marks are
+   defined once here and imported by each route's view. */
+
+/* ---------- header ---------- */
+
+.header {
+  padding: 22px 30px 0;
+}
+
+.headerTop {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--indigo-600);
+  font-weight: 700;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  margin: 2px 0 0;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ghostButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-card);
+  color: var(--text-body);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: var(--indigo-600);
+  color: #fff;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* ---------- tabs ---------- */
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 18px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* The -1px pulls each tab's own border over the strip's border-bottom, so the
+   active tab reads as a continuous 2px rule rather than stacking on top. */
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  margin-bottom: -1px;
+}
+
+.tab[data-active="true"] {
+  border-bottom-color: var(--indigo-600);
+  color: var(--indigo-700);
+  font-weight: 600;
+}
+
+/* ---------- page body + card atoms ---------- */
+
+.body {
+  padding: 22px 30px 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+}
+
+.cardPad {
+  padding: 20px 22px;
+}
+
+/* Tables bleed their header strip to the card edge, so the radius has to clip. */
+.tableCard {
+  overflow: hidden;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tableTitle {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+/* ---------- bar primitive ---------- */
+
+.barTrack {
+  display: block;
+  background: var(--neutral-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barTrack[data-h="6"] {
+  height: 6px;
+}
+.barTrack[data-h="10"] {
+  height: 10px;
+}
+.barTrack[data-h="11"] {
+  height: 11px;
+}
+.barTrack[data-h="12"] {
+  height: 12px;
+}
+
+/* Table bars are fixed-width so the numeral beside them stays column-aligned. */
+.barTrack[data-track="w56"] {
+  width: 56px;
+  flex: none;
+}
+.barTrack[data-track="w90"] {
+  width: 90px;
+  flex: none;
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--indigo-500);
+}
+
+.barTrack[data-fill="indigo-300"] .barFill {
+  background: var(--indigo-300);
+}
+.barTrack[data-fill="indigo-400"] .barFill {
+  background: var(--indigo-400);
+}
+
+/* ---------- target meter (hero) ---------- */
+
+.meter {
+  position: relative;
+  height: 8px;
+  background: var(--neutral-200);
+  border-radius: 999px;
+  margin: 16px 0 6px;
+}
+
+.meterFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--warning);
+  border-radius: 999px;
+}
+
+/* Overhangs the track top and bottom by 4px so the tick stays legible against
+   the fill it sits on. */
+.meterTick {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--neutral-600);
+}
+
+.meterFoot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.meterFootTarget {
+  font-family: var(--font-mono);
+}
+
+/* ---------- target hero ---------- */
+
+.heroLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.heroValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 10px 0 2px;
+}
+
+.heroValue {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--warning);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.heroValue[data-size="lg"] {
+  font-size: 48px;
+}
+.heroValue[data-size="md"] {
+  font-size: 44px;
+}
+
+.heroUnit[data-size="lg"] {
+  font-size: 24px;
+}
+.heroUnit[data-size="md"] {
+  font-size: 22px;
+}
+
+.heroCaption {
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+/* ---------- delta ---------- */
+
+.delta {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+}
+
+.delta[data-size="hero"] {
+  gap: 3px;
+  font-size: 12.5px;
+}
+
+.delta[data-size="inline"] {
+  gap: 1px;
+  font-size: 11px;
+}
+
+.delta[data-tone="danger"] {
+  color: var(--danger);
+}
+
+.delta[data-tone="success"] {
+  color: var(--success);
+}
+
+/* ---------- dashed target rule over a bar list ---------- */
+
+/* Legend mark: a bare 12px dashed upright, no width of its own. */
+.dashSwatch {
+  width: 0;
+  height: 12px;
+  border-left: 2px dashed var(--neutral-500);
+}
+
+.legendNote {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.barListStack {
+  position: relative;
+}
+
+/* Rides the bar column of a `150px | 1fr | 54px` row grid: 160px clears the
+   label plus its gap, and 224px is that plus the value column and its gap. */
+.targetRule {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 2px dashed var(--neutral-400);
+}
+
+.targetRule[data-inset="true"] {
+  bottom: 22px;
+}
+
+/* ---------- shared row grids for the bar lists ---------- */
+
+.barRow {
+  display: grid;
+  grid-template-columns: 150px 1fr 54px;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+}
+
+.barRowName {
+  font-size: 12px;
+  color: var(--text-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barRowValue {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+/* ---------- table column-header strip ---------- */
+
+.tableHead {
+  padding: 10px 20px;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--hairline);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-caption);
+}
+
+.tableRow {
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--hairline);
+  align-items: center;
+}
+
+.numRight {
+  text-align: right;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}

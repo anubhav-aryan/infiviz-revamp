@@ -1,0 +1,773 @@
+/* Master data — styles transcribed from the design doc's inline styles. All
+   four surfaces share one module because they share the page head, the card,
+   the grid-based table and the mini-bar treatments. */
+
+/* ---------- shared frame ---------- */
+
+.board {
+  padding: 24px 28px 30px;
+}
+
+.pageHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--indigo-600);
+  font-weight: 700;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  margin: 2px 0 0;
+}
+
+.headActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ---------- controls (all inert — the design has no interactive state) ---- */
+
+/* Not a control in the design: no pointer cursor, no affordance beyond looking
+   like a field. Kept as static text so it is not announced as an input. */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 220px;
+}
+
+.searchIcon {
+  color: var(--text-caption);
+  flex: none;
+}
+
+.searchPlaceholder {
+  font-size: 12.5px;
+  color: var(--text-caption);
+}
+
+.ghostButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-card);
+  color: var(--text-body);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: var(--indigo-600);
+  color: var(--text-on-brand);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* ---------- summary tiles ---------- */
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.tile {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+}
+
+.tileLabel {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Tiles whose body is a bar list need more room under the label than the
+   numeric tiles, which get their gap from the value's own margin. */
+.tileLabelBars {
+  margin-bottom: 10px;
+}
+
+.tileValue {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  margin-top: 6px;
+}
+
+.tileNote {
+  font-size: 11px;
+  color: var(--text-caption);
+  margin-top: 2px;
+}
+
+.miniRow {
+  display: grid;
+  grid-template-columns: 78px 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.miniName {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.miniTrack {
+  height: 7px;
+  background: var(--neutral-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.miniFill {
+  display: block;
+  height: 100%;
+  background: var(--indigo-500);
+  border-radius: 999px;
+}
+
+/* Store type is the one breakdown the design draws in the lighter tint. */
+.miniFill[data-tone="light"] {
+  background: var(--indigo-300);
+}
+
+/* ---------- table shell, shared by Stores and Plans ---------- */
+
+.tableCard {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.tableHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.tableTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.tableCount {
+  font-size: 12px;
+  color: var(--text-caption);
+}
+
+/* Column tracks live on their own class so the header row and the body rows
+   are laid out by the same declaration and cannot drift apart. */
+.storesGrid {
+  display: grid;
+  grid-template-columns:
+    130px minmax(220px, 1fr) 120px 105px 140px 130px 92px 100px;
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: 150px 160px 100px 110px 90px 90px 1fr;
+}
+
+.columnHead {
+  padding: 10px 18px;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-caption);
+}
+
+.row {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--hairline);
+  align-items: center;
+  font-size: 12.5px;
+}
+
+.cell {
+  color: var(--text-body);
+}
+
+.cellMono {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.cellName {
+  color: var(--text-heading);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 12px;
+}
+
+.cellMuted {
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+.right {
+  text-align: right;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.status[data-status="Active"] {
+  color: var(--text-body);
+}
+
+.status[data-status="Inactive"] {
+  color: var(--text-caption);
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex: none;
+}
+
+.status[data-status="Active"] .statusDot {
+  background: var(--indigo-500);
+}
+
+.status[data-status="Inactive"] .statusDot {
+  background: var(--neutral-300);
+}
+
+/* ---------- journey plans: month stepper ---------- */
+
+.monthStepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 7px 12px;
+}
+
+.monthLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.stepperArrow {
+  display: flex;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--text-caption);
+  cursor: pointer;
+}
+
+/* ---------- journey plans: calendar ---------- */
+
+.calendarCard {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+.calendarHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.legendSwatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+}
+
+.legendSwatch[data-tone="completed"] {
+  background: var(--indigo-600);
+}
+
+.legendSwatch[data-tone="planned"] {
+  background: var(--neutral-200);
+}
+
+.weekRow,
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.weekRow {
+  margin-bottom: 8px;
+}
+
+.weekday {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-caption);
+  text-align: center;
+}
+
+.day {
+  min-height: 70px;
+  border-radius: 9px;
+  padding: 8px 9px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--hairline);
+}
+
+/* The leading pad cells keep the box model but drop every visible edge. */
+.day[data-variant="blank"] {
+  border: 0;
+}
+
+.day[data-variant="plan"] {
+  background: var(--surface-card);
+}
+
+.day[data-variant="rest"] {
+  background: var(--surface-sunken);
+}
+
+.day[data-variant="today"] {
+  border: 2px solid var(--indigo-600);
+  background: var(--indigo-50);
+}
+
+.dayHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dayNumber {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.dayNumber[data-future="true"] {
+  color: var(--text-caption);
+}
+
+.todayTag {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--indigo-600);
+}
+
+/* Pushed to the bottom so short and tall cells align on their bars. */
+.dayPlan,
+.dayRest {
+  margin-top: auto;
+}
+
+.dayCount {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-heading);
+  font-weight: 600;
+}
+
+.dayPlanned {
+  color: var(--text-caption);
+  font-weight: 400;
+}
+
+.dayTrack {
+  height: 5px;
+  background: var(--neutral-200);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.dayFill {
+  display: block;
+  height: 100%;
+  background: var(--indigo-600);
+  border-radius: 999px;
+}
+
+.dayRest {
+  font-size: 11px;
+  color: var(--neutral-300);
+}
+
+/* ---------- journey plans: adherence ---------- */
+
+.plansTitle {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.cellMrch {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-heading);
+  font-weight: 600;
+}
+
+.cellNum {
+  font-family: var(--font-mono);
+  color: var(--text-body);
+}
+
+.adherence {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.adhTrack {
+  width: 60px;
+  height: 6px;
+  background: var(--neutral-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.adhFill {
+  display: block;
+  height: 100%;
+  background: var(--indigo-500);
+  border-radius: 999px;
+}
+
+.adhValue {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  min-width: 42px;
+  text-align: right;
+}
+
+.adhValue[data-tier="high"] {
+  color: var(--success);
+}
+
+.adhValue[data-tier="mid"] {
+  color: var(--amber-700);
+}
+
+.adhValue[data-tier="low"] {
+  color: var(--danger);
+}
+
+/* ---------- layout sketches (Users, Upload history) ---------- */
+
+/* The dashed edge and the pill are the design's signal that these two screens
+   are not resolved yet; both are deliberate, not placeholder styling. */
+.sketch {
+  background: var(--surface-card);
+  border: 1px dashed var(--border-strong);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  padding: 22px 24px;
+  /* Drawn two-up inside the 1440px board; holding that width keeps the
+     internal proportions now that each sketch owns a full route. */
+  max-width: 710px;
+}
+
+.sketchHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sketchTitle {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 2px 0 0;
+}
+
+.sketchPill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-caption);
+  background: var(--surface-sunken);
+  border: 1px solid var(--hairline);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+/* ---------- users sketch ---------- */
+
+.userTiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.userTile {
+  background: var(--surface-sunken);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.userTileLabel {
+  font-size: 10.5px;
+  color: var(--text-caption);
+}
+
+.userTileValue {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-top: 4px;
+}
+
+.usersGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+}
+
+.usersHead {
+  padding: 9px 12px;
+  background: var(--surface-sunken);
+  border-radius: 8px 8px 0 0;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-caption);
+}
+
+.usersRow {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 12px;
+  align-items: center;
+}
+
+.userName {
+  color: var(--text-heading);
+}
+
+/* Caption-coloured but not caption-sized — this column keeps the row's 12px. */
+.userActive {
+  color: var(--text-caption);
+}
+
+.userId {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.footnote {
+  font-size: 11px;
+  color: var(--text-caption);
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+/* ---------- upload history sketch ---------- */
+
+.intro {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.upload {
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.uploadRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.uploadIcon {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--indigo-50);
+  color: var(--indigo-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploadMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.uploadFile {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.uploadMeta {
+  font-size: 11px;
+  color: var(--text-caption);
+  margin-top: 2px;
+}
+
+.uploadCounts {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.uploadAccepted {
+  color: var(--text-heading);
+  font-weight: 600;
+}
+
+.uploadReceived {
+  color: var(--text-caption);
+}
+
+.uploadRejected {
+  font-size: 10.5px;
+  font-weight: 600;
+  margin-top: 2px;
+  color: var(--text-caption);
+}
+
+.uploadRejected[data-has-rejects="true"] {
+  color: var(--amber-700);
+}
+
+.uploadChevron {
+  display: flex;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--text-caption);
+  flex: none;
+  cursor: pointer;
+}
+
+.drawer {
+  /* 14 + 30 + 12 — lines the reasons up with the file name above. */
+  padding: 12px 14px 14px 56px;
+  background: var(--surface-sunken);
+  border-top: 1px solid var(--hairline);
+}
+
+.drawerTitle {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: var(--text-caption);
+  margin-bottom: 8px;
+}
+
+.reason {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-body);
+  padding: 3px 0;
+}
+
+.reasonIcon {
+  color: var(--amber-700);
+  flex: none;
+}

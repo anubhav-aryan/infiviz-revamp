@@ -1,0 +1,46 @@
+/* InfiViz Shots — Typography tokens
+   The design system loaded Fraunces / Inter / JetBrains Mono from the Google
+   Fonts CDN. Here they come from `next/font/google` in app/layout.tsx, which
+   self-hosts them and exposes the three variables referenced below. */
+:root {
+  --font-display: var(--font-fraunces), 'Times New Roman', serif;
+  --font-ui: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, 'SF Mono', monospace;
+
+  /* Type scale — size / line-height / weight */
+  --type-display-size: 48px;
+  --type-display-lh: 1.05;
+  --type-display-weight: 700;
+
+  --type-h1-size: 32px;
+  --type-h1-lh: 1.15;
+  --type-h1-weight: 700;
+
+  --type-h2-size: 22px;
+  --type-h2-lh: 1.25;
+  --type-h2-weight: 600;
+
+  --type-h3-size: 16px;
+  --type-h3-lh: 1.35;
+  --type-h3-weight: 600;
+
+  --type-body-l-size: 16px;
+  --type-body-l-lh: 1.55;
+  --type-body-l-weight: 400;
+
+  --type-body-m-size: 14px;
+  --type-body-m-lh: 1.55;
+  --type-body-m-weight: 400;
+
+  --type-label-size: 13px;
+  --type-label-lh: 1.4;
+  --type-label-weight: 500;
+
+  --type-caption-size: 11px;
+  --type-caption-lh: 1.4;
+  --type-caption-weight: 500;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+}

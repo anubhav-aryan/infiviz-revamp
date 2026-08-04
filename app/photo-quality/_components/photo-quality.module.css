@@ -1,0 +1,475 @@
+/* Photo quality — styles transcribed from the design doc's inline styles.
+   Card, bar, meter and delta atoms come from app/_reports/reports.module.css. */
+
+/* ---------- hero + 30-day trend ---------- */
+
+.heroCard {
+  padding: 22px 24px;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 28px;
+  align-items: center;
+}
+
+.trendHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.trendTitle {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+/* Legend mark for the dashed target — a flat 14px rule. */
+.trendLegendMark {
+  width: 14px;
+  height: 2px;
+  background: var(--neutral-500);
+  display: inline-block;
+}
+
+/* The chart overflows its box deliberately: the 80% gridline label sits left
+   of the viewBox origin. */
+.trendSvg {
+  display: block;
+  overflow: visible;
+}
+
+.trendGrid {
+  stroke: var(--hairline);
+  stroke-width: 1;
+}
+
+.trendAxisLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--text-caption);
+}
+
+.trendTargetLine {
+  stroke: var(--neutral-500);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.trendLine {
+  fill: none;
+  stroke: var(--indigo-600);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.trendDot {
+  fill: var(--indigo-600);
+}
+
+.trendXLabel {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  fill: var(--text-caption);
+}
+
+/* ---------- two-up: reasons / regions ---------- */
+
+.twoUp {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.reasonsCaption {
+  font-size: 12px;
+  color: var(--text-caption);
+  margin: 3px 0 16px;
+}
+
+.reasonRow {
+  display: grid;
+  grid-template-columns: 120px 1fr 92px;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.reasonName {
+  font-size: 12.5px;
+  color: var(--text-body);
+}
+
+.reasonValue {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.reasonPct {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.reasonsNote {
+  font-size: 11.5px;
+  color: var(--text-caption);
+  margin-top: 14px;
+  line-height: 1.5;
+}
+
+.regionStack {
+  margin-top: 16px;
+}
+
+/* ---------- merchandisers by rejection rate ---------- */
+
+.worstHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.worstSubtitle {
+  font-size: 12px;
+  color: var(--text-caption);
+  margin-left: 10px;
+}
+
+.worstPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-caption);
+  background: var(--surface-sunken);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.worstGrid {
+  display: grid;
+  grid-template-columns: 160px 150px 90px 1fr 130px;
+}
+
+.worstHeadRow {
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+}
+
+.worstRow {
+  display: grid;
+  font-size: 12.5px;
+}
+
+.worstMrch {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-heading);
+  font-weight: 600;
+}
+
+.worstText {
+  color: var(--text-body);
+}
+
+.worstCaptures {
+  font-family: var(--font-mono);
+  color: var(--text-body);
+  text-align: right;
+}
+
+.worstRate {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.rateValue {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  min-width: 44px;
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+.rateValue[data-tier="danger"] {
+  color: var(--danger);
+}
+
+.rateValue[data-tier="warning"] {
+  color: var(--amber-700);
+}
+
+/* ---------- recent rejected sessions ---------- */
+
+.rejectedHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.segmented {
+  display: flex;
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.segmentedOption {
+  padding: 6px 12px;
+  border: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+}
+
+.segmentedOption + .segmentedOption {
+  border-left: 1px solid var(--border-strong);
+}
+
+.segmentedOption[data-active="true"] {
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+}
+
+/* The gallery is a single scrolling row, not a wrapping grid. */
+.gallery {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.galleryItem {
+  width: 200px;
+  flex: none;
+}
+
+/* Hardcoded hexes: the design authored these placeholder gradients literally,
+   and they are artwork rather than palette. The table variant below tightens
+   the stripe to 6px/7px so it still reads at 40×30. */
+.thumb {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  background:
+    repeating-linear-gradient(
+      0deg,
+      #e7ebf1 0px,
+      #e7ebf1 10px,
+      #dde3ec 10px,
+      #dde3ec 11px
+    ),
+    linear-gradient(160deg, #eef1f6, #dbe1ea);
+}
+
+.scoreBadge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.scoreBadgeLabel {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.scoreValue {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.scoreValue[data-tier="danger"] {
+  color: var(--danger);
+}
+
+.scoreValue[data-tier="warning"] {
+  color: var(--amber-700);
+}
+
+.rejectBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--amber-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.reasonTag {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.galleryStore {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-heading);
+  margin-top: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.galleryCode {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-caption);
+  margin-top: 2px;
+}
+
+/* A real <button> standing in for the design's clickable div, so it carries
+   its own reset rather than composing one from another stylesheet — cross-file
+   class order is not guaranteed, and `font: inherit` would win the race. */
+.viewImages {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--indigo-600);
+  cursor: pointer;
+}
+
+.galleryView {
+  margin-top: 8px;
+}
+
+/* table variant */
+
+.rejectedTable {
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.rejectedGrid {
+  display: grid;
+  grid-template-columns: 56px minmax(200px, 1fr) 140px 130px 80px 120px;
+}
+
+.rejectedHeadRow {
+  padding: 10px 16px;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-caption);
+}
+
+/* The design keeps the border on the final row too, so it doubles up against
+   the wrapper's own edge. Left as authored. */
+.rejectedRow {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--hairline);
+  align-items: center;
+  font-size: 12.5px;
+}
+
+.thumbSmall {
+  position: relative;
+  width: 40px;
+  height: 30px;
+  border-radius: 6px;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      #e7ebf1 0px,
+      #e7ebf1 6px,
+      #dde3ec 6px,
+      #dde3ec 7px
+    ),
+    linear-gradient(160deg, #eef1f6, #dbe1ea);
+}
+
+.rejectBadgeSmall {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--amber-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.rejectedStore {
+  color: var(--text-heading);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 8px;
+}
+
+.rejectedCode {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.rejectedReason {
+  color: var(--text-body);
+}
+
+.rejectedScore {
+  text-align: right;
+}
+
+.rejectedView {
+  justify-content: flex-end;
+}

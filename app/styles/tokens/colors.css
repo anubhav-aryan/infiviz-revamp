@@ -1,0 +1,77 @@
+/* InfiViz Shots — Color tokens */
+:root {
+  /* Primary — Modern Indigo */
+  --indigo-50: #eef2ff;
+  --indigo-100: #e0e7ff;
+  --indigo-200: #c7d2fe;
+  --indigo-300: #a5b4fc;
+  --indigo-400: #818cf8;
+  --indigo-500: #6366f1;
+  --indigo-600: #4f46e5;
+  --indigo-700: #4338ca;
+  --indigo-800: #3730a3;
+  --indigo-900: #312e81;
+
+  /* Accent — Amber (attention only, sparingly) */
+  --amber-50: #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-300: #fcd34d;
+  --amber-500: #f59e0b;
+  --amber-700: #b45309;
+
+  /* Neutrals */
+  --neutral-0: #ffffff;
+  --neutral-50: #f8fafc;
+  --neutral-100: #f1f5f9;
+  --neutral-200: #e2e8f0;
+  --neutral-300: #cbd5e1;
+  --neutral-400: #94a3b8;
+  --neutral-500: #64748b;
+  --neutral-600: #475569;
+  --neutral-700: #334155;
+  --neutral-800: #1e293b;
+  --neutral-900: #0f172a;
+
+  /* Semantic */
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #dc2626;
+  --info: #0ea5e9;
+
+  /* ---- Semantic aliases ---- */
+  --brand: var(--indigo-600);
+  --brand-hover: var(--indigo-700);
+  --brand-active: var(--indigo-800);
+  --brand-subtle: var(--indigo-50);
+  --brand-subtle-hover: var(--indigo-100);
+  --brand-border: var(--indigo-200);
+  --brand-ring: color-mix(in oklab, var(--indigo-600) 35%, transparent);
+
+  --accent: var(--amber-500);
+  --accent-subtle: var(--amber-50);
+
+  /* Surfaces */
+  --surface-page: var(--neutral-50);
+  --surface-card: var(--neutral-0);
+  --surface-sunken: var(--neutral-100);
+  --surface-hover: var(--neutral-50);
+
+  /* Text */
+  --text-heading: var(--neutral-900);
+  --text-body: var(--neutral-700);
+  --text-secondary: var(--neutral-600);
+  --text-caption: var(--neutral-500);
+  --text-disabled: var(--neutral-400);
+  --text-on-brand: var(--neutral-0);
+
+  /* Borders / hairlines */
+  --border: var(--neutral-200);
+  --border-strong: var(--neutral-300);
+  --hairline: #e1e9f1;
+
+  /* Semantic surface pairs */
+  --success-subtle: #dcfce7;
+  --warning-subtle: var(--amber-100);
+  --danger-subtle: #fee2e2;
+  --info-subtle: #e0f2fe;
+}

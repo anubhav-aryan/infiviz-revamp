@@ -1,0 +1,291 @@
+.shell {
+  display: flex;
+  min-height: 100dvh;
+  background: var(--surface-page);
+  font-family: var(--font-ui);
+  color: var(--text-body);
+}
+
+.sidebar {
+  width: 240px;
+  flex: none;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100dvh;
+  background: var(--surface-card);
+  border-right: 1px solid var(--hairline);
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px 18px;
+}
+
+.brandMark {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--indigo-600);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brandName {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.01em;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 12px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 2px;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: background var(--transition-snap), color var(--transition-snap);
+}
+
+.navItem:hover {
+  background: var(--surface-hover);
+  color: var(--text-body);
+}
+
+.navItem[data-state="active"],
+.navItem[data-state="active"]:hover {
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+  font-weight: 600;
+}
+
+/* Surfaces whose data has not arrived yet are shown, but visibly inert. */
+.navItem[data-state="locked"],
+.navItem[data-state="locked"]:hover {
+  background: none;
+  color: var(--neutral-400);
+  cursor: default;
+}
+
+.navLabel {
+  flex: 1;
+}
+
+.lockPill {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--neutral-500);
+  background: var(--neutral-100);
+  border: 1px solid var(--neutral-300);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+
+.footer {
+  margin-top: auto;
+}
+
+.callout {
+  padding: 12px;
+  background: var(--indigo-50);
+  border: 1px solid var(--indigo-100);
+  border-radius: 10px;
+}
+
+.calloutTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--indigo-700);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.calloutBody {
+  font-size: 11.5px;
+  color: var(--indigo-800);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The source designs are fixed 1440px desktop canvases with no responsive
+   spec; below this width the app scrolls rather than reflowing into a layout
+   the design never defined. */
+.mainInner {
+  min-width: 1100px;
+}
+
+/* ---------- collapsed product rail (Master data's two-rail shell) ---------- */
+
+.railShell {
+  display: flex;
+  min-height: 100dvh;
+  background: var(--surface-page);
+  font-family: var(--font-ui);
+  color: var(--text-body);
+}
+
+.productRail {
+  width: 64px;
+  flex: none;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100dvh;
+  background: var(--neutral-900);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0;
+  gap: 6px;
+}
+
+.railMark {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 9px;
+  background: var(--indigo-600);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  text-decoration: none;
+}
+
+.railItem {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neutral-400);
+  text-decoration: none;
+  transition: background var(--transition-snap), color var(--transition-snap);
+}
+
+.railItem:hover {
+  background: var(--neutral-800);
+  color: var(--neutral-100);
+}
+
+.railItem[data-state="active"],
+.railItem[data-state="active"]:hover {
+  background: var(--indigo-600);
+  color: #fff;
+}
+
+/* section rail */
+
+.sectionRail {
+  width: 210px;
+  flex: none;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100dvh;
+  background: var(--surface-card);
+  border-right: 1px solid var(--hairline);
+  padding: 22px 14px;
+  overflow-y: auto;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.sectionCaption {
+  font-size: 12px;
+  color: var(--text-caption);
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.sectionGroup {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-caption);
+  padding: 16px 6px 8px;
+}
+
+.sectionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 2px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-snap), color var(--transition-snap);
+}
+
+.sectionItem:hover {
+  background: var(--surface-hover);
+  color: var(--text-body);
+}
+
+.sectionItem[data-state="active"],
+.sectionItem[data-state="active"]:hover {
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+  font-weight: 600;
+}
+
+/* Sub-surfaces that aren't built yet: shown, but not offered as controls. */
+.sectionItem[data-state="unavailable"],
+.sectionItem[data-state="unavailable"]:hover {
+  background: none;
+  color: var(--text-secondary);
+  cursor: default;
+}

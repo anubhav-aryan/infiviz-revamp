@@ -1,0 +1,704 @@
+/* Catalog — styles transcribed from the design doc's inline styles. Shared by
+   the overview, the Toothpaste detail (grid and table) and the SKU slide-over,
+   since all three reuse the same card and product-image treatments. */
+
+/* ---------- shared atoms ---------- */
+
+.reset {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+/* No product photography exists yet — every pack shot is this flat gradient,
+   at the three sizes the design uses it. */
+.productImage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #eef1f6, #dbe1ea);
+  color: var(--neutral-400);
+}
+
+.productImageCard {
+  position: relative;
+  aspect-ratio: 4 / 3;
+}
+
+.productImageCell {
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+}
+
+.productImageHero {
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+  margin-bottom: 18px;
+}
+
+.segmented {
+  display: flex;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ---------- overview ---------- */
+
+.overview {
+  padding: 26px 32px 34px;
+}
+
+.overviewHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--indigo-600);
+  font-weight: 700;
+}
+
+.overviewTitle {
+  font-family: var(--font-display);
+  font-size: 27px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  margin: 2px 0 0;
+}
+
+.overviewSubtitle {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.updatedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-caption);
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+.updatedBadgeIcon {
+  color: var(--indigo-500);
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.categoryCard {
+  display: block;
+  width: 100%;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  padding: 24px 26px;
+  cursor: default;
+}
+
+.categoryCard[data-openable="true"] {
+  cursor: pointer;
+  transition: box-shadow var(--transition-snap);
+}
+
+.categoryCard[data-openable="true"]:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.categoryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.categoryIdent {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.categoryIcon {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 12px;
+  background: var(--indigo-50);
+  color: var(--indigo-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.categoryName {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.categoryUpdated {
+  display: block;
+  font-size: 12.5px;
+  color: var(--text-caption);
+}
+
+.browse {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--indigo-600);
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.statValue {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.statLabel {
+  display: block;
+  font-size: 11px;
+  color: var(--text-caption);
+  margin-top: 2px;
+}
+
+/* ---------- toothpaste detail ---------- */
+
+.detail {
+  padding: 22px 32px 34px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.crumbLink {
+  color: var(--indigo-600);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.crumbSeparator {
+  display: inline-flex;
+  color: var(--text-caption);
+}
+
+.crumbCurrent {
+  color: var(--text-heading);
+  font-weight: 600;
+}
+
+.detailHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.detailTitle {
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.detailSubtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+.detailTools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Search is not wired to anything yet, so the field is inert by design. */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 200px;
+  color: var(--text-caption);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--text-caption);
+  cursor: not-allowed;
+}
+
+.searchInput::placeholder {
+  color: var(--text-caption);
+  opacity: 1;
+}
+
+.modeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+}
+
+.modeButton + .modeButton {
+  border-left: 1px solid var(--border-strong);
+}
+
+.modeButton[data-active="true"] {
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+}
+
+.brandChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 20px;
+}
+
+.brandChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  background: var(--surface-card);
+  color: var(--text-body);
+  border: 1px solid var(--border-strong);
+}
+
+/* The selected chip drops its border rather than recolouring it, exactly as
+   the design has it — the row's stretch alignment keeps the heights level. */
+.brandChip[data-active="true"] {
+  background: var(--indigo-600);
+  color: #fff;
+  border: none;
+}
+
+.brandChipCount {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.brandChip[data-active="true"] .brandChipCount {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterLabel {
+  font-size: 11.5px;
+  color: var(--text-caption);
+  font-weight: 600;
+}
+
+.filterButton {
+  padding: 5px 11px;
+  border: none;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+}
+
+.filterButton + .filterButton {
+  border-left: 1px solid var(--border-strong);
+}
+
+.filterButton[data-active="true"] {
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+}
+
+.skuCount {
+  font-size: 12px;
+  color: var(--text-caption);
+  margin-left: auto;
+}
+
+/* ---------- sku grid ---------- */
+
+.skuGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.skuCard {
+  display: block;
+  width: 100%;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow var(--transition-snap);
+}
+
+.skuCard:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.skuBody {
+  display: block;
+  padding: 12px 14px;
+}
+
+.skuName {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+  line-height: 1.35;
+  min-height: 34px;
+}
+
+.skuTags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.skuBrandTag {
+  font-size: 11px;
+  color: var(--indigo-700);
+  background: var(--indigo-50);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-weight: 600;
+}
+
+.skuSubTag {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+.skuVariant {
+  display: block;
+  font-size: 11px;
+  color: var(--text-caption);
+  margin-top: 6px;
+}
+
+.skuCode {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-caption);
+  margin-top: 8px;
+}
+
+/* ---------- sku table ---------- */
+
+.table {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.tableHead,
+.tableRow {
+  display: grid;
+  grid-template-columns:
+    44px minmax(150px, 1fr) 92px 128px 92px 132px 108px 46px 46px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.tableHead {
+  background: var(--surface-sunken);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-caption);
+}
+
+.tableRow {
+  width: 100%;
+  align-items: center;
+  font-family: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  cursor: pointer;
+  transition: background var(--transition-snap);
+}
+
+.tableRow:hover {
+  background: var(--surface-hover);
+}
+
+.tableName {
+  color: var(--text-heading);
+  font-weight: 500;
+  padding-right: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tableCell {
+  color: var(--text-body);
+}
+
+.tableTruncate {
+  color: var(--text-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tableMono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.alignRight {
+  text-align: right;
+}
+
+/* ---------- sku slide-over ---------- */
+
+/* The design absolutely positioned this inside its 1440px canvas card; as a
+   real app it covers the viewport, sidebar included. */
+.panelScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(15, 23, 41, 0.45);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.panel {
+  width: 440px;
+  flex: none;
+  height: 100%;
+  background: var(--surface-card);
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+}
+
+.panelHead {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--hairline);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panelClose {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-card);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.panelBody {
+  padding: 24px;
+}
+
+.panelTitleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.panelTitle {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.attributes {
+  margin: 18px 0;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.attributeRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.attributeKey {
+  font-size: 12px;
+  color: var(--text-caption);
+}
+
+.attributeValue[data-kind="text"] {
+  font-size: 12.5px;
+  color: var(--text-heading);
+  font-weight: 500;
+}
+
+.attributeValue[data-kind="mono"] {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-heading);
+  font-weight: 600;
+}
+
+.attributeValue[data-kind="desc"] {
+  font-size: 12px;
+  color: var(--text-body);
+  text-align: right;
+  max-width: 230px;
+}
+
+.onPackLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-caption);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.onPackTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.onPackTag {
+  font-size: 11px;
+  color: var(--text-body);
+  background: var(--surface-sunken);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 3px 9px;
+}
+
+.ranged {
+  background: var(--indigo-50);
+  border: 1px solid var(--indigo-100);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.rangedTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--indigo-800);
+}
+
+.rangedBody {
+  font-size: 12px;
+  color: var(--indigo-700);
+  margin-top: 6px;
+  line-height: 1.5;
+}

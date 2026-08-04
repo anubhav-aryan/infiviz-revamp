@@ -1,0 +1,409 @@
+/* Merchandiser activity & store coverage — styles transcribed from the design
+   doc's inline styles. Card, bar, meter and delta atoms come from
+   app/_reports/reports.module.css. */
+
+/* ---------- section headings ---------- */
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+/* Estate coverage sits further from the table above it than Field activity
+   does from the tab bar. */
+.sectionHead[data-spaced="true"] {
+  margin-top: 12px;
+}
+
+.sectionMark {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 7px;
+  background: var(--indigo-600);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* An <h2> for document structure; the design used a bare span, so the UA
+   heading margins have to go. */
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0;
+}
+
+.sectionCaption {
+  font-size: 12.5px;
+  color: var(--text-caption);
+}
+
+/* ---------- KPI tiles ---------- */
+
+.tileGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.tile {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  padding: 15px 18px;
+}
+
+.tileLabel {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.tileValue {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  margin-top: 6px;
+}
+
+.tileSub {
+  font-size: 11px;
+  color: var(--text-caption);
+  margin-top: 2px;
+}
+
+/* ---------- not seen in 7+ days ---------- */
+
+.notSeen {
+  background: var(--amber-50);
+  border: 1px solid var(--amber-100);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.notSeenLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--amber-700);
+}
+
+.notSeenChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--text-body);
+  background: var(--surface-card);
+  border: 1px solid var(--amber-100);
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+
+.notSeenName {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.notSeenMeta {
+  color: var(--text-caption);
+}
+
+/* ---------- visits heatmap ---------- */
+
+.heatHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.heatLegend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.heatRamp {
+  display: flex;
+  gap: 3px;
+}
+
+.heatRow {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.heatName {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heatCells {
+  display: grid;
+  grid-template-columns: repeat(31, 1fr);
+  gap: 3px;
+}
+
+/* Shared by the ramp swatches and the 310 day cells, so the legend can never
+   drift from what the grid actually renders. */
+.heatCell {
+  border-radius: 3px;
+  background: var(--neutral-100);
+}
+
+.heatCell[data-level="1"] {
+  background: var(--indigo-100);
+}
+.heatCell[data-level="2"] {
+  background: var(--indigo-300);
+}
+.heatCell[data-level="3"] {
+  background: var(--indigo-500);
+}
+.heatCell[data-level="4"] {
+  background: var(--indigo-700);
+}
+
+.heatCellDay {
+  aspect-ratio: 1;
+}
+
+.heatSwatch {
+  width: 11px;
+  height: 11px;
+}
+
+/* ---------- merchandiser activity table ---------- */
+
+.activityGrid {
+  display: grid;
+  grid-template-columns: 150px 140px 80px 70px 1fr 80px 1fr 90px;
+}
+
+.activityHeadRow {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.activityRow {
+  font-size: 12.5px;
+}
+
+.activityMrch {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-heading);
+  font-weight: 600;
+}
+
+.activityText {
+  color: var(--text-body);
+}
+
+.activityNum {
+  font-family: var(--font-mono);
+  color: var(--text-body);
+  text-align: right;
+}
+
+.activityMeter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.adherenceValue {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 38px;
+  text-align: right;
+}
+
+.adherenceValue[data-tier="success"] {
+  color: var(--success);
+}
+.adherenceValue[data-tier="warning"] {
+  color: var(--amber-700);
+}
+.adherenceValue[data-tier="danger"] {
+  color: var(--danger);
+}
+
+.passValue {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.activityActive {
+  font-size: 11.5px;
+  color: var(--text-caption);
+  text-align: right;
+}
+
+/* ---------- estate coverage ---------- */
+
+.coverageTop {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+}
+
+.coverageHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.splitPair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.breakdownTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 14px;
+}
+
+.breakdownRow {
+  display: grid;
+  grid-template-columns: 130px 1fr 44px;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+}
+
+/* ---------- coverage map + overdue table ---------- */
+
+.mapSplit {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.mapCard {
+  padding: 18px 20px;
+}
+
+.mapTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 4px;
+}
+
+.mapLegend {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.mapLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.legendDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+}
+
+.legendDot[data-status="covered"] {
+  background: var(--indigo-600);
+}
+.legendDot[data-status="overdue"] {
+  background: var(--amber-500);
+}
+.legendDot[data-status="notyet"] {
+  background: var(--neutral-300);
+}
+
+.overdueGrid {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 120px 130px 90px 130px;
+}
+
+.overdueHeadRow {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.overdueRow {
+  font-size: 12px;
+}
+
+.overdueStore {
+  color: var(--text-heading);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 10px;
+}
+
+.overdueDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  margin-right: 8px;
+}
+
+.overdueDot[data-status="notyet"] {
+  background: var(--neutral-300);
+}
+.overdueDot[data-status="overdue"] {
+  background: var(--amber-500);
+}
+
+.overdueText {
+  color: var(--text-body);
+}
+
+.overdueDays {
+  font-family: var(--font-mono);
+  color: var(--text-body);
+  text-align: right;
+}
+
+.overdueMrch {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+}

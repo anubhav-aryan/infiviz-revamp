@@ -1,0 +1,1416 @@
+/* Analytics — styles transcribed from the design doc's inline styles.
+   Shared by the header shell and all four persona bodies, since every persona
+   reuses the same card, panel, ribbon and delta treatments. */
+
+/* ---------- shared atoms ---------- */
+
+.reset {
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.panel {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  padding: 18px 20px;
+}
+
+.tableCard {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.panelTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.panelTitle[data-gap="6"] {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.panelTitle[data-gap="12"] {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.panelTitle[data-gap="14"] {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+/* Arrow direction and colour are set independently — `neutral` exists so a
+   competitor's gain can show its sign without being scored as good or bad. */
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.delta[data-tone="up"] {
+  color: var(--success);
+}
+
+.delta[data-tone="down"] {
+  color: var(--danger);
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* A figure called out mid-sentence, in mono and at heading weight of colour. */
+.inlineMono {
+  font-family: var(--font-mono);
+  color: var(--text-heading);
+}
+
+.right {
+  text-align: right;
+}
+
+.segmented {
+  display: flex;
+  background: var(--surface-sunken);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.segButton {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+.segButton[data-active="true"] {
+  background: var(--surface-card);
+  color: var(--indigo-700);
+  box-shadow: var(--shadow-sm);
+}
+
+.ghostButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-card);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-body);
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: var(--indigo-600);
+  color: #fff;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.inlineLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--indigo-600);
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+}
+
+/* ---------- header shell ---------- */
+
+.headRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.headRow1 {
+  padding: 18px 28px 14px;
+}
+
+.headRow2 {
+  padding: 0 28px 12px;
+}
+
+.headRow3 {
+  padding: 0 28px 16px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.pageSubtitle {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  margin-top: 1px;
+}
+
+.headActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-caption);
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+
+.pillDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--indigo-500);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crumb {
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--indigo-600);
+}
+
+/* The crumb you are scoped to is the destination, so it stops looking clickable. */
+.crumb[data-current="true"] {
+  color: var(--text-heading);
+  cursor: default;
+}
+
+.crumbSep {
+  color: var(--text-caption);
+  display: inline-flex;
+}
+
+.chips {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--indigo-50);
+  border: 1px solid var(--indigo-200);
+  border-radius: 999px;
+  padding: 5px 8px 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--indigo-700);
+}
+
+.chipRemove {
+  display: inline-flex;
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+.addFilter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-card);
+  border: 1px dashed var(--border-strong);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ---------- band scaffold ---------- */
+
+.body {
+  padding: 18px 28px 32px;
+}
+
+.statStrip {
+  font-size: 12px;
+  color: var(--text-caption);
+  margin-bottom: 20px;
+}
+
+.statSep {
+  color: var(--neutral-300);
+  margin: 0 10px;
+}
+
+.band {
+  margin-bottom: 26px;
+}
+
+/* Band E closes the page, so it drops the inter-band rhythm. */
+.bandEnd {
+  margin-bottom: 0;
+}
+
+.bandHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.bandHeadActions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.bandTitle {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0;
+}
+
+.bandTitle[data-gap="4"] {
+  margin: 0 0 4px;
+}
+
+.bandTitle[data-gap="6"] {
+  margin: 0 0 6px;
+}
+
+.bandTitle[data-gap="14"] {
+  margin: 0 0 14px;
+}
+
+.bandSubtitle {
+  font-size: 12.5px;
+  color: var(--text-caption);
+  margin-top: 2px;
+}
+
+.bandCaption {
+  font-size: 12.5px;
+  color: var(--text-caption);
+  margin-bottom: 14px;
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ---------- hero cards ---------- */
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 26px;
+}
+
+.heroGridStart {
+  align-items: start;
+}
+
+.heroCard {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  padding: 22px 24px;
+}
+
+.heroTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.heroName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.heroSpark {
+  width: 80px;
+  height: 26px;
+  overflow: visible;
+}
+
+.heroValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 12px 0 2px;
+}
+
+.bigNumber {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-heading);
+  line-height: 1;
+}
+
+.bigNumber[data-size="exec"] {
+  font-size: 46px;
+  letter-spacing: -0.03em;
+}
+
+.bigNumber[data-size="regional"] {
+  font-size: 44px;
+  letter-spacing: -0.03em;
+}
+
+/* The category cards run the same 44px but without the optical tightening. */
+.bigNumber[data-size="category"] {
+  font-size: 44px;
+}
+
+.bigNumber[data-size="field"] {
+  font-size: 38px;
+}
+
+.bigUnit {
+  font-size: 22px;
+  color: var(--text-caption);
+}
+
+.heroDeltaLabel {
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+.heroTrack {
+  position: relative;
+  height: 8px;
+  background: var(--neutral-200);
+  border-radius: 999px;
+  margin: 16px 0 6px;
+}
+
+.heroFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--warning);
+  border-radius: 999px;
+}
+
+.heroTarget {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--neutral-600);
+}
+
+.heroScale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.heroScaleGap {
+  margin-bottom: 16px;
+}
+
+.heroSubs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+}
+
+.subKey {
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.subVal {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-top: 2px;
+}
+
+.ownCompBar {
+  display: flex;
+  height: 9px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 7px;
+}
+
+.ownCompOwn {
+  background: var(--indigo-600);
+}
+
+.ownCompRest {
+  background: var(--neutral-300);
+}
+
+.ownCompLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ---------- ranked list (band C, every persona) ---------- */
+
+.dimGrid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 16px;
+}
+
+.targetLegend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.targetLegendMark {
+  width: 0;
+  height: 12px;
+  border-left: 2px dashed var(--neutral-500);
+}
+
+.rankWrap {
+  position: relative;
+}
+
+.rankTargetLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 2px dashed var(--neutral-400);
+}
+
+.rankRow {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.rankRow[data-variant="exec"] {
+  grid-template-columns: 140px 1fr 74px;
+  cursor: pointer;
+}
+
+.rankRow[data-variant="regional"] {
+  grid-template-columns: 150px 1fr 74px;
+}
+
+.rankRow[data-variant="field"] {
+  grid-template-columns: 170px 1fr 74px;
+}
+
+.rankName {
+  font-size: 12px;
+  color: var(--text-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rankRow[data-variant="field"] .rankName {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.rankTrack {
+  height: 12px;
+  background: var(--neutral-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.rankBar {
+  display: block;
+  height: 100%;
+  background: var(--indigo-500);
+  border-radius: 999px;
+}
+
+.rankValue {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.rankOsa {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.smallDelta {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.smallDelta[data-tone="up"] {
+  color: var(--success);
+}
+
+.smallDelta[data-tone="down"] {
+  color: var(--danger);
+}
+
+.smallDelta[data-tone="neutral"] {
+  font-weight: 600;
+  color: var(--text-caption);
+}
+
+/* Indented to line up with the bar track, not the row. */
+.rankStores {
+  font-size: 10px;
+  color: var(--text-caption);
+  margin: -2px 0 4px 150px;
+}
+
+/* ---------- dumbbell + trend line (exec band D) ---------- */
+
+.dumbbellRow {
+  display: grid;
+  grid-template-columns: 150px 1fr 52px;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+}
+
+.dumbbellName {
+  font-size: 12px;
+  color: var(--text-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dumbbellTrack {
+  position: relative;
+  height: 14px;
+}
+
+.dumbbellBar {
+  position: absolute;
+  top: 6px;
+  height: 2px;
+}
+
+.dumbbellFrom {
+  position: absolute;
+  top: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--neutral-300);
+}
+
+.dumbbellTo {
+  position: absolute;
+  top: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.dumbbellRow[data-tone="up"] .dumbbellBar,
+.dumbbellRow[data-tone="up"] .dumbbellTo {
+  background: var(--success);
+}
+
+.dumbbellRow[data-tone="down"] .dumbbellBar,
+.dumbbellRow[data-tone="down"] .dumbbellTo {
+  background: var(--danger);
+}
+
+.dumbbellDelta {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.dumbbellRow[data-tone="up"] .dumbbellDelta {
+  color: var(--success);
+}
+
+.dumbbellRow[data-tone="down"] .dumbbellDelta {
+  color: var(--danger);
+}
+
+.lineHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.legendRow {
+  display: flex;
+  gap: 14px;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.legendLine {
+  width: 14px;
+  height: 2px;
+}
+
+/* ---------- insight cards (exec band E) ---------- */
+
+.insightGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.insightCard {
+  display: flex;
+  gap: 14px;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+}
+
+.insightIcon {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 10px;
+  background: var(--indigo-50);
+  color: var(--indigo-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.insightBody {
+  flex: 1;
+}
+
+.insightText {
+  font-size: 13px;
+  color: var(--text-body);
+  line-height: 1.5;
+}
+
+.insightLink {
+  margin-top: 8px;
+}
+
+/* ---------- regional ---------- */
+
+.rankBadge {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--indigo-700);
+  background: var(--indigo-50);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+/* The national figure rides along as a dashed "ghost" edge behind the region. */
+.ghostTrack {
+  position: relative;
+  height: 14px;
+  margin: 16px 0 6px;
+}
+
+.ghostBase {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  height: 8px;
+  width: 100%;
+  background: var(--neutral-200);
+  border-radius: 999px;
+}
+
+.ghostMark {
+  position: absolute;
+  left: 0;
+  top: 1px;
+  height: 12px;
+  border-right: 2px dashed var(--neutral-500);
+}
+
+.ghostFill {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  height: 8px;
+  background: var(--warning);
+  border-radius: 999px;
+}
+
+.ghostTarget {
+  position: absolute;
+  top: -1px;
+  bottom: 1px;
+  width: 2px;
+  background: var(--neutral-600);
+}
+
+.heatGrid {
+  display: grid;
+  grid-template-columns: 96px repeat(5, 1fr);
+  gap: 4px;
+  align-items: center;
+}
+
+.heatColLabel {
+  font-size: 10px;
+  color: var(--text-caption);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heatRowLabel {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heatCell {
+  aspect-ratio: 1.6;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+}
+
+.covGrid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 16px;
+}
+
+.leagueGrid {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 110px 90px 70px 70px 80px 90px 70px;
+}
+
+.leagueHead {
+  padding: 10px 18px;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-caption);
+}
+
+.leagueRow {
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--hairline);
+  align-items: center;
+  font-size: 12px;
+  cursor: pointer;
+  width: 100%;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  background: none;
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.leagueStore {
+  color: var(--text-heading);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 8px;
+}
+
+.leagueCell {
+  color: var(--text-body);
+}
+
+.leagueMono {
+  font-family: var(--font-mono);
+  text-align: right;
+  color: var(--text-heading);
+}
+
+.leagueMonoDim {
+  font-family: var(--font-mono);
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+.leagueVisit {
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.leagueSpark {
+  width: 56px;
+  height: 18px;
+}
+
+/* ---------- share-of-shelf ribbon ---------- */
+
+.ribbonCard {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  padding: 20px 22px;
+}
+
+.ribbonWrap {
+  position: relative;
+}
+
+.ribbon {
+  display: flex;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  /* The ribbon casts a shadow onto its own shelf lip — authored literal. */
+  box-shadow: 0 8px 12px -8px rgba(15, 23, 41, 0.4);
+}
+
+.ribbon[data-variant="summary"] {
+  height: 44px;
+}
+
+.ribbon[data-variant="brands"],
+.ribbon[data-variant="store"] {
+  height: 52px;
+}
+
+.ribbonSeg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-weight: 600;
+}
+
+.ribbon[data-variant="summary"] .ribbonSeg {
+  font-size: 11px;
+}
+
+.ribbon[data-variant="brands"] .ribbonSeg {
+  font-size: 9.5px;
+}
+
+.ribbon[data-variant="store"] .ribbonSeg {
+  font-size: 9px;
+}
+
+.ribbonShelf {
+  height: 6px;
+  background: var(--neutral-400);
+  border-radius: 0 0 5px 5px;
+}
+
+.ribbonLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-top: 14px;
+}
+
+.ribbonLegend[data-variant="store"] {
+  gap: 10px 16px;
+}
+
+.legendSwatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.ribbonCaption {
+  font-size: 11px;
+  color: var(--text-caption);
+  margin: 10px 0 8px;
+}
+
+/* Hand-built switch: a 34×18 track with a 14×14 knob sliding 2px → 18px. */
+.switchLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+}
+
+.switchTrack {
+  width: 34px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--neutral-300);
+  position: relative;
+  display: inline-block;
+  flex: none;
+}
+
+.switchLabel[data-on="true"] .switchTrack {
+  background: var(--indigo-600);
+}
+
+.switchKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.switchLabel[data-on="true"] .switchKnob {
+  left: 18px;
+}
+
+/* ---------- who has the shelf / what's missing ---------- */
+
+.whoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 16px;
+}
+
+.whoRow {
+  display: grid;
+  grid-template-columns: 120px 1fr 74px;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.whoName {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.whoDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.whoTrack {
+  height: 10px;
+  background: var(--neutral-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.whoBar {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.whoValue {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.whoShare {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-heading);
+}
+
+.missingTitle {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.missingGrid {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) 70px 70px 70px 70px 60px;
+}
+
+.missingHead {
+  padding: 9px 18px;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-caption);
+}
+
+.missingRow {
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--hairline);
+  align-items: center;
+  font-size: 11.5px;
+}
+
+.missingName {
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 8px;
+}
+
+.missingMono {
+  font-family: var(--font-mono);
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+.missingAbsent {
+  font-family: var(--font-mono);
+  text-align: right;
+  color: var(--text-heading);
+  font-weight: 600;
+}
+
+.missingOsa {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.missingOsa[data-tier="good"] {
+  color: var(--success);
+}
+
+.missingOsa[data-tier="warn"] {
+  color: var(--amber-700);
+}
+
+.missingOsa[data-tier="bad"] {
+  color: var(--danger);
+}
+
+.missingSpark {
+  width: 46px;
+  height: 16px;
+}
+
+/* ---------- MSL gap cards ---------- */
+
+.mslGapCard {
+  display: flex;
+  gap: 14px;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+}
+
+.mslGapIcon {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 10px;
+  background: var(--amber-50);
+  color: var(--amber-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mslGapName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.mslGapSub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+/* ---------- field ---------- */
+
+.fieldHeroGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.fieldHeroCard {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  padding: 20px 22px;
+}
+
+.fieldHeroName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.fieldValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 10px 0 2px;
+}
+
+.fieldUnit {
+  font-size: 18px;
+  color: var(--text-caption);
+}
+
+.fieldSub {
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+.fieldTrack {
+  position: relative;
+  height: 7px;
+  background: var(--neutral-200);
+  border-radius: 999px;
+  margin-top: 14px;
+}
+
+.fieldFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+}
+
+.mslRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.mslRowIcon {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mslRow[data-found="true"] .mslRowIcon {
+  background: var(--indigo-50);
+  color: var(--indigo-600);
+}
+
+.mslRow[data-found="false"] .mslRowIcon {
+  background: var(--amber-50);
+  color: var(--amber-700);
+}
+
+.mslRowName {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mslTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 2px 8px;
+  flex: none;
+}
+
+.mslRow[data-found="true"] .mslTag {
+  color: var(--indigo-700);
+  background: var(--indigo-50);
+  border: 1px solid var(--indigo-100);
+}
+
+.mslRow[data-found="false"] .mslTag {
+  color: var(--amber-700);
+  background: var(--amber-50);
+  border: 1px solid var(--amber-100);
+}
+
+.fixRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.fixDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex: none;
+  background: var(--amber-500);
+}
+
+.fixBody {
+  flex: 1;
+}
+
+.fixStore {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.fixIssue {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}

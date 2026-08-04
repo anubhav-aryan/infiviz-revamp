@@ -1,0 +1,992 @@
+/* Store Explorer — styles transcribed from the design doc's inline styles.
+   Shared by the explorer view, the app-images view and the lightbox, since all
+   three reuse the same card, chip and photo-placeholder treatments. */
+
+/* ---------- shared atoms ---------- */
+
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+}
+
+.reset {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+/* The design never had real photography — every image is this striped
+   placeholder, kept exactly as authored. */
+.photoPlaceholder {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      #e7ebf1 0px,
+      #e7ebf1 10px,
+      #dde3ec 10px,
+      #dde3ec 11px
+    ),
+    linear-gradient(160deg, #eef1f6, #dbe1ea);
+}
+
+.photoPlaceholderLarge {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      #e7ebf1 0px,
+      #e7ebf1 12px,
+      #dde3ec 12px,
+      #dde3ec 13px
+    ),
+    linear-gradient(160deg, #eef1f6, #dbe1ea);
+}
+
+.statusChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex: none;
+}
+
+.statusChip[data-status="Complete"] {
+  color: var(--indigo-700);
+  background: var(--indigo-50);
+}
+
+.statusChip[data-status="Processing"] {
+  color: var(--text-secondary);
+  background: var(--neutral-100);
+}
+
+.statusChip[data-status="Queued"] {
+  color: var(--text-caption);
+  background: var(--neutral-100);
+}
+
+.openLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--indigo-600);
+}
+
+/* ---------- explorer view ---------- */
+
+.explorer {
+  padding: 22px 28px 28px;
+}
+
+.pageHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.pageSubtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.segmented {
+  display: flex;
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dateOption {
+  padding: 7px 13px;
+  border: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+}
+
+.dateOption + .dateOption {
+  border-left: 1px solid var(--border-strong);
+}
+
+.dateOption[data-active="true"] {
+  background: var(--indigo-600);
+  color: #fff;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: var(--hairline);
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--indigo-50);
+  border: 1px solid var(--indigo-200);
+  border-radius: 999px;
+  padding: 5px 8px 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--indigo-700);
+}
+
+.filterChipRemove {
+  display: inline-flex;
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+.addFilter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-card);
+  border: 1px dashed var(--border-strong);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.summaryTile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  padding: 13px 16px;
+}
+
+.summaryIcon {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 9px;
+  background: var(--indigo-50);
+  color: var(--indigo-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.summaryValue {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-heading);
+  line-height: 1;
+}
+
+.summaryLabel {
+  font-size: 11px;
+  color: var(--text-caption);
+  margin-top: 3px;
+}
+
+/* visited + retailer breakdown */
+
+.visitedCard {
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 28px;
+  align-items: center;
+}
+
+.visitedLeft {
+  border-right: 1px solid var(--hairline);
+  padding-right: 24px;
+}
+
+.visitedCount {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.visitedNumber {
+  font-family: var(--font-mono);
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.visitedTarget {
+  font-size: 12.5px;
+  color: var(--text-caption);
+}
+
+.visitedLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-top: 6px;
+}
+
+.visitedAwaiting {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--text-caption);
+  margin-top: 10px;
+}
+
+.retailerHeading {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 12px;
+}
+
+.retailerGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 28px;
+}
+
+.retailerRow {
+  display: grid;
+  grid-template-columns: 110px 1fr 78px;
+  align-items: center;
+  gap: 10px;
+}
+
+.retailerName {
+  font-size: 11.5px;
+  color: var(--text-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.retailerTrack {
+  height: 8px;
+  background: var(--neutral-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.retailerBar {
+  display: block;
+  height: 100%;
+  background: var(--indigo-500);
+  border-radius: 999px;
+}
+
+.retailerValue {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+/* controls */
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ghostButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-card);
+  color: var(--text-body);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.viewToggle {
+  margin-left: auto;
+}
+
+.viewOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+}
+
+.viewOption + .viewOption {
+  border-left: 1px solid var(--border-strong);
+}
+
+.viewOption[data-active="true"] {
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+}
+
+/* split: map + list */
+
+.split {
+  display: grid;
+  grid-template-columns: var(--split-cols);
+  gap: 16px;
+  align-items: start;
+}
+
+.mapPanel {
+  padding: 16px 18px;
+}
+
+.mapHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.panelTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.legend {
+  display: flex;
+  gap: 14px;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.legendDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+}
+
+/* list panel */
+
+.listPanel {
+  overflow: hidden;
+}
+
+.listHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.listHint {
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.visitRow {
+  display: block;
+  width: 100%;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--hairline);
+  cursor: pointer;
+  transition: background var(--transition-snap);
+}
+
+.visitRow:hover {
+  background: var(--surface-hover);
+}
+
+.visitRowTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.visitStore {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.visitMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--text-caption);
+  flex-wrap: wrap;
+}
+
+.visitMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.visitMetaSep {
+  color: var(--neutral-300);
+}
+
+.visitMono {
+  font-family: var(--font-mono);
+}
+
+.visitRowBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.visitPhotos {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.visitPhotoCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.visitCategories {
+  color: var(--text-caption);
+}
+
+/* gallery */
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.galleryCard {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow var(--transition-snap);
+}
+
+.galleryCard:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+/* These live inside a <button>, so they are spans and need blockifying. */
+.galleryThumb {
+  display: block;
+  position: relative;
+  aspect-ratio: 16 / 10;
+}
+
+.galleryThumbChip {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+}
+
+.galleryBody {
+  display: block;
+  padding: 11px 13px;
+}
+
+.galleryTitle {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gallerySub {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-caption);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.galleryFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.galleryPhotos {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+/* ---------- app images view ---------- */
+
+.images {
+  padding: 22px 28px 30px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--indigo-600);
+  cursor: pointer;
+  margin-bottom: 14px;
+}
+
+.imagesHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.imagesTitle {
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.imagesMeta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.imagesMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.imagesMetaMono {
+  font-family: var(--font-mono);
+}
+
+.photoCountBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+/* timeline */
+
+.timelineCard {
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+
+.timelineHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.timelineTotal {
+  font-size: 12px;
+  color: var(--text-caption);
+}
+
+.timelineTotal b {
+  font-family: var(--font-mono);
+  color: var(--text-heading);
+}
+
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  position: relative;
+}
+
+.timelineRail {
+  position: absolute;
+  top: 11px;
+  left: 8%;
+  right: 8%;
+  height: 2px;
+  background: var(--indigo-200);
+}
+
+.timelineStep {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 8px;
+}
+
+.timelineDot {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--indigo-600);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.timelineLabel {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-top: 10px;
+}
+
+.timelineTime {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.timelineGap {
+  font-size: 10.5px;
+  color: var(--text-caption);
+  margin-top: 4px;
+}
+
+/* photo groups */
+
+.photoGroup {
+  margin-bottom: 18px;
+}
+
+.photoGroupHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.photoGroupName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.photoGroupMeta {
+  font-size: 12px;
+  color: var(--text-caption);
+}
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.photoTile {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+
+.photoFrame {
+  display: block;
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  transition: box-shadow var(--transition-snap);
+}
+
+.photoTile:hover .photoFrame {
+  box-shadow: var(--shadow-md);
+}
+
+.photoQuality {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--neutral-500);
+}
+
+.photoQuality[data-quality="flag"] {
+  background: var(--amber-500);
+  color: #fff;
+}
+
+.photoSeq {
+  position: absolute;
+  bottom: 7px;
+  left: 7px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-heading);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+
+.photoTime {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-caption);
+  margin-top: 6px;
+}
+
+/* ---------- lightbox ---------- */
+
+/* The design absolutely positioned this inside its 1440px canvas card; as a
+   real app it covers the viewport, sidebar included. */
+.lightboxBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(15, 23, 41, 0.7);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  border: none;
+}
+
+.lightboxPanel {
+  display: flex;
+  background: var(--surface-card);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  max-width: 1000px;
+  width: 100%;
+}
+
+.lightboxStage {
+  position: relative;
+  flex: 1;
+  aspect-ratio: 4 / 3;
+}
+
+.lightboxNav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightboxPrev {
+  left: 14px;
+}
+
+.lightboxNext {
+  right: 14px;
+}
+
+.lightboxSide {
+  width: 300px;
+  flex: none;
+  padding: 24px;
+  border-left: 1px solid var(--hairline);
+}
+
+.lightboxSideHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.lightboxSeq {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.lightboxClose {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-card);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.lightboxMeta {
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.lightboxMetaRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.lightboxMetaRow:last-child {
+  border-bottom: none;
+}
+
+.lightboxMetaKey {
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+.lightboxMetaValue {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-heading);
+  text-align: right;
+}
+
+.lightboxNote {
+  font-size: 11.5px;
+  color: var(--text-caption);
+  margin-top: 14px;
+  line-height: 1.5;
+}
+
+/* ---------- sidebar callout (screen-specific) ---------- */
+
+.sidebarNote {
+  padding: 12px;
+  background: var(--indigo-50);
+  border: 1px solid var(--indigo-100);
+  border-radius: 10px;
+}
+
+.sidebarNoteTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--indigo-700);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sidebarNoteBody {
+  font-size: 11.5px;
+  color: var(--indigo-800);
+  margin-top: 4px;
+  line-height: 1.4;
+}
