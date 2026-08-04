@@ -1,19 +1,24 @@
 import { Icon } from "@/app/_components/icon";
-import {
-  DATE_OPTIONS,
-  FILTER_CHIPS,
-  RETAILERS,
-  STORES_VISITED,
-  SUMMARY,
-  VISIT_COUNT_LABEL,
-  VISITS,
-  type Visit,
-} from "../_data/store-explorer";
+import { type ActiveFilter, filterKey, filterLabel } from "@/app/_filters/model";
+import type { Period } from "../_data/period";
+import type { Facts, View, Visit } from "../_data/store-explorer";
+import { FilterMenu } from "./filter-menu";
+import { SavedViewsMenu } from "./saved-views-menu";
+import { TimeControl } from "./time-control";
 import { VietnamMap } from "./vietnam-map";
 import { VisitGallery, VisitList } from "./visit-list";
 import styles from "./store-explorer.module.css";
 
 type ExplorerViewProps = {
+  view: View;
+  facts: Facts;
+  period: Period;
+  onPeriodChange: (period: Period) => void;
+  filters: ActiveFilter[];
+  onAddFilter: (filter: ActiveFilter) => void;
+  onRemoveFilter: (filter: ActiveFilter) => void;
+  onClearFilters: () => void;
+  onApplySavedView: (period: Period, filters: ActiveFilter[]) => void;
   mapOpen: boolean;
   onToggleMap: () => void;
   listView: "list" | "gallery";
@@ -22,6 +27,15 @@ type ExplorerViewProps = {
 };
 
 export function ExplorerView({
+  view,
+  facts,
+  period,
+  onPeriodChange,
+  filters,
+  onAddFilter,
+  onRemoveFilter,
+  onClearFilters,
+  onApplySavedView,
   mapOpen,
   onToggleMap,
   listView,
@@ -41,44 +55,48 @@ export function ExplorerView({
 
       {/* filter row */}
       <div className={styles.filterRow}>
-        <div className={styles.segmented}>
-          {DATE_OPTIONS.map((option) => (
-            <button
-              key={option.label}
-              type="button"
-              className={styles.dateOption}
-              data-active={option.active}
-              aria-pressed={option.active}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+        <TimeControl period={period} onChange={onPeriodChange} />
 
         <div className={styles.divider} />
 
-        {FILTER_CHIPS.map((label) => (
-          <span key={label} className={styles.filterChip}>
-            {label}
+        {filters.map((filter) => (
+          <span key={filterKey(filter)} className={styles.filterChip}>
+            {filterLabel(filter)}
             <button
               type="button"
               className={styles.filterChipRemove}
-              aria-label={`Remove filter ${label}`}
+              aria-label={`Remove filter ${filterLabel(filter)}`}
+              onClick={() => onRemoveFilter(filter)}
             >
               <Icon name="x" size={13} />
             </button>
           </span>
         ))}
 
-        <button type="button" className={styles.addFilter}>
-          <Icon name="plus" size={14} />
-          Add filter
-        </button>
+        <FilterMenu facts={facts} filters={filters} onAdd={onAddFilter} />
+
+        {filters.length > 1 ? (
+          <button
+            type="button"
+            className={styles.linkButton}
+            onClick={onClearFilters}
+          >
+            Clear all
+          </button>
+        ) : null}
+
+        <div className={styles.filterRowEnd}>
+          <SavedViewsMenu
+            period={period}
+            filters={filters}
+            onApply={onApplySavedView}
+          />
+        </div>
       </div>
 
       {/* summary strip */}
       <div className={styles.summaryGrid}>
-        {SUMMARY.map((tile) => (
+        {view.summary.map((tile) => (
           <div key={tile.label} className={styles.summaryTile}>
             <span className={styles.summaryIcon} aria-hidden="true">
               <Icon name={tile.icon} />
@@ -95,36 +113,44 @@ export function ExplorerView({
       <div className={`${styles.card} ${styles.visitedCard}`}>
         <div className={styles.visitedLeft}>
           <div className={styles.visitedCount}>
-            <span className={styles.visitedNumber}>{STORES_VISITED.count}</span>
+            <span className={styles.visitedNumber}>
+              {view.storesVisited.count}
+            </span>
             <span className={styles.visitedTarget}>
-              / {STORES_VISITED.target} configured
+              / {view.storesVisited.target} configured
             </span>
           </div>
-          <div className={styles.visitedLabel}>Stores visited today</div>
+          <div className={styles.visitedLabel}>{view.storesVisitedLabel}</div>
           <div className={styles.visitedAwaiting}>
             <Icon name="clock" size={14} />
-            {STORES_VISITED.awaiting} sessions awaiting processing
+            {view.storesVisited.awaiting} sessions awaiting processing
           </div>
         </div>
 
         <div>
-          <div className={styles.retailerHeading}>Visits by retailer · today</div>
-          <div className={styles.retailerGrid}>
-            {RETAILERS.map((retailer) => (
-              <div key={retailer.name} className={styles.retailerRow}>
-                <span className={styles.retailerName}>{retailer.name}</span>
-                <span className={styles.retailerTrack}>
-                  <span
-                    className={styles.retailerBar}
-                    style={{ width: `${retailer.width}%` }}
-                  />
-                </span>
-                <span className={styles.retailerValue}>
-                  {retailer.visits} · {retailer.pct}%
-                </span>
-              </div>
-            ))}
-          </div>
+          <div className={styles.retailerHeading}>{view.retailerHeading}</div>
+          {view.retailers.length > 0 ? (
+            <div className={styles.retailerGrid}>
+              {view.retailers.map((retailer) => (
+                <div key={retailer.name} className={styles.retailerRow}>
+                  <span className={styles.retailerName}>{retailer.name}</span>
+                  <span className={styles.retailerTrack}>
+                    <span
+                      className={styles.retailerBar}
+                      style={{ width: `${retailer.width}%` }}
+                    />
+                  </span>
+                  <span className={styles.retailerValue}>
+                    {retailer.visits} · {retailer.pct}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className={styles.inlineEmpty}>
+              No retailer in this cut recorded a visit.
+            </p>
+          )}
         </div>
       </div>
 
@@ -167,7 +193,9 @@ export function ExplorerView({
         {mapOpen ? (
           <div className={`${styles.card} ${styles.mapPanel}`}>
             <div className={styles.mapHead}>
-              <span className={styles.panelTitle}>Visited stores · today</span>
+              <span className={styles.panelTitle}>
+                Visited stores · {view.periodLabel}
+              </span>
               <div className={styles.legend}>
                 <span className={styles.legendItem}>
                   <span
@@ -192,20 +220,28 @@ export function ExplorerView({
                 </span>
               </div>
             </div>
-            <VietnamMap />
+            <VietnamMap pins={view.pins} />
           </div>
         ) : null}
 
         <div className={`${styles.card} ${styles.listPanel}`}>
           <div className={styles.listHead}>
-            <span className={styles.panelTitle}>{VISIT_COUNT_LABEL}</span>
+            <span className={styles.panelTitle}>{view.visitsLabel}</span>
             <span className={styles.listHint}>Tap a row to open App Images</span>
           </div>
 
           {listView === "list" ? (
-            <VisitList visits={VISITS} onOpen={onOpenVisit} />
+            <VisitList
+              visits={view.visits}
+              onOpen={onOpenVisit}
+              onClearFilters={filters.length > 0 ? onClearFilters : undefined}
+            />
           ) : (
-            <VisitGallery visits={VISITS} onOpen={onOpenVisit} />
+            <VisitGallery
+              visits={view.visits}
+              onOpen={onOpenVisit}
+              onClearFilters={filters.length > 0 ? onClearFilters : undefined}
+            />
           )}
         </div>
       </div>

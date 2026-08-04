@@ -50,9 +50,14 @@
   letter-spacing: -0.01em;
 }
 
+/* min-height:0 lets this shrink inside the 100dvh column, and overflow-y gives
+   it its own scrollbar — otherwise items fall off a short viewport and the
+   sticky sidebar puts them out of reach of page scroll. */
 .nav {
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .navItem {
@@ -282,10 +287,11 @@
   font-weight: 600;
 }
 
-/* Sub-surfaces that aren't built yet: shown, but not offered as controls. */
+/* Sub-surfaces that aren't built yet: shown, but not offered as controls — and
+   dimmed, so they don't read as live links you could click. */
 .sectionItem[data-state="unavailable"],
 .sectionItem[data-state="unavailable"]:hover {
   background: none;
-  color: var(--text-secondary);
+  color: var(--text-disabled);
   cursor: default;
 }

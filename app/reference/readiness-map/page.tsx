@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Hint } from "@/app/_components/hint";
 import {
   CLIENT,
   COLUMNS,
@@ -80,16 +81,29 @@ export default function ReadinessMapPage() {
                 </div>
                 <div className={styles.rowNote}>{row.note}</div>
               </div>
-              {row.cells.map((cell, index) => (
-                <div
-                  key={COLUMNS[index].label}
-                  className={styles.cell}
-                  data-kind={cell.kind}
-                  title={cell.title}
-                >
-                  {READINESS_LABEL[cell.kind]}
-                </div>
-              ))}
+              {row.cells.map((cell, index) =>
+                // Only the cells that carry an unlock rule become focusable —
+                // making all 44 a tab stop would bury the ones that say something.
+                cell.title ? (
+                  <Hint
+                    key={COLUMNS[index].label}
+                    text={cell.title}
+                    align={index >= COLUMNS.length - 2 ? "end" : "center"}
+                    className={styles.cell}
+                    data-kind={cell.kind}
+                  >
+                    {READINESS_LABEL[cell.kind]}
+                  </Hint>
+                ) : (
+                  <div
+                    key={COLUMNS[index].label}
+                    className={styles.cell}
+                    data-kind={cell.kind}
+                  >
+                    {READINESS_LABEL[cell.kind]}
+                  </div>
+                ),
+              )}
             </div>
           ))}
 

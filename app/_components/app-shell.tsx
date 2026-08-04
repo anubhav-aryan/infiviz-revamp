@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Hint } from "./hint";
 import { Icon } from "./icon";
 import {
   NAV_BY_ID,
@@ -41,16 +42,19 @@ export function AppShell({ active, nav, callout, children }: AppShellProps) {
             // Locked surfaces have no data yet, so they are not navigable.
             if (entry.state === "locked") {
               return (
-                <span
+                // The unlock reason is the only explanation the user gets, so
+                // it goes in a focusable Hint rather than a mouse-only `title`.
+                <Hint
                   key={entry.id}
+                  text={entry.tooltip ?? "Not available yet"}
                   className={styles.navItem}
                   data-state="locked"
-                  title={entry.tooltip}
+                  data-disabled="true"
                 >
                   <Icon name={item.icon} />
                   <span className={styles.navLabel}>{item.label}</span>
                   <span className={styles.lockPill}>Locked</span>
-                </span>
+                </Hint>
               );
             }
 

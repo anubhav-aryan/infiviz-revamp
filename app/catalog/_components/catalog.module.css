@@ -517,6 +517,10 @@
   transition: background var(--transition-snap);
 }
 
+.tableRow:last-child {
+  border-bottom: none;
+}
+
 .tableRow:hover {
   background: var(--surface-hover);
 }
@@ -628,6 +632,10 @@
   gap: 12px;
   padding: 10px 14px;
   border-bottom: 1px solid var(--hairline);
+}
+
+.attributeRow:last-child {
+  border-bottom: none;
 }
 
 .attributeKey {

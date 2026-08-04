@@ -1,3 +1,5 @@
+import { VISITS, type Visit } from "@/app/store-explorer/_data/store-explorer";
+
 /**
  * Demo content for the Session Viewer screen, transcribed verbatim from the
  * design doc. One session — 04 Aug 2026, Winmart HCM, toothpaste — reached from
@@ -10,9 +12,11 @@ export const CONTEXT = {
   headline: "Optic White OSA was 33% in this session",
 };
 
+export type SessionHeaderRow = { key: string; value: string };
+
 export const SESSION_TITLE = "3742 · Winlife HCM 94/54 - 56";
 
-export const SESSION_HEADER: { key: string; value: string }[] = [
+export const SESSION_HEADER: SessionHeaderRow[] = [
   { key: "Retailer", value: "Winmart" },
   { key: "Category", value: "Toothpaste" },
   { key: "Merchandiser", value: "minh_tran" },
@@ -21,7 +25,82 @@ export const SESSION_HEADER: { key: string; value: string }[] = [
   { key: "Capture quality", value: "Good" },
 ];
 
+/** What identifies a session; everything below it is the shared authored fixture. */
+export type SessionIdentity = { title: string; header: SessionHeaderRow[] };
+
+/** `/session-viewer` with no store is still the design's transcribed session. */
+export const DEFAULT_SESSION: SessionIdentity = {
+  title: SESSION_TITLE,
+  header: SESSION_HEADER,
+};
+
+/* ---- per-store sessions, keyed off the Store Explorer visit list ---- */
+
+/**
+ * Store names carry Vietnamese diacritics plus `·`, `/`, `_` and spaced
+ * hyphens. NFD splits each accented letter into a base letter and a combining
+ * mark, so dropping the U+0300–U+036F block turns `Tân` into `Tan`; `đ`/`Đ` is
+ * a stroked letter with no decomposition, so it is mapped by hand before the
+ * lowercase pass. Whatever is left outside [a-z0-9] collapses to a single
+ * hyphen, which is what keeps `94/54 - 56` from producing empty path segments.
+ */
+export function slugifyStore(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[đĐ]/g, "d")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/** The eight visits Store Explorer lists, addressable by slug. */
+export const SESSION_STORES = VISITS.map((visit) => ({
+  slug: slugifyStore(visit.store),
+  visit,
+}));
+
+const VISIT_BY_SLUG = new Map(SESSION_STORES.map(({ slug, visit }) => [slug, visit]));
+
+export function visitBySlug(slug: string): Visit | undefined {
+  return VISIT_BY_SLUG.get(slug);
+}
+
+/**
+ * Every Store Explorer visit belongs to the same authored day, and that date is
+ * spelled out there rather than derived — no `new Date()` anywhere in render.
+ */
+const VISIT_DATE = "04 Aug";
+
+/**
+ * Only the header varies per store, and only across the four facts the `Visit`
+ * record actually holds. `Capture quality` is dropped rather than defaulted:
+ * it is not in the visit data, and asserting "Good" for eight stores would be
+ * inventing a measurement.
+ */
+export function sessionFor(visit: Visit): SessionIdentity {
+  return {
+    title: visit.store,
+    header: [
+      { key: "Retailer", value: visit.retailer },
+      { key: "Category", value: visit.categories },
+      { key: "Merchandiser", value: visit.merchandiser },
+      { key: "Visit", value: `${VISIT_DATE} ${visit.time}` },
+      { key: "Photos", value: String(visit.photos) },
+    ],
+  };
+}
+
 /* ---- stitched shelf ---- */
+
+/*
+ * Everything from here down is the one authored session's evidence — the same
+ * stitch, shelf metrics, must-stock list and brand breakdown on every
+ * `/session-viewer/[store]` page. These numbers were transcribed from a real
+ * design; generating eight plausible-looking variants would be fabricating
+ * measurements that no capture backs, which is exactly the failure this screen
+ * exists to prevent. Per-store data arrives when a backend does.
+ */
 
 export type BoxKind = "own" | "competitor" | "unrecognised";
 

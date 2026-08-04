@@ -1,31 +1,34 @@
+import Link from "next/link";
 import { Icon } from "@/app/_components/icon";
 import {
-  FIELD_BAND_A,
-  FIELD_HEROES,
   FIELD_RIBBON,
   FIELD_STORE_CAPTION,
   FIX_LIST,
-  RANK_ROWS,
   STORE_MSL,
+  type AnalyticsView,
   type DimKey,
 } from "../_data/analytics";
 import { RankedList, Ribbon, RibbonLegend, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
 
 export function FieldBody({
+  view,
   dim,
   dimPicker,
+  compare,
 }: {
+  view: AnalyticsView;
   dim: DimKey;
   dimPicker: React.ReactNode;
+  compare: boolean;
 }) {
   return (
     <div className={styles.body}>
-      <StatStrip items={FIELD_BAND_A} />
+      <StatStrip items={view.fieldBandA} />
 
       {/* Band B — today's cluster, plus progress against the visit plan */}
       <div className={styles.fieldHeroGrid}>
-        {FIELD_HEROES.map((hero) => (
+        {view.fieldHeroes.map((hero) => (
           <div key={hero.name} className={styles.fieldHeroCard}>
             <span className={styles.fieldHeroName}>{hero.name}</span>
             <div className={styles.fieldValueRow}>
@@ -55,7 +58,12 @@ export function FieldBody({
           <span className={styles.panelTitle} data-gap="12">
             OSA by {dim.toLowerCase()}
           </span>
-          <RankedList rows={RANK_ROWS[dim]} variant="field" />
+          <RankedList
+            rows={view.ranked[dim]}
+            variant="field"
+            compare={compare}
+            emptyLabel={`No ${dim.toLowerCase()} matches the filters.`}
+          />
         </div>
       </div>
 
@@ -116,14 +124,14 @@ export function FieldBody({
                   <b className={styles.inlineMono}>{fix.skus}</b> SKUs affected
                 </div>
               </div>
-              <button
-                type="button"
-                className={styles.inlineLink}
+              <Link
+                href="/session-viewer"
+                className={`${styles.reset} ${styles.inlineLink}`}
                 aria-label={`Open Session Viewer for ${fix.store}`}
               >
                 Open Session Viewer
                 <Icon name="arrow-right" size={14} />
-              </button>
+              </Link>
             </div>
           ))}
         </div>

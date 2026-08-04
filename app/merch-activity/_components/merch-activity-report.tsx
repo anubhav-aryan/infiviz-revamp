@@ -1,17 +1,13 @@
 import { CoverageMap } from "@/app/_components/coverage-map";
 import { Icon } from "@/app/_components/icon";
+import type { CsvTable } from "@/app/_export/csv";
 import { Bar, TargetHero, TargetRule } from "@/app/_reports/marks";
 import { ReportHeader } from "@/app/_reports/report-header";
+import type { MonthKey } from "@/app/_time/periods";
 import {
-  ACTIVITY_ROWS,
-  ACTIVITY_TILES,
-  COVERAGE_HERO,
-  COVERAGE_REGIONS,
-  COVERAGE_RETAILERS,
   COVERAGE_TARGET_FRACTION,
-  COVERAGE_TYPES,
-  NOT_SEEN,
-  OVERDUE,
+  MERCH_ACTIVITY,
+  type ActivityRow,
 } from "../_data/merch-activity";
 import { VisitHeatmap } from "./visit-heatmap";
 import shared from "@/app/_reports/reports.module.css";
@@ -22,6 +18,32 @@ const MAP_LEGEND = [
   { status: "overdue", label: "Overdue" },
   { status: "notyet", label: "Not visited" },
 ] as const;
+
+/** Serialized here, from the same rows the table renders below. */
+function activityCsv(rows: ActivityRow[]): CsvTable {
+  return {
+    headers: [
+      "Merchandiser",
+      "Region",
+      "Stores",
+      "Visits",
+      "Adherence %",
+      "Photos",
+      "Pass rate %",
+      "Last active",
+    ],
+    rows: rows.map((r) => [
+      r.mrch,
+      r.region,
+      r.stores,
+      r.visits,
+      r.adherence,
+      r.photos,
+      r.pass,
+      r.lastActive,
+    ]),
+  };
+}
 
 /** Coverage-by-X cards differ only in heading and rows. */
 function BreakdownCard({
@@ -45,12 +67,17 @@ function BreakdownCard({
   );
 }
 
-export function MerchActivityReport() {
+export function MerchActivityReport({ month }: { month: MonthKey }) {
+  const view = MERCH_ACTIVITY[month];
+
   return (
     <>
       <ReportHeader
         title="Merchandiser activity & store coverage"
         active="merch-activity"
+        month={month}
+        basePath="/merch-activity"
+        csv={activityCsv(view.activityRows)}
       />
 
       <div className={shared.body}>
@@ -66,7 +93,7 @@ export function MerchActivityReport() {
         </div>
 
         <div className={styles.tileGrid}>
-          {ACTIVITY_TILES.map((tile) => (
+          {view.tiles.map((tile) => (
             <div key={tile.label} className={styles.tile}>
               <div className={styles.tileLabel}>{tile.label}</div>
               <div className={styles.tileValue}>{tile.value}</div>
@@ -80,7 +107,7 @@ export function MerchActivityReport() {
             <Icon name="alert-triangle" />
             Not seen in 7+ days
           </span>
-          {NOT_SEEN.map((person) => (
+          {view.notSeen.map((person) => (
             <span key={person.name} className={styles.notSeenChip}>
               <span className={styles.notSeenName}>{person.name}</span>
               <span className={styles.notSeenMeta}>
@@ -90,7 +117,11 @@ export function MerchActivityReport() {
           ))}
         </div>
 
-        <VisitHeatmap />
+        <VisitHeatmap
+          title={view.heatTitle}
+          rows={view.heatRows}
+          days={view.heatDays}
+        />
 
         <div className={`${shared.card} ${shared.tableCard}`}>
           <div className={shared.tableTitle}>Merchandiser activity</div>
@@ -108,7 +139,7 @@ export function MerchActivityReport() {
             <span className={shared.numRight}>Last active</span>
           </div>
 
-          {ACTIVITY_ROWS.map((row) => (
+          {view.activityRows.map((row) => (
             <div
               key={row.mrch}
               className={`${styles.activityGrid} ${shared.tableRow} ${styles.activityRow}`}
@@ -155,14 +186,14 @@ export function MerchActivityReport() {
         <div className={styles.coverageTop}>
           <div className={`${shared.card} ${shared.cardPad}`}>
             <TargetHero
-              label={COVERAGE_HERO.label}
-              value={COVERAGE_HERO.value}
-              delta={COVERAGE_HERO.delta}
-              caption={COVERAGE_HERO.caption}
-              pct={COVERAGE_HERO.pct}
-              targetPct={COVERAGE_HERO.targetPct}
-              statusLabel={COVERAGE_HERO.statusLabel}
-              targetLabel={COVERAGE_HERO.targetLabel}
+              label={view.coverageHero.label}
+              value={view.coverageHero.value}
+              delta={view.coverageHero.delta}
+              caption={view.coverageHero.caption}
+              pct={view.coverageHero.pct}
+              targetPct={view.coverageHero.targetPct}
+              statusLabel={view.coverageHero.statusLabel}
+              targetLabel={view.coverageHero.targetLabel}
               size="md"
             />
           </div>
@@ -172,13 +203,13 @@ export function MerchActivityReport() {
               <div className={shared.cardTitle}>Coverage by region</div>
               <span className={shared.legendNote}>
                 <span className={shared.dashSwatch} />
-                Target 90%
+                {view.coverageHero.targetLabel}
               </span>
             </div>
 
             <div className={shared.barListStack}>
               <TargetRule fraction={COVERAGE_TARGET_FRACTION} />
-              {COVERAGE_REGIONS.map((region) => (
+              {view.coverageRegions.map((region) => (
                 <div key={region.name} className={shared.barRow}>
                   <span className={shared.barRowName}>{region.name}</span>
                   <Bar pct={region.pct} height={11} />
@@ -192,9 +223,12 @@ export function MerchActivityReport() {
         <div className={styles.splitPair}>
           <BreakdownCard
             title="Coverage by retailer"
-            rows={COVERAGE_RETAILERS}
+            rows={view.coverageRetailers}
           />
-          <BreakdownCard title="Coverage by store type" rows={COVERAGE_TYPES} />
+          <BreakdownCard
+            title="Coverage by store type"
+            rows={view.coverageTypes}
+          />
         </div>
 
         <div className={styles.mapSplit}>
@@ -229,7 +263,7 @@ export function MerchActivityReport() {
               <span>Merchandiser</span>
             </div>
 
-            {OVERDUE.map((row) => (
+            {view.overdue.map((row) => (
               <div
                 key={row.store}
                 className={`${styles.overdueGrid} ${shared.tableRow} ${styles.overdueRow}`}

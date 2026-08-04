@@ -317,6 +317,12 @@
   cursor: pointer;
 }
 
+/* At the ends of the authored Feb–Jul window there is nowhere to step to. */
+.stepperArrow[data-disabled="true"] {
+  color: var(--text-disabled);
+  cursor: default;
+}
+
 /* ---------- journey plans: calendar ---------- */
 
 .calendarCard {
@@ -740,6 +746,13 @@
   color: var(--text-caption);
   flex: none;
   cursor: pointer;
+}
+
+/* Rows with no rejection reasons keep the chevron for column alignment, so it
+   has to read as inert rather than as an affordance the reader missed. */
+.uploadChevron:disabled {
+  color: var(--text-disabled);
+  cursor: default;
 }
 
 .drawer {

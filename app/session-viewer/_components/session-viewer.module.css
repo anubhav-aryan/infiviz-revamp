@@ -395,6 +395,10 @@
   background: var(--surface-card);
 }
 
+.mslRow:last-child {
+  border-bottom: none;
+}
+
 .mslRow[data-status="absent"] {
   background: var(--amber-50);
 }

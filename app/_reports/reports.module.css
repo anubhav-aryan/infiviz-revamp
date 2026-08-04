@@ -44,19 +44,33 @@
   gap: 10px;
 }
 
-.ghostButton {
-  display: inline-flex;
+/* Sits where the design's inert "This month" button did, and matches its box. */
+.monthStepper {
+  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   border: 1px solid var(--border-strong);
   background: var(--surface-card);
-  color: var(--text-body);
-  font-family: inherit;
+  border-radius: 8px;
+  padding: 7px 12px;
+}
+
+.monthLabel {
   font-size: 12.5px;
   font-weight: 600;
-  padding: 8px 12px;
-  border-radius: 8px;
+  color: var(--text-heading);
+}
+
+.stepperArrow {
+  display: flex;
+  color: var(--text-caption);
   cursor: pointer;
+}
+
+/* At the ends of the authored Feb–Jul window there is nowhere to step to. */
+.stepperArrow[data-disabled="true"] {
+  color: var(--text-disabled);
+  cursor: default;
 }
 
 .primaryButton {
@@ -382,6 +396,11 @@
   padding: 11px 20px;
   border-bottom: 1px solid var(--hairline);
   align-items: center;
+}
+
+/* Shared row primitive: the last row would otherwise double against the card border. */
+.tableRow:last-child {
+  border-bottom: none;
 }
 
 .numRight {

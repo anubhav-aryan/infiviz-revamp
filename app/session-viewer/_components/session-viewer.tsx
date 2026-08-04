@@ -3,16 +3,25 @@
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { Icon } from "@/app/_components/icon";
-import { CONTEXT } from "../_data/session-viewer";
+import {
+  CONTEXT,
+  DEFAULT_SESSION,
+  type SessionIdentity,
+} from "../_data/session-viewer";
 import { EvidencePanel } from "./evidence-panel";
 import { MetricsPanel } from "./metrics-panel";
 import styles from "./session-viewer.module.css";
+
+type SessionViewerProps = {
+  /** Which store's session header to show; omit for the design's own session. */
+  session?: SessionIdentity;
+};
 
 /**
  * Mirrors the design doc's component state, which is a single flag: whether the
  * recognition overlay is drawn on the stitched shelf.
  */
-export function SessionViewer() {
+export function SessionViewer({ session = DEFAULT_SESSION }: SessionViewerProps) {
   const [boxes, setBoxes] = useState(true);
   const toggleBoxes = useCallback(() => setBoxes((on) => !on), []);
 
@@ -36,7 +45,7 @@ export function SessionViewer() {
 
       <div className={styles.grid}>
         <EvidencePanel boxes={boxes} onToggleBoxes={toggleBoxes} />
-        <MetricsPanel />
+        <MetricsPanel session={session} />
       </div>
     </div>
   );

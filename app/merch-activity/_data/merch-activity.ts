@@ -1,3 +1,4 @@
+import { group } from "@/app/_format/num";
 import {
   adherenceTier,
   heatLevel,
@@ -5,30 +6,373 @@ import {
   type Delta,
   type HeatLevel,
 } from "@/app/_reports/thresholds";
+import {
+  CURRENT_MONTH,
+  MONTHS,
+  type Month,
+  type MonthKey,
+  isWeekend,
+} from "@/app/_time/periods";
+import {
+  lcg,
+  shiftCount,
+  shiftFor,
+  shiftPct,
+  type Shift,
+} from "@/app/_time/variants";
 
 /**
- * Demo content for the Merchandiser activity & store coverage report,
- * transcribed verbatim from the design doc. Everything derived — including the
- * 310 heatmap cells — is computed once at module scope, so the server and
- * client renders are guaranteed to agree.
+ * Demo content for the Merchandiser activity & store coverage report. July 2026
+ * is the month the design doc authored, so its figures live in `CURRENT_FACTS`
+ * and reach `FACTS` by reference — nothing in this file transforms them. The
+ * other five months apply `PER_MONTH` to those facts: the team, the estate and
+ * the coverage were all smaller further back.
+ *
+ * Everything derived — including the heatmap's ~300 cells — is computed once at
+ * module scope, so the server and client renders are guaranteed to agree.
  */
+
+/** The 90% coverage target, and the fraction of the 0–100 bar domain it sits at. */
+const TARGET_PCT = 90;
+export const COVERAGE_TARGET_FRACTION = TARGET_PCT / 100;
+
+type NotSeenFact = { name: string; region: string; days: number };
+type CoverageFact = { name: string; pct: number };
+/** Merchandiser → the run of days they were absent for. */
+type Gaps = Record<string, [from: number, to: number]>;
+type ActivityFact = [
+  mrch: string,
+  region: string,
+  stores: number,
+  visits: number,
+  adherence: number,
+  photos: number,
+  pass: number,
+  lastActive: string,
+];
+type OverdueFact = [
+  store: string,
+  retailer: string,
+  region: string,
+  /** `null` is a store that has never been visited at all. */
+  days: number | null,
+  mrch: string,
+];
+
+type Facts = {
+  activeToday: number;
+  teamSize: number;
+  activeThisMonth: number;
+  avgVisitsPerDay: number;
+  avgMinutesInStore: number;
+  notSeen: NotSeenFact[];
+  /** Deliberate absence streaks — the story the heatmap is there to tell. */
+  gaps: Gaps;
+  activity: ActivityFact[];
+  /** Stores audited out of the whole estate: the coverage hero's two numbers. */
+  audited: number;
+  estate: number;
+  /** Points gained on the month before — the coverage hero's delta chip. */
+  coverageGainPts: number;
+  coverageRegions: CoverageFact[];
+  coverageRetailers: CoverageFact[];
+  coverageTypes: CoverageFact[];
+  overdue: OverdueFact[];
+};
+
+const CURRENT_FACTS: Facts = {
+  activeToday: 142,
+  teamSize: 148,
+  activeThisMonth: 148,
+  avgVisitsPerDay: 6.4,
+  avgMinutesInStore: 11,
+  notSeen: [
+    { name: "bao_vu", region: "Central", days: 9 },
+    { name: "duc_ngo", region: "Red River Delta", days: 12 },
+    { name: "ha_pham", region: "North Highlands", days: 8 },
+  ],
+  gaps: {
+    huy_le: [11, 17],
+    duc_ngo: [13, 24],
+    bao_vu: [15, 22],
+    nam_hoang: [20, 27],
+  },
+  activity: [
+    ["khang_nguyen", "Ho Chi Minh City", 42, 152, 90, 1840, 94, "2h ago"],
+    ["linh_pham", "South East", 38, 141, 93, 1712, 92, "1h ago"],
+    ["minh_tran", "Ho Chi Minh City", 45, 149, 83, 1901, 92, "3h ago"],
+    ["quan_do", "Red River Delta", 44, 170, 97, 2044, 90, "40m ago"],
+    ["mai_bui", "South East", 36, 129, 90, 1488, 88, "5h ago"],
+    ["huy_le", "Central", 40, 138, 86, 1602, 79, "6d ago"],
+    ["thao_vo", "Mekong Delta", 33, 44, 67, 604, 84, "1d ago"],
+    ["nam_hoang", "North Highlands", 29, 31, 53, 388, 81, "4d ago"],
+  ],
+  audited: 1412,
+  estate: 1847,
+  coverageGainPts: 3,
+  coverageRegions: [
+    { name: "Ho Chi Minh City", pct: 84 },
+    { name: "South East", pct: 79 },
+    { name: "Mekong Delta", pct: 74 },
+    { name: "Red River Delta", pct: 71 },
+    { name: "Central", pct: 66 },
+    { name: "North Highlands", pct: 58 },
+  ],
+  coverageRetailers: [
+    { name: "Bach Hoa Xanh", pct: 81 },
+    { name: "Winmart", pct: 73 },
+    { name: "Co.opmart", pct: 70 },
+    { name: "Aeon", pct: 68 },
+    { name: "Lotte", pct: 61 },
+  ],
+  coverageTypes: [
+    { name: "Mini mart", pct: 80 },
+    { name: "Supermarket", pct: 72 },
+    { name: "Hypermarket", pct: 64 },
+    { name: "Convenience", pct: 51 },
+  ],
+  overdue: [
+    ["Emart Vinh", "Emart", "Central", null, "—"],
+    [
+      "MM Mega Market Hải Phòng",
+      "MM Mega Market",
+      "Red River Delta",
+      null,
+      "duc_ngo",
+    ],
+    ["Aeon Hà Đông", "Aeon", "Red River Delta", 73, "duc_ngo"],
+    ["Lotte Mart Đà Nẵng", "Lotte", "Central", 61, "bao_vu"],
+    [
+      "2111 BHX_HCM_TPH - 138 Lý Th",
+      "Bach Hoa Xanh",
+      "North Highlands",
+      52,
+      "nam_hoang",
+    ],
+    [
+      "VNC0010338 Co.opmart Long Xuyên",
+      "Co.opmart",
+      "Mekong Delta",
+      41,
+      "thao_vo",
+    ],
+    ["3157 Winlife 537 Nguyễn Duy", "Winmart", "Central", 34, "huy_le"],
+    [
+      "1933 BHX_HCM_TPH - 871 Âu Cơ",
+      "Bach Hoa Xanh",
+      "South East",
+      28,
+      "mai_bui",
+    ],
+  ],
+};
+
+/* ---- deriving the other five months ---- */
+
+/**
+ * How one month further back differs, per fact family. A recipe rather than a
+ * literal per month: the screen states how fast it was growing, and the six
+ * months fall out of that.
+ */
+const PER_MONTH = {
+  /** Head-counts and volumes: a smaller team working a smaller estate. */
+  volume: { scale: 0.94, bias: 0, spread: 0.04 },
+  /** Effort per merchandiser — visits a day, minutes in store. */
+  intensity: { scale: 0.97, bias: 0, spread: 0.03 },
+  /** Coverage, in points — the same step the hero cites against last month. */
+  coverage: { scale: 1, bias: -3, spread: 1.2 },
+  /** Route adherence was a little weaker earlier in the window. */
+  adherence: { scale: 1, bias: -1.4, spread: 1.1 },
+  /** Photo pass rate, matching the step the Photo quality hero cites. */
+  pass: { scale: 1, bias: -1.8, spread: 1 },
+  /** Days a store has gone unvisited: shorter backlogs on a younger estate. */
+  overdue: { scale: 0.9, bias: 0, spread: 0.12 },
+};
+
+const SEED = 7000;
+
+/**
+ * Absence streaks are authored per month rather than generated: they are the
+ * one thing in the heatmap a reader is meant to notice, and every run is inside
+ * its own month's day count. July's live on `CURRENT_FACTS`.
+ */
+const EARLIER_GAPS: Record<string, Gaps> = {
+  "2026-02": { thao_vo: [6, 12], nam_hoang: [9, 15], duc_ngo: [17, 24] },
+  "2026-03": { huy_le: [4, 11], bao_vu: [19, 27], mai_bui: [22, 28] },
+  "2026-04": { duc_ngo: [8, 16], nam_hoang: [12, 19], thao_vo: [24, 30] },
+  "2026-05": { bao_vu: [3, 9], huy_le: [14, 21], duc_ngo: [20, 29] },
+  "2026-06": { nam_hoang: [7, 14], duc_ngo: [11, 20], bao_vu: [23, 30] },
+};
+
+/** Coverage percentages read off the two numbers the hero caption prints. */
+function coveragePct(facts: Facts): number {
+  return Math.round((facts.audited / facts.estate) * 100);
+}
+
+function deriveCoverage(
+  rows: CoverageFact[],
+  shift: Shift,
+  rand: () => number,
+): CoverageFact[] {
+  return rows.map((row) => ({
+    name: row.name,
+    pct: Math.round(shiftPct(row.pct, shift, rand)),
+  }));
+}
+
+function deriveFacts(key: MonthKey, previous: Facts | null): Facts {
+  const volume = shiftFor(key, PER_MONTH.volume, SEED);
+  const intensity = shiftFor(key, PER_MONTH.intensity, SEED + 1);
+  const coverage = shiftFor(key, PER_MONTH.coverage, SEED + 2);
+  const adherence = shiftFor(key, PER_MONTH.adherence, SEED + 3);
+  const pass = shiftFor(key, PER_MONTH.pass, SEED + 4);
+  const overdue = shiftFor(key, PER_MONTH.overdue, SEED + 5);
+
+  const randVolume = lcg(volume.seed);
+  const randIntensity = lcg(intensity.seed);
+  const randCoverage = lcg(coverage.seed);
+  const randAdherence = lcg(adherence.seed);
+  const randPass = lcg(pass.seed);
+  const randOverdue = lcg(overdue.seed);
+
+  const teamSize = shiftCount(CURRENT_FACTS.teamSize, volume, randVolume);
+  const estate = shiftCount(CURRENT_FACTS.estate, volume, randVolume);
+  const auditedPct = shiftPct(
+    (CURRENT_FACTS.audited / CURRENT_FACTS.estate) * 100,
+    coverage,
+    randCoverage,
+  );
+  const facts: Facts = {
+    activeToday: Math.round(
+      (teamSize * CURRENT_FACTS.activeToday) / CURRENT_FACTS.teamSize,
+    ),
+    teamSize,
+    // A team that was still hiring did not have everyone in the field all month.
+    activeThisMonth: Math.round(teamSize * 0.97),
+    avgVisitsPerDay: +(CURRENT_FACTS.avgVisitsPerDay * intensity.scale).toFixed(
+      1,
+    ),
+    avgMinutesInStore: shiftCount(
+      CURRENT_FACTS.avgMinutesInStore,
+      intensity,
+      randIntensity,
+    ),
+    notSeen: CURRENT_FACTS.notSeen.map((person) => ({
+      ...person,
+      // The card's own heading promises 7+ days, so the floor is part of it.
+      days: Math.max(7, shiftCount(person.days, overdue, randOverdue)),
+    })),
+    gaps: EARLIER_GAPS[key] ?? {},
+    activity: CURRENT_FACTS.activity.map(
+      ([
+        mrch,
+        region,
+        stores,
+        visits,
+        adh,
+        photos,
+        passRate,
+        lastActive,
+      ]): ActivityFact => [
+        mrch,
+        region,
+        shiftCount(stores, volume, randVolume),
+        shiftCount(visits, volume, randVolume),
+        Math.round(shiftPct(adh, adherence, randAdherence, 99)),
+        shiftCount(photos, volume, randVolume),
+        Math.round(shiftPct(passRate, pass, randPass)),
+        lastActive,
+      ],
+    ),
+    audited: Math.round((estate * auditedPct) / 100),
+    estate,
+    coverageGainPts: 0,
+    coverageRegions: deriveCoverage(
+      CURRENT_FACTS.coverageRegions,
+      coverage,
+      randCoverage,
+    ),
+    coverageRetailers: deriveCoverage(
+      CURRENT_FACTS.coverageRetailers,
+      coverage,
+      randCoverage,
+    ),
+    coverageTypes: deriveCoverage(
+      CURRENT_FACTS.coverageTypes,
+      coverage,
+      randCoverage,
+    ),
+    overdue: CURRENT_FACTS.overdue.map(
+      ([store, retailer, region, days, mrch]): OverdueFact => [
+        store,
+        retailer,
+        region,
+        days === null ? null : shiftCount(days, overdue, randOverdue),
+        mrch,
+      ],
+    ),
+  };
+
+  // February has no month before it inside the window, so it falls back to the
+  // recipe's nominal step rather than inventing a January.
+  facts.coverageGainPts = previous
+    ? coveragePct(facts) - coveragePct(previous)
+    : -PER_MONTH.coverage.bias;
+
+  return facts;
+}
+
+/**
+ * Built in calendar order so a month can read its gain off the one before it.
+ * July is assigned by reference — no spread — so the authored figures are
+ * provably the ones the current month renders.
+ */
+const FACTS: Record<MonthKey, Facts> = (() => {
+  const out = {} as Record<MonthKey, Facts>;
+  let previous: Facts | null = null;
+  for (const month of MONTHS) {
+    out[month.key] =
+      month.key === CURRENT_MONTH
+        ? CURRENT_FACTS
+        : deriveFacts(month.key, previous);
+    previous = out[month.key];
+  }
+  return out;
+})();
 
 /* ---- field activity ---- */
 
-export const ACTIVITY_TILES = [
-  { label: "Active today", value: "142", sub: "of 148 merchandisers" },
-  { label: "Active this month", value: "148", sub: "full team" },
-  { label: "Avg visits / day", value: "6.4", sub: "per merchandiser" },
-  { label: "Avg time in store", value: "11m", sub: "per visit" },
-];
+type Tile = { label: string; value: string; sub: string };
 
-export const NOT_SEEN = [
-  { name: "bao_vu", region: "Central", days: 9 },
-  { name: "duc_ngo", region: "Red River Delta", days: 12 },
-  { name: "ha_pham", region: "North Highlands", days: 8 },
-];
+function buildTiles(facts: Facts): Tile[] {
+  return [
+    {
+      label: "Active today",
+      value: String(facts.activeToday),
+      sub: `of ${group(facts.teamSize)} merchandisers`,
+    },
+    {
+      label: "Active this month",
+      value: String(facts.activeThisMonth),
+      sub:
+        facts.activeThisMonth >= facts.teamSize
+          ? "full team"
+          : `of ${group(facts.teamSize)}`,
+    },
+    {
+      label: "Avg visits / day",
+      value: facts.avgVisitsPerDay.toFixed(1),
+      sub: "per merchandiser",
+    },
+    {
+      label: "Avg time in store",
+      value: `${facts.avgMinutesInStore}m`,
+      sub: "per visit",
+    },
+  ];
+}
 
-/* ---- visits heatmap: 10 merchandisers × 31 days ---- */
+/* ---- visits heatmap: 10 merchandisers × the days of the month ---- */
 
 export type HeatCell = { level: HeatLevel; title: string };
 export type HeatRow = { name: string; cells: HeatCell[] };
@@ -46,51 +390,37 @@ const HEAT_NAMES = [
   "bao_vu",
 ];
 
-/** Deliberate absence streaks — the story the heatmap is there to tell. */
-const GAPS: Record<string, [from: number, to: number]> = {
-  huy_le: [11, 17],
-  duc_ngo: [13, 24],
-  bao_vu: [15, 22],
-  nam_hoang: [20, 27],
-};
-
 /**
- * The design's LCG, reproduced expression-for-expression. `& 0x7fffffff` runs
- * the product through ToInt32, so the double-precision rounding above 2^53 is
- * part of the sequence — any "safer" arithmetic would produce a different map.
+ * The weekday of a day comes from `isWeekend`, which reads a precomputed month
+ * rather than constructing a `Date` — the grid is built once at module scope
+ * and the same cells are what every render sees.
  */
-function lcg(seed: number) {
-  let s = seed;
-  return () => {
-    s = (s * 1103515245 + 12345) & 0x7fffffff;
-    return s / 0x7fffffff;
-  };
+function buildHeatRows(month: Month, facts: Facts): HeatRow[] {
+  const shift = shiftFor(month.key, PER_MONTH.volume, SEED);
+
+  return HEAT_NAMES.map((name, rowIndex) => {
+    const rand = lcg(shift.seed + rowIndex * 131);
+    const gap = facts.gaps[name];
+    const cells: HeatCell[] = [];
+
+    for (let day = 1; day <= month.days; day++) {
+      const weekend = isWeekend(month, day);
+
+      let visits: number;
+      if (gap && day >= gap[0] && day <= gap[1]) visits = 0;
+      else if (weekend) visits = rand() < 0.75 ? 0 : 1;
+      else
+        visits = Math.max(0, Math.round((3 + (rand() - 0.35) * 7) * shift.scale));
+
+      cells.push({
+        level: heatLevel(visits),
+        title: `${name} · ${month.shortLabel} ${day} · ${visits} visits`,
+      });
+    }
+
+    return { name, cells };
+  });
 }
-
-export const HEAT_ROWS: HeatRow[] = HEAT_NAMES.map((name, rowIndex) => {
-  const rand = lcg(7000 + rowIndex * 131);
-  const gap = GAPS[name];
-  const cells: HeatCell[] = [];
-
-  for (let day = 1; day <= 31; day++) {
-    // July 2026. Local-time construction, but the weekday of a calendar date
-    // is the same in every zone, so this stays stable across environments.
-    const dow = new Date(2026, 6, day).getDay();
-    const weekend = dow === 0 || dow === 6;
-
-    let visits: number;
-    if (gap && day >= gap[0] && day <= gap[1]) visits = 0;
-    else if (weekend) visits = rand() < 0.75 ? 0 : 1;
-    else visits = Math.max(0, Math.round(3 + (rand() - 0.35) * 7));
-
-    cells.push({
-      level: heatLevel(visits),
-      title: `${name} · Jul ${day} · ${visits} visits`,
-    });
-  }
-
-  return { name, cells };
-});
 
 /* ---- merchandiser activity table ---- */
 
@@ -106,80 +436,43 @@ export type ActivityRow = {
   lastActive: string;
 };
 
-const ACTIVITY_RAW: [
-  mrch: string,
-  region: string,
-  stores: number,
-  visits: number,
-  adherence: number,
-  photos: number,
-  pass: number,
-  lastActive: string,
-][] = [
-  ["khang_nguyen", "Ho Chi Minh City", 42, 152, 90, 1840, 94, "2h ago"],
-  ["linh_pham", "South East", 38, 141, 93, 1712, 92, "1h ago"],
-  ["minh_tran", "Ho Chi Minh City", 45, 149, 83, 1901, 92, "3h ago"],
-  ["quan_do", "Red River Delta", 44, 170, 97, 2044, 90, "40m ago"],
-  ["mai_bui", "South East", 36, 129, 90, 1488, 88, "5h ago"],
-  ["huy_le", "Central", 40, 138, 86, 1602, 79, "6d ago"],
-  ["thao_vo", "Mekong Delta", 33, 44, 67, 604, 84, "1d ago"],
-  ["nam_hoang", "North Highlands", 29, 31, 53, 388, 81, "4d ago"],
-];
-
-export const ACTIVITY_ROWS: ActivityRow[] = ACTIVITY_RAW.map(
-  ([mrch, region, stores, visits, adherence, photos, pass, lastActive]) => ({
-    mrch,
-    region,
-    stores,
-    visits,
-    adherence,
-    adherenceTier: adherenceTier(adherence),
-    photos,
-    pass,
-    lastActive,
-  }),
-);
-
 /* ---- estate coverage ---- */
 
-export const COVERAGE_HERO = {
-  label: "Stores audited",
-  value: "76",
-  pct: 76,
-  targetPct: 90,
-  delta: { direction: "up", tone: "success", label: "3 pts" } satisfies Delta,
-  caption: "1,412 of 1,847 · vs last month",
-  statusLabel: "Below target",
-  targetLabel: "Target 90%",
+type Hero = {
+  label: string;
+  value: string;
+  pct: number;
+  targetPct: number;
+  delta: Delta;
+  caption: string;
+  statusLabel: string;
+  targetLabel: string;
 };
 
-/** Coverage bars are already percentages, so the bar width is the value. */
-export const COVERAGE_REGIONS = [
-  { name: "Ho Chi Minh City", pct: 84 },
-  { name: "South East", pct: 79 },
-  { name: "Mekong Delta", pct: 74 },
-  { name: "Red River Delta", pct: 71 },
-  { name: "Central", pct: 66 },
-  { name: "North Highlands", pct: 58 },
-];
-
-/** The 90% target on a 0–100 domain. */
-export const COVERAGE_TARGET_FRACTION = 0.9;
-
-export const COVERAGE_RETAILERS = [
-  { name: "Bach Hoa Xanh", pct: 81 },
-  { name: "Winmart", pct: 73 },
-  { name: "Co.opmart", pct: 70 },
-  { name: "Aeon", pct: 68 },
-  { name: "Lotte", pct: 61 },
-];
-
-export const COVERAGE_TYPES = [
-  { name: "Mini mart", pct: 80 },
-  { name: "Supermarket", pct: 72 },
-  { name: "Hypermarket", pct: 64 },
-  { name: "Convenience", pct: 51 },
-];
+function buildCoverageHero(facts: Facts): Hero {
+  const pct = coveragePct(facts);
+  const gain = facts.coverageGainPts;
+  return {
+    label: "Stores audited",
+    value: String(pct),
+    pct,
+    targetPct: TARGET_PCT,
+    delta: {
+      direction: gain >= 0 ? "up" : "down",
+      tone: gain >= 0 ? "success" : "danger",
+      label: `${Math.abs(gain)} pts`,
+    },
+    caption: `${group(facts.audited)} of ${group(facts.estate)} · vs last month`,
+    // Within five points of the target is close enough to say so.
+    statusLabel:
+      pct >= TARGET_PCT
+        ? "On target"
+        : TARGET_PCT - pct <= 5
+          ? "Just below target"
+          : "Below target",
+    targetLabel: `Target ${TARGET_PCT}%`,
+  };
+}
 
 /* ---- never-visited & overdue stores ---- */
 
@@ -193,69 +486,75 @@ export type OverdueRow = {
   status: "notyet" | "overdue";
 };
 
-export const OVERDUE: OverdueRow[] = [
-  {
-    store: "Emart Vinh",
-    retailer: "Emart",
-    region: "Central",
-    days: "Never",
-    mrch: "—",
-    status: "notyet",
-  },
-  {
-    store: "MM Mega Market Hải Phòng",
-    retailer: "MM Mega Market",
-    region: "Red River Delta",
-    days: "Never",
-    mrch: "duc_ngo",
-    status: "notyet",
-  },
-  {
-    store: "Aeon Hà Đông",
-    retailer: "Aeon",
-    region: "Red River Delta",
-    days: "73",
-    mrch: "duc_ngo",
-    status: "overdue",
-  },
-  {
-    store: "Lotte Mart Đà Nẵng",
-    retailer: "Lotte",
-    region: "Central",
-    days: "61",
-    mrch: "bao_vu",
-    status: "overdue",
-  },
-  {
-    store: "2111 BHX_HCM_TPH - 138 Lý Th",
-    retailer: "Bach Hoa Xanh",
-    region: "North Highlands",
-    days: "52",
-    mrch: "nam_hoang",
-    status: "overdue",
-  },
-  {
-    store: "VNC0010338 Co.opmart Long Xuyên",
-    retailer: "Co.opmart",
-    region: "Mekong Delta",
-    days: "41",
-    mrch: "thao_vo",
-    status: "overdue",
-  },
-  {
-    store: "3157 Winlife 537 Nguyễn Duy",
-    retailer: "Winmart",
-    region: "Central",
-    days: "34",
-    mrch: "huy_le",
-    status: "overdue",
-  },
-  {
-    store: "1933 BHX_HCM_TPH - 871 Âu Cơ",
-    retailer: "Bach Hoa Xanh",
-    region: "South East",
-    days: "28",
-    mrch: "mai_bui",
-    status: "overdue",
-  },
-];
+/**
+ * Never-visited stores head the list; the rest run longest-overdue first.
+ * `MAX_SAFE_INTEGER` rather than `Infinity` so two never-visited stores compare
+ * as 0 instead of `NaN` and keep their authored order.
+ */
+function buildOverdue(facts: Facts): OverdueRow[] {
+  const rank = (days: number | null) => days ?? Number.MAX_SAFE_INTEGER;
+  return [...facts.overdue]
+    .sort((a, b) => rank(b[3]) - rank(a[3]))
+    .map(([store, retailer, region, days, mrch]) => ({
+      store,
+      retailer,
+      region,
+      days: days === null ? "Never" : String(days),
+      mrch,
+      status: days === null ? "notyet" : "overdue",
+    }));
+}
+
+/* ---- the month's view ---- */
+
+export type MerchActivityView = {
+  monthLabel: string;
+  tiles: Tile[];
+  notSeen: NotSeenFact[];
+  heatTitle: string;
+  heatRows: HeatRow[];
+  /** Drives the heat grid's column count, which is the month's day count. */
+  heatDays: number;
+  activityRows: ActivityRow[];
+  coverageHero: Hero;
+  coverageRegions: CoverageFact[];
+  coverageRetailers: CoverageFact[];
+  coverageTypes: CoverageFact[];
+  overdue: OverdueRow[];
+};
+
+function buildView(month: Month, facts: Facts): MerchActivityView {
+  return {
+    monthLabel: month.label,
+    tiles: buildTiles(facts),
+    notSeen: facts.notSeen,
+    heatTitle: `Visits logged · ${month.label}`,
+    heatRows: buildHeatRows(month, facts),
+    heatDays: month.days,
+    activityRows: facts.activity.map(
+      ([mrch, region, stores, visits, adherence, photos, pass, lastActive]) => ({
+        mrch,
+        region,
+        stores,
+        visits,
+        adherence,
+        adherenceTier: adherenceTier(adherence),
+        photos,
+        pass,
+        lastActive,
+      }),
+    ),
+    coverageHero: buildCoverageHero(facts),
+    // Coverage bars are already percentages of their own row's estate, so the
+    // domain is a fixed 0–100 — the same domain the dashed 90% rule rides.
+    coverageRegions: facts.coverageRegions,
+    coverageRetailers: facts.coverageRetailers,
+    coverageTypes: facts.coverageTypes,
+    overdue: buildOverdue(facts),
+  };
+}
+
+export const MERCH_ACTIVITY: Record<MonthKey, MerchActivityView> =
+  Object.fromEntries(
+    MONTHS.map((month) => [month.key, buildView(month, FACTS[month.key])]),
+  ) as Record<MonthKey, MerchActivityView>;

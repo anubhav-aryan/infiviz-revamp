@@ -1,81 +1,73 @@
 import { Icon } from "@/app/_components/icon";
-import {
-  BAND_A,
-  CATEGORY_OSA,
-  CATEGORY_SOS,
-  CATEGORY_SUMMARY_RIBBON,
-  MSL_GAP,
-  RIBBON_BROKEN_OUT,
-  RIBBON_COLLAPSED,
-  WHATS_MISSING,
-  WHO_SHELF,
-} from "../_data/analytics";
-import { Ribbon, RibbonLegend, Sparkline, StatStrip } from "./shared";
+import type { AnalyticsView } from "../_data/analytics";
+import { EmptyState, Ribbon, RibbonLegend, Sparkline, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
 
 export function CategoryBody({
+  view,
   breakout,
   onToggleBreakout,
   dimPicker,
+  compare,
 }: {
+  view: AnalyticsView;
   breakout: boolean;
   onToggleBreakout: () => void;
   dimPicker: React.ReactNode;
+  compare: boolean;
 }) {
-  const segments = breakout ? RIBBON_BROKEN_OUT : RIBBON_COLLAPSED;
+  const segments = breakout ? view.ribbonBrokenOut : view.ribbonCollapsed;
+  const osa = view.categoryOsa;
+  const sos = view.categorySos;
 
   return (
     <div className={styles.body}>
-      <StatStrip items={BAND_A} />
+      <StatStrip items={view.bandA} />
 
       {/* Band B — the category's two numbers, visibility shown as a ribbon */}
       <div className={`${styles.heroGrid} ${styles.heroGridStart}`}>
         <div className={styles.heroCard}>
-          <span className={styles.heroName}>{CATEGORY_OSA.name}</span>
+          <span className={styles.heroName}>{osa.name}</span>
           <div className={styles.heroValueRow}>
             <span className={styles.bigNumber} data-size="category">
-              {CATEGORY_OSA.val}
+              {osa.val}
               <span className={styles.bigUnit}>%</span>
             </span>
-            <span className={styles.delta} data-tone={CATEGORY_OSA.tone}>
-              <Icon name={CATEGORY_OSA.deltaIcon} />
-              {CATEGORY_OSA.delta} pts
+            <span className={styles.delta} data-tone={osa.tone}>
+              <Icon name={osa.deltaIcon} />
+              {osa.delta} pts
             </span>
           </div>
           <div className={styles.heroTrack}>
-            <div
-              className={styles.heroFill}
-              style={{ width: `${CATEGORY_OSA.val}%` }}
-            />
+            <div className={styles.heroFill} style={{ width: `${osa.val}%` }} />
+            {compare ? (
+              <div className={styles.heroGhost} style={{ left: `${osa.prev}%` }} />
+            ) : null}
             <div
               className={styles.heroTarget}
-              style={{ left: `${CATEGORY_OSA.target}%` }}
+              style={{ left: `${osa.target}%` }}
             />
           </div>
           <div className={styles.heroScale}>
-            <span>Below target</span>
-            <span className={styles.mono}>Target {CATEGORY_OSA.target}%</span>
+            <span>{compare ? `Last month ${osa.prev}%` : "Below target"}</span>
+            <span className={styles.mono}>Target {osa.target}%</span>
           </div>
         </div>
 
         <div className={styles.heroCard}>
-          <span className={styles.heroName}>{CATEGORY_SOS.name}</span>
+          <span className={styles.heroName}>{sos.name}</span>
           <div className={styles.heroValueRow}>
             <span className={styles.bigNumber} data-size="category">
-              {CATEGORY_SOS.val}
+              {sos.val}
               <span className={styles.bigUnit}>%</span>
             </span>
-            <span className={styles.delta} data-tone={CATEGORY_SOS.tone}>
-              <Icon name={CATEGORY_SOS.deltaIcon} />
-              {CATEGORY_SOS.delta} pts
+            <span className={styles.delta} data-tone={sos.tone}>
+              <Icon name={sos.deltaIcon} />
+              {sos.delta} pts
             </span>
           </div>
           <div className={styles.ribbonCaption}>Share-of-shelf ribbon</div>
-          <Ribbon
-            segments={CATEGORY_SUMMARY_RIBBON}
-            variant="summary"
-            titled={false}
-          />
+          <Ribbon segments={view.summaryRibbon} variant="summary" titled={false} />
         </div>
       </div>
 
@@ -97,6 +89,8 @@ export function CategoryBody({
               </span>
               Competitor breakout
             </button>
+            {/* Flagged for the designer: this persona renders a dimension picker
+                that nothing on the page reads. Left exactly as designed. */}
             {dimPicker}
           </div>
         </div>
@@ -120,7 +114,7 @@ export function CategoryBody({
             <span className={styles.panelTitle} data-gap="14">
               Who has the shelf
             </span>
-            {WHO_SHELF.map((brand) => (
+            {view.whoShelf.map((brand) => (
               <div key={brand.name} className={styles.whoRow}>
                 <span className={styles.whoName}>
                   <span
@@ -155,26 +149,30 @@ export function CategoryBody({
               <span className={styles.right}>OSA</span>
               <span>Trend</span>
             </div>
-            {WHATS_MISSING.map((row) => (
-              <div
-                key={row.name}
-                className={`${styles.missingGrid} ${styles.missingRow}`}
-              >
-                <span className={styles.missingName}>{row.name}</span>
-                <span className={styles.missingMono}>{row.ranged}</span>
-                <span className={styles.missingMono}>{row.present}</span>
-                <span className={styles.missingAbsent}>{row.absent}</span>
-                <span className={styles.missingOsa} data-tier={row.tier}>
-                  {row.osa}%
-                </span>
-                <Sparkline
-                  points={row.spark}
-                  viewBox="0 0 50 18"
-                  className={styles.missingSpark}
-                  strokeWidth={1.6}
-                />
-              </div>
-            ))}
+            {view.whatsMissing.length === 0 ? (
+              <EmptyState>No SKU matches the filters.</EmptyState>
+            ) : (
+              view.whatsMissing.map((row) => (
+                <div
+                  key={row.name}
+                  className={`${styles.missingGrid} ${styles.missingRow}`}
+                >
+                  <span className={styles.missingName}>{row.name}</span>
+                  <span className={styles.missingMono}>{row.ranged}</span>
+                  <span className={styles.missingMono}>{row.present}</span>
+                  <span className={styles.missingAbsent}>{row.absent}</span>
+                  <span className={styles.missingOsa} data-tier={row.tier}>
+                    {row.osa}%
+                  </span>
+                  <Sparkline
+                    points={row.spark}
+                    viewBox="0 0 50 18"
+                    className={styles.missingSpark}
+                    strokeWidth={1.6}
+                  />
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -184,22 +182,28 @@ export function CategoryBody({
         <h2 className={styles.bandTitle} data-gap="14">
           Where to push · MSL gaps to chase
         </h2>
-        <div className={styles.insightGrid}>
-          {MSL_GAP.map((gap) => (
-            <div key={gap.name} className={styles.mslGapCard}>
-              <span className={styles.mslGapIcon} aria-hidden="true">
-                <Icon name="package-x" />
-              </span>
-              <div className={styles.insightBody}>
-                <div className={styles.mslGapName}>{gap.name}</div>
-                <div className={styles.mslGapSub}>
-                  Absent in <b className={styles.inlineMono}>{gap.stores}</b>{" "}
-                  ranged stores · {gap.brand}
+        {view.mslGap.length === 0 ? (
+          <div className={styles.tableCard}>
+            <EmptyState>No MSL gap matches the filters.</EmptyState>
+          </div>
+        ) : (
+          <div className={styles.insightGrid}>
+            {view.mslGap.map((gap) => (
+              <div key={gap.name} className={styles.mslGapCard}>
+                <span className={styles.mslGapIcon} aria-hidden="true">
+                  <Icon name="package-x" />
+                </span>
+                <div className={styles.insightBody}>
+                  <div className={styles.mslGapName}>{gap.name}</div>
+                  <div className={styles.mslGapSub}>
+                    Absent in <b className={styles.inlineMono}>{gap.stores}</b>{" "}
+                    ranged stores · {gap.brand}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

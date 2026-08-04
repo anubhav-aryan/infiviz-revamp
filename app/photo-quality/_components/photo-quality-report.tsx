@@ -1,37 +1,57 @@
 import { Icon } from "@/app/_components/icon";
+import type { CsvTable } from "@/app/_export/csv";
 import { Bar, DeltaChip, TargetHero, TargetRule } from "@/app/_reports/marks";
 import { ReportHeader } from "@/app/_reports/report-header";
+import type { MonthKey } from "@/app/_time/periods";
 import {
-  HERO,
-  REASONS_CAPTION,
+  PHOTO_QUALITY,
   REASONS_NOTE,
-  REGION_TARGET_FRACTION,
-  REJECTION_REASONS,
-  REJECTION_REGIONS,
-  WORST,
+  type WorstRow,
 } from "../_data/photo-quality";
 import { RecentRejected } from "./recent-rejected";
 import { TrendChart } from "./trend-chart";
 import shared from "@/app/_reports/reports.module.css";
 import styles from "./photo-quality.module.css";
 
-export function PhotoQualityReport() {
+/** Serialized here, from the same rows the table renders below. */
+function worstCsv(rows: WorstRow[]): CsvTable {
+  return {
+    headers: [
+      "Merchandiser",
+      "Region",
+      "Captures",
+      "Rejection rate %",
+      "Top reason",
+    ],
+    rows: rows.map((r) => [r.mrch, r.region, r.captures, r.rate, r.reason]),
+  };
+}
+
+export function PhotoQualityReport({ month }: { month: MonthKey }) {
+  const view = PHOTO_QUALITY[month];
+
   return (
     <>
-      <ReportHeader title="Photo quality" active="photo-quality" />
+      <ReportHeader
+        title="Photo quality"
+        active="photo-quality"
+        month={month}
+        basePath="/photo-quality"
+        csv={worstCsv(view.worst)}
+      />
 
       <div className={shared.body}>
         {/* hero + 30-day trend */}
         <div className={`${shared.card} ${styles.heroCard}`}>
           <TargetHero
-            label={HERO.label}
-            value={HERO.value}
-            delta={HERO.delta}
-            caption={HERO.caption}
-            pct={HERO.pct}
-            targetPct={HERO.targetPct}
-            statusLabel={HERO.statusLabel}
-            targetLabel={HERO.targetLabel}
+            label={view.hero.label}
+            value={view.hero.value}
+            delta={view.hero.delta}
+            caption={view.hero.caption}
+            pct={view.hero.pct}
+            targetPct={view.hero.targetPct}
+            statusLabel={view.hero.statusLabel}
+            targetLabel={view.hero.targetLabel}
             size="lg"
           />
 
@@ -40,10 +60,10 @@ export function PhotoQualityReport() {
               <span className={styles.trendTitle}>30-day trend</span>
               <span className={shared.legendNote}>
                 <span className={styles.trendLegendMark} />
-                Target 95%
+                {view.hero.targetLabel}
               </span>
             </div>
-            <TrendChart />
+            <TrendChart trend={view.trend} />
           </div>
         </div>
 
@@ -51,9 +71,9 @@ export function PhotoQualityReport() {
         <div className={styles.twoUp}>
           <div className={`${shared.card} ${shared.cardPad}`}>
             <div className={shared.cardTitle}>Why captures were rejected</div>
-            <div className={styles.reasonsCaption}>{REASONS_CAPTION}</div>
+            <div className={styles.reasonsCaption}>{view.reasonsCaption}</div>
 
-            {REJECTION_REASONS.map((reason) => (
+            {view.reasons.map((reason) => (
               <div key={reason.name} className={styles.reasonRow}>
                 <span className={styles.reasonName}>{reason.name}</span>
                 <Bar pct={reason.width} height={12} />
@@ -77,8 +97,8 @@ export function PhotoQualityReport() {
             </div>
 
             <div className={`${shared.barListStack} ${styles.regionStack}`}>
-              <TargetRule fraction={REGION_TARGET_FRACTION} inset />
-              {REJECTION_REGIONS.map((region) => (
+              <TargetRule fraction={view.regionTargetFraction} inset />
+              {view.regions.map((region) => (
                 <div key={region.name} className={shared.barRow}>
                   <span className={shared.barRowName}>{region.name}</span>
                   <Bar pct={region.width} height={11} />
@@ -116,7 +136,7 @@ export function PhotoQualityReport() {
             <span>Top reason</span>
           </div>
 
-          {WORST.map((row) => (
+          {view.worst.map((row) => (
             <div
               key={row.mrch}
               className={`${styles.worstGrid} ${shared.tableRow} ${styles.worstRow}`}
@@ -135,7 +155,7 @@ export function PhotoQualityReport() {
           ))}
         </div>
 
-        <RecentRejected />
+        <RecentRejected sessions={view.rejected} />
       </div>
     </>
   );

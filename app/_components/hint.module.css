@@ -1,0 +1,64 @@
+/* Positioning only — the caller's own class owns `display`, so this can wrap a
+   grid/flex cell without flattening its layout. */
+.hint {
+  position: relative;
+}
+
+.hintInline {
+  display: inline-flex;
+}
+
+/*
+ * The text lives here permanently, clipped to a 1px box so screen readers can
+ * always reach it. An `opacity: 0` bubble would work for assistive tech too,
+ * but an absolutely-positioned box still counts toward scrollable overflow —
+ * which put a horizontal scrollbar on any page with a Hint near its right edge.
+ */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The visible bubble is purely presentational — `display: none` keeps it out of
+   layout (and so out of overflow) until it is actually shown. */
+.bubble {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  width: max-content;
+  max-width: 240px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--neutral-900);
+  color: var(--neutral-50);
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: left;
+  white-space: normal;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+}
+
+.hint:hover .bubble,
+.hint:focus-visible .bubble {
+  display: block;
+}
+
+/* Near the right edge the centred bubble would overflow the viewport. */
+.hint[data-hint-align="end"] .bubble {
+  left: auto;
+  right: 0;
+  transform: none;
+}

@@ -1,4 +1,4 @@
-import { TREND } from "../_data/photo-quality";
+import type { PhotoQualityView } from "../_data/photo-quality";
 import styles from "./photo-quality.module.css";
 
 /**
@@ -6,16 +6,16 @@ import styles from "./photo-quality.module.css";
  * gridlines with mono labels, a dashed 95% target, the polyline and its dots.
  * All geometry is precomputed in `_data`, so this is pure markup.
  */
-export function TrendChart() {
+export function TrendChart({ trend }: { trend: PhotoQualityView["trend"] }) {
   return (
     <svg
       viewBox="0 0 720 170"
       width="100%"
       className={styles.trendSvg}
       role="img"
-      aria-label="Pass rate over the last 30 days, rising from 88.4% to 91.3% against a 95% target"
+      aria-label={trend.ariaLabel}
     >
-      {TREND.grid.map((line) => (
+      {trend.grid.map((line) => (
         <g key={line.label}>
           <line
             x1={34}
@@ -39,14 +39,14 @@ export function TrendChart() {
       <line
         x1={34}
         x2={712}
-        y1={TREND.targetY}
-        y2={TREND.targetY}
+        y1={trend.targetY}
+        y2={trend.targetY}
         className={styles.trendTargetLine}
       />
 
-      <polyline points={TREND.line} className={styles.trendLine} />
+      <polyline points={trend.line} className={styles.trendLine} />
 
-      {TREND.dots.map((dot) => (
+      {trend.dots.map((dot) => (
         <circle
           key={dot.cx}
           cx={dot.cx}
@@ -56,7 +56,7 @@ export function TrendChart() {
         />
       ))}
 
-      {TREND.xLabels.map((tick) => (
+      {trend.xLabels.map((tick) => (
         <text
           key={tick.x}
           x={tick.x}

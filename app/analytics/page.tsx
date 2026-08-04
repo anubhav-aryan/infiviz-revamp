@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { AppShell } from "@/app/_components/app-shell";
 import { Analytics } from "./_components/analytics";
 
@@ -17,7 +18,13 @@ export default function AnalyticsPage() {
         body: "No nested tabs. Scope by breadcrumb, slice by one picker.",
       }}
     >
-      <Analytics />
+      {/* Persona, month, dimension, compare and filters round-trip through the
+          query string, and `useSearchParams` needs a boundary to suspend on.
+          The accepted trade is that the route prerenders the shell and the nav
+          around it, and this screen arrives with the client bundle. */}
+      <Suspense fallback={null}>
+        <Analytics />
+      </Suspense>
     </AppShell>
   );
 }

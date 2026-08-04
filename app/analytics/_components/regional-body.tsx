@@ -1,33 +1,33 @@
+import Link from "next/link";
 import { Fragment } from "react";
 import { Icon } from "@/app/_components/icon";
 import {
-  BAND_A,
-  COV_SCATTER,
   HEAT_COLS,
-  HEAT_ROWS,
-  LEAGUE,
-  RANK_ROWS,
   REGIONAL_HERO_SUB,
-  REGIONAL_HEROES,
+  type AnalyticsView,
   type DimKey,
 } from "../_data/analytics";
-import { RankedList, Sparkline, StatStrip } from "./shared";
+import { EmptyState, RankedList, Sparkline, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
 
 export function RegionalBody({
+  view,
   dim,
   dimPicker,
+  compare,
 }: {
+  view: AnalyticsView;
   dim: DimKey;
   dimPicker: React.ReactNode;
+  compare: boolean;
 }) {
   return (
     <div className={styles.body}>
-      <StatStrip items={BAND_A} />
+      <StatStrip items={view.bandA} />
 
       {/* Band B — the region measured against the national ghost */}
       <div className={styles.heroGrid}>
-        {REGIONAL_HEROES.map((hero) => (
+        {view.regionalHeroes.map((hero) => (
           <div key={hero.name} className={styles.heroCard}>
             <div className={styles.heroTop}>
               <span className={styles.heroName}>{hero.name}</span>
@@ -46,6 +46,9 @@ export function RegionalBody({
             </div>
             <div className={styles.heroDeltaLabel}>{REGIONAL_HERO_SUB}</div>
 
+            {/* This track's dashed mark is already spoken for by the national
+                figure, so the compare toggle leaves it alone and settles for
+                the ranked list below. */}
             <div className={styles.ghostTrack}>
               <div className={styles.ghostBase} />
               <div
@@ -76,7 +79,12 @@ export function RegionalBody({
           <span className={styles.panelTitle} data-gap="12">
             OSA by {dim.toLowerCase()}
           </span>
-          <RankedList rows={RANK_ROWS[dim]} variant="regional" />
+          <RankedList
+            rows={view.ranked[dim]}
+            variant="regional"
+            compare={compare}
+            emptyLabel={`No ${dim.toLowerCase()} matches the filters.`}
+          />
         </div>
       </div>
 
@@ -101,7 +109,7 @@ export function RegionalBody({
                   {col}
                 </span>
               ))}
-              {HEAT_ROWS.map((row) => (
+              {view.heatRows.map((row) => (
                 <Fragment key={row.name}>
                   <span className={styles.heatRowLabel}>{row.name}</span>
                   {row.cells.map((cell, i) => (
@@ -148,7 +156,7 @@ export function RegionalBody({
               >
                 OSA
               </text>
-              {COV_SCATTER.map((p, i) => (
+              {view.covScatter.map((p, i) => (
                 <circle
                   key={i}
                   cx={p.cx}
@@ -167,16 +175,7 @@ export function RegionalBody({
       <div className={styles.bandEnd}>
         <div className={styles.bandHead}>
           <h2 className={styles.bandTitle}>Where to push</h2>
-          <span className={styles.chip}>
-            Bottom 20
-            <button
-              type="button"
-              className={styles.chipRemove}
-              aria-label="Remove filter Bottom 20"
-            >
-              <Icon name="x" size={13} />
-            </button>
-          </span>
+          <span className={styles.chip}>Bottom 20</span>
         </div>
 
         <div className={styles.tableCard}>
@@ -191,28 +190,32 @@ export function RegionalBody({
             <span>Trend</span>
           </div>
 
-          {LEAGUE.map((row) => (
-            <button
-              key={row.store}
-              type="button"
-              className={`${styles.leagueGrid} ${styles.leagueRow}`}
-              aria-label={`${row.store} — OSA ${row.osa}%`}
-            >
-              <span className={styles.leagueStore}>{row.store}</span>
-              <span className={styles.leagueCell}>{row.retailer}</span>
-              <span className={styles.leagueCell}>{row.type}</span>
-              <span className={styles.leagueMono}>{row.osa}</span>
-              <span className={styles.leagueMonoDim}>{row.sos}</span>
-              <span className={styles.leagueMonoDim}>{row.sessions}</span>
-              <span className={styles.leagueVisit}>{row.lastVisit}</span>
-              <Sparkline
-                points={row.spark}
-                viewBox="0 0 60 20"
-                className={styles.leagueSpark}
-                strokeWidth={1.6}
-              />
-            </button>
-          ))}
+          {view.league.length === 0 ? (
+            <EmptyState>No store matches the filters.</EmptyState>
+          ) : (
+            view.league.map((row) => (
+              <Link
+                key={row.store}
+                href="/session-viewer"
+                className={`${styles.reset} ${styles.leagueGrid} ${styles.leagueRow}`}
+                aria-label={`${row.store} — OSA ${row.osa}%`}
+              >
+                <span className={styles.leagueStore}>{row.store}</span>
+                <span className={styles.leagueCell}>{row.retailer}</span>
+                <span className={styles.leagueCell}>{row.type}</span>
+                <span className={styles.leagueMono}>{row.osa}</span>
+                <span className={styles.leagueMonoDim}>{row.sos}</span>
+                <span className={styles.leagueMonoDim}>{row.sessions}</span>
+                <span className={styles.leagueVisit}>{row.lastVisit}</span>
+                <Sparkline
+                  points={row.spark}
+                  viewBox="0 0 60 20"
+                  className={styles.leagueSpark}
+                  strokeWidth={1.6}
+                />
+              </Link>
+            ))
+          )}
         </div>
       </div>
     </div>

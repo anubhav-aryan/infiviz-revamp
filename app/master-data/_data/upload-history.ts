@@ -1,9 +1,10 @@
 import type { IconName } from "@/app/_components/icon";
 
 /**
- * Upload history fixtures — another layout sketch. The first row is authored
- * open in the design to show the rejection drawer; that is a fixed state, not
- * a default the reader can toggle.
+ * Upload history fixtures — another layout sketch. `expanded` is the design's
+ * opening state, not a frozen one: the first row is drawn open so the drawer is
+ * visible on arrival, and the reader can collapse it or open any other row that
+ * has reasons to show.
  */
 
 export const UPLOAD_INTRO =
@@ -16,7 +17,13 @@ export type UploadRow = {
   accepted: string;
   received: string;
   rejected: string;
+  /** Whether the drawer starts open — seeds the toggle, it is not the truth. */
   expanded: boolean;
+  /**
+   * Drives the chevron: a row with no reasons has nothing to open, whatever its
+   * rejected count says. Every non-zero `rejected` therefore has to itemise
+   * itself here, or the audit trail dead-ends on the one row that matters.
+   */
   reasons: string[];
 };
 
@@ -49,7 +56,7 @@ export const UPLOAD_ROWS: UploadRow[] = [
     received: "150",
     rejected: "2",
     expanded: false,
-    reasons: [],
+    reasons: ["1 row missing MERCHANDISER_ID", "1 duplicate merchandiser code"],
   },
   {
     icon: "file-spreadsheet",

@@ -144,6 +144,8 @@
 
 .worstPill {
   display: inline-flex;
+  white-space: nowrap;
+  flex: none;
   align-items: center;
   gap: 6px;
   font-size: 11px;
@@ -186,11 +188,14 @@
   text-align: right;
 }
 
+/* Padded so the right-aligned value cannot butt against the next
+   column, which has no gap and starts flush. */
 .worstRate {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 10px;  padding-right: 12px;
+
 }
 
 .rateValue {
@@ -364,6 +369,8 @@
 /* A real <button> standing in for the design's clickable div, so it carries
    its own reset rather than composing one from another stylesheet — cross-file
    class order is not guaranteed, and `font: inherit` would win the race. */
+/* An <a> that reads as a button: the reset covers the anchor's underline as
+   well as the button chrome, so both element types land in the same place. */
 .viewImages {
   display: inline-flex;
   align-items: center;
@@ -376,6 +383,7 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--indigo-600);
+  text-decoration: none;
   cursor: pointer;
 }
 

@@ -64,6 +64,8 @@
 
 .lockedPill {
   display: inline-flex;
+  white-space: nowrap;
+  flex: none;
   align-items: center;
   gap: 7px;
   font-size: 12px;
@@ -673,12 +675,13 @@
   overflow: hidden;
 }
 
+/* No border here: every .feedRow carries a border-top, so a border-bottom on
+   the header would double the first row's hairline. */
 .feedHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 18px;
-  border-bottom: 1px solid var(--hairline);
 }
 
 .feedTitle {

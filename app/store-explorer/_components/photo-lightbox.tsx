@@ -54,10 +54,13 @@ export function PhotoLightbox({
         onClick={(event) => event.stopPropagation()}
       >
         <div className={`${styles.lightboxStage} ${styles.photoPlaceholderLarge}`}>
+          {/* Disabled at the ends rather than silently clamping, so the control
+              never looks available when it cannot move. */}
           <button
             type="button"
             className={`${styles.lightboxNav} ${styles.lightboxPrev}`}
             onClick={onPrev}
+            disabled={index === 0}
             aria-label="Previous photo"
           >
             <Icon name="chevron-left" />
@@ -66,6 +69,7 @@ export function PhotoLightbox({
             type="button"
             className={`${styles.lightboxNav} ${styles.lightboxNext}`}
             onClick={onNext}
+            disabled={index === PHOTOS.length - 1}
             aria-label="Next photo"
           >
             <Icon name="chevron-right" />

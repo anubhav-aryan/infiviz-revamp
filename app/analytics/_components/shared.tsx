@@ -1,7 +1,16 @@
+import Link from "next/link";
 import { Fragment } from "react";
 import type { RankRow, RibbonSegment } from "../_data/analytics";
 import { RANK_TARGET_LINE } from "../_data/analytics";
 import styles from "./analytics.module.css";
+
+/**
+ * Every table on this screen can now come back empty, because every one of them
+ * is filterable. Saying so beats an unexplained blank panel.
+ */
+export function EmptyState({ children }: { children: React.ReactNode }) {
+  return <div className={styles.emptyState}>{children}</div>;
+}
 
 /**
  * Band A. The design's loop emits a separator after every item including the
@@ -83,14 +92,24 @@ export function Sparkline({
 type RankedListProps = {
   rows: RankRow[];
   variant: "exec" | "regional" | "field";
+  /** Draws a ghost marker where the bar sat in the previous month. */
+  compare: boolean;
+  emptyLabel: string;
 };
 
 /**
- * Band C's ranked rows. Only the executive view makes rows clickable, carries
- * the store-count sub-line and overlays the dashed 85% target.
+ * Band C's ranked rows. Only the executive view links through to a session,
+ * carries the store-count sub-line and overlays the dashed 85% target.
  */
-export function RankedList({ rows, variant }: RankedListProps) {
+export function RankedList({
+  rows,
+  variant,
+  compare,
+  emptyLabel,
+}: RankedListProps) {
   const isExec = variant === "exec";
+
+  if (rows.length === 0) return <EmptyState>{emptyLabel}</EmptyState>;
 
   const body = rows.map((row) => {
     const cells = (
@@ -98,6 +117,9 @@ export function RankedList({ rows, variant }: RankedListProps) {
         <span className={styles.rankName}>{row.name}</span>
         <span className={styles.rankTrack}>
           <span className={styles.rankBar} style={{ width: `${row.w}%` }} />
+          {compare ? (
+            <span className={styles.rankGhost} style={{ left: `${row.prevW}%` }} />
+          ) : null}
         </span>
         <span className={styles.rankValue}>
           <span className={styles.rankOsa}>{row.osa}</span>
@@ -111,14 +133,14 @@ export function RankedList({ rows, variant }: RankedListProps) {
     return (
       <Fragment key={row.name}>
         {isExec ? (
-          <button
-            type="button"
-            className={styles.rankRow}
+          <Link
+            href="/session-viewer"
+            className={`${styles.reset} ${styles.rankRow}`}
             data-variant={variant}
             aria-label={`${row.name} — OSA ${row.osa}%`}
           >
             {cells}
-          </button>
+          </Link>
         ) : (
           <div className={styles.rankRow} data-variant={variant}>
             {cells}

@@ -32,8 +32,9 @@ button {
   color: inherit;
 }
 
+/* No border-radius here: it would apply to the element, not the ring, and
+   visibly square the corners of anything rounded while it has focus. */
 :focus-visible {
   outline: 2px solid var(--indigo-600);
   outline-offset: 2px;
-  border-radius: var(--radius-sm);
 }

@@ -1,24 +1,26 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Icon } from "@/app/_components/icon";
-import { REJECTED, type RejectedSession } from "../_data/photo-quality";
+import type { RejectedSession } from "../_data/photo-quality";
 import shared from "@/app/_reports/reports.module.css";
 import styles from "./photo-quality.module.css";
 
 /** The only genuine client state on either report. */
 type RejectedView = "gallery" | "table";
 
+/** The captures themselves live in Store explorer, so this is a real link. */
 function ViewImages({ store, className }: { store: string; className?: string }) {
   return (
-    <button
-      type="button"
+    <Link
+      href="/store-explorer"
       className={`${styles.viewImages} ${className ?? ""}`}
       aria-label={`View images for ${store}`}
     >
       View images
       <Icon name="arrow-up-right" size={14} />
-    </button>
+    </Link>
   );
 }
 
@@ -87,7 +89,11 @@ function Table({ sessions }: { sessions: RejectedSession[] }) {
   );
 }
 
-export function RecentRejected() {
+export function RecentRejected({
+  sessions,
+}: {
+  sessions: RejectedSession[];
+}) {
   const [view, setView] = useState<RejectedView>("gallery");
 
   return (
@@ -120,9 +126,9 @@ export function RecentRejected() {
       </div>
 
       {view === "gallery" ? (
-        <Gallery sessions={REJECTED} />
+        <Gallery sessions={sessions} />
       ) : (
-        <Table sessions={REJECTED} />
+        <Table sessions={sessions} />
       )}
     </div>
   );

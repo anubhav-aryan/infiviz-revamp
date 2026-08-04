@@ -1,13 +1,45 @@
+import Link from "next/link";
+import { ExportButton } from "@/app/_export/export-button";
+import type { CsvTable } from "@/app/_export/csv";
 import { Icon } from "@/app/_components/icon";
+import { type MonthKey, stepMonth } from "@/app/_time/periods";
 import {
-  CALENDAR,
-  MONTH_LABEL,
-  PLAN_ROWS,
+  JOURNEY_PLANS,
   WEEKDAYS,
   adherenceTier,
   type CalendarCell,
+  type PlanRow,
 } from "../_data/journey-plans";
 import styles from "./master-data.module.css";
+
+/** Serialized here, from the same rows the table renders below. */
+function planCsv(rows: PlanRow[]): CsvTable {
+  return {
+    headers: [
+      "Merchandiser",
+      "Region",
+      "Stores",
+      "Frequency",
+      "Planned",
+      "Done",
+      "Adherence %",
+    ],
+    rows: rows.map((r) => [
+      r.mrch,
+      r.region,
+      r.stores,
+      r.freq,
+      r.planned,
+      r.done,
+      r.adh,
+    ]),
+  };
+}
+
+/** The stepper is two links, so the whole board stays a Server Component. */
+function monthHref(key: MonthKey | null): string | null {
+  return key ? `/master-data/journey-plans/${key}` : null;
+}
 
 /** Today wins over the weekend treatment, as in the design's cascade. */
 function cellVariant(cell: CalendarCell) {
@@ -17,7 +49,11 @@ function cellVariant(cell: CalendarCell) {
   return "plan";
 }
 
-export function JourneyPlansBoard() {
+export function JourneyPlansBoard({ month }: { month: MonthKey }) {
+  const view = JOURNEY_PLANS[month];
+  const prev = monthHref(stepMonth(month, -1));
+  const next = monthHref(stepMonth(month, 1));
+
   return (
     <div className={styles.board}>
       <div className={styles.pageHead}>
@@ -28,26 +64,41 @@ export function JourneyPlansBoard() {
 
         <div className={styles.headActions}>
           <div className={styles.monthStepper}>
-            <button
-              type="button"
-              className={styles.stepperArrow}
-              aria-label="Previous month"
-            >
-              <Icon name="chevron-left" />
-            </button>
-            <span className={styles.monthLabel}>{MONTH_LABEL}</span>
-            <button
-              type="button"
-              className={styles.stepperArrow}
-              aria-label="Next month"
-            >
-              <Icon name="chevron-right" />
-            </button>
+            {/* Inert at the ends of the authored Feb–Jul window rather than
+                linking to a month with no data behind it. */}
+            {prev ? (
+              <Link
+                href={prev}
+                className={styles.stepperArrow}
+                aria-label="Previous month"
+              >
+                <Icon name="chevron-left" />
+              </Link>
+            ) : (
+              <span className={styles.stepperArrow} data-disabled="true" aria-hidden="true">
+                <Icon name="chevron-left" />
+              </span>
+            )}
+            <span className={styles.monthLabel}>{view.monthLabel}</span>
+            {next ? (
+              <Link
+                href={next}
+                className={styles.stepperArrow}
+                aria-label="Next month"
+              >
+                <Icon name="chevron-right" />
+              </Link>
+            ) : (
+              <span className={styles.stepperArrow} data-disabled="true" aria-hidden="true">
+                <Icon name="chevron-right" />
+              </span>
+            )}
           </div>
-          <button type="button" className={styles.primaryButton}>
-            <Icon name="download" />
-            Export CSV
-          </button>
+          <ExportButton
+            table={planCsv(view.planRows)}
+            filename={`journey-plans-${month}`}
+            className={styles.primaryButton}
+          />
         </div>
       </div>
 
@@ -75,7 +126,7 @@ export function JourneyPlansBoard() {
         </div>
 
         <div className={styles.calendarGrid}>
-          {CALENDAR.map((cell, index) => (
+          {view.calendar.map((cell, index) => (
             <div
               key={cell.day ?? `blank-${index}`}
               className={styles.day}
@@ -131,7 +182,7 @@ export function JourneyPlansBoard() {
           <span className={styles.right}>Adherence</span>
         </div>
 
-        {PLAN_ROWS.map((plan) => (
+        {view.planRows.map((plan) => (
           <div key={plan.mrch} className={`${styles.plansGrid} ${styles.row}`}>
             <span className={styles.cellMrch}>{plan.mrch}</span>
             <span className={styles.cell}>{plan.region}</span>

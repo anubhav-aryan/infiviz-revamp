@@ -1,27 +1,33 @@
+import { Hint } from "@/app/_components/hint";
 import { Icon } from "@/app/_components/icon";
 import {
   AVAILABILITY,
   BRAND_ROWS,
   MSL,
   OWN_VS_COMPETITION,
-  SESSION_HEADER,
-  SESSION_TITLE,
   SHELF_METRICS,
+  type SessionIdentity,
 } from "../_data/session-viewer";
 import styles from "./session-viewer.module.css";
 
+type MetricsPanelProps = {
+  session: SessionIdentity;
+};
+
 /**
  * The right column: every number Analytics rolled up, next to the evidence it
- * was computed from. Entirely static — nothing here reacts to the box toggle.
+ * was computed from. Only the session header varies by store — the metrics
+ * below it are one authored session's figures. Entirely static; nothing here
+ * reacts to the box toggle.
  */
-export function MetricsPanel() {
+export function MetricsPanel({ session }: MetricsPanelProps) {
   return (
     <div className={styles.column}>
       {/* session header */}
       <div className={`${styles.card} ${styles.metricsCard}`}>
-        <h1 className={styles.sessionTitle}>{SESSION_TITLE}</h1>
+        <h1 className={styles.sessionTitle}>{session.title}</h1>
         <div className={styles.sessionMeta}>
-          {SESSION_HEADER.map((row) => (
+          {session.header.map((row) => (
             <div key={row.key} className={styles.sessionMetaRow}>
               <span className={styles.sessionMetaKey}>{row.key}</span>
               <span className={styles.sessionMetaValue}>{row.value}</span>
@@ -41,12 +47,11 @@ export function MetricsPanel() {
             <div key={metric.label}>
               <div className={styles.metricLabel}>
                 <span className={styles.metricLabelText}>{metric.label}</span>
-                {/* `title` sits on the wrapper, not the <svg> — SVG elements
-                    only surface tooltips via a <title> child, so the design's
-                    attribute would otherwise never render. */}
-                <span className={styles.infoIcon} title={metric.definition}>
+                {/* The definition is the point of the icon, so it goes in a
+                    focusable Hint rather than a mouse-only `title`. */}
+                <Hint text={metric.definition} className={styles.infoIcon}>
                   <Icon name="info" size={13} />
-                </span>
+                </Hint>
               </div>
               <div className={styles.metricValue}>{metric.value}</div>
               <div className={styles.metricDetail}>{metric.detail}</div>
@@ -76,9 +81,9 @@ export function MetricsPanel() {
           <span className={styles.sectionLabel}>Availability</span>
           <div className={styles.availabilityMetric}>
             <span className={styles.availabilityLabel}>{AVAILABILITY.label}</span>
-            <span className={styles.infoIcon} title={AVAILABILITY.definition}>
+            <Hint text={AVAILABILITY.definition} className={styles.infoIcon}>
               <Icon name="info" size={13} />
-            </span>
+            </Hint>
             <span className={styles.availabilityValue}>{AVAILABILITY.value}</span>
           </div>
         </div>

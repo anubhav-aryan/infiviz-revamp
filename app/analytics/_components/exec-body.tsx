@@ -1,35 +1,29 @@
 import { Icon } from "@/app/_components/icon";
-import {
-  BAND_A,
-  DUMBBELL,
-  HEROES,
-  INSIGHTS,
-  LINE,
-  OWN_COMP,
-  RANK_ROWS,
-  SCATTER_BY_DIM,
-  SCATTER_GUIDES,
-  type DimKey,
-} from "../_data/analytics";
+import { INSIGHTS, SCATTER_GUIDES, type AnalyticsView, type DimKey } from "../_data/analytics";
 import { RankedList, Sparkline, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
 
 export function ExecBody({
+  view,
   dim,
   dimPicker,
+  compare,
 }: {
+  view: AnalyticsView;
   dim: DimKey;
   dimPicker: React.ReactNode;
+  compare: boolean;
 }) {
-  const points = SCATTER_BY_DIM[dim];
+  const points = view.scatter[dim];
+  const line = view.line;
 
   return (
     <div className={styles.body}>
-      <StatStrip items={BAND_A} />
+      <StatStrip items={view.bandA} />
 
       {/* Band B — the two headline metrics */}
       <div className={styles.heroGrid}>
-        {HEROES.map((hero) => (
+        {view.heroes.map((hero) => (
           <div key={hero.name} className={styles.heroCard}>
             <div className={styles.heroTop}>
               <span className={styles.heroName}>{hero.name}</span>
@@ -56,13 +50,19 @@ export function ExecBody({
 
             <div className={styles.heroTrack}>
               <div className={styles.heroFill} style={{ width: `${hero.val}%` }} />
+              {compare ? (
+                <div
+                  className={styles.heroGhost}
+                  style={{ left: `${hero.prev}%` }}
+                />
+              ) : null}
               <div
                 className={styles.heroTarget}
                 style={{ left: `${hero.target}%` }}
               />
             </div>
             <div className={`${styles.heroScale} ${styles.heroScaleGap}`}>
-              <span>Below target</span>
+              <span>{compare ? `Last month ${hero.prev}%` : "Below target"}</span>
               <span className={styles.mono}>Target {hero.target}%</span>
             </div>
 
@@ -78,14 +78,14 @@ export function ExecBody({
                     <div className={styles.ownCompBar}>
                       <span
                         className={styles.ownCompOwn}
-                        style={{ width: `${OWN_COMP.own}%` }}
+                        style={{ width: `${view.ownComp.own}%` }}
                       />
                       <span
                         className={styles.ownCompRest}
-                        style={{ width: `${OWN_COMP.comp}%` }}
+                        style={{ width: `${view.ownComp.comp}%` }}
                       />
                     </div>
-                    <div className={styles.ownCompLabel}>{OWN_COMP.label}</div>
+                    <div className={styles.ownCompLabel}>{view.ownComp.label}</div>
                   </>
                 ) : (
                   <div className={styles.subVal}>{hero.sub2v}</div>
@@ -119,7 +119,12 @@ export function ExecBody({
                 Target 85%
               </span>
             </div>
-            <RankedList rows={RANK_ROWS[dim]} variant="exec" />
+            <RankedList
+              rows={view.ranked[dim]}
+              variant="exec"
+              compare={compare}
+              emptyLabel={`No ${dim.toLowerCase()} matches the filters.`}
+            />
           </div>
 
           <div className={styles.panel}>
@@ -204,7 +209,7 @@ export function ExecBody({
             <span className={styles.panelTitle} data-gap="14">
               Biggest moves vs last month
             </span>
-            {DUMBBELL.map((d) => (
+            {view.dumbbell.map((d) => (
               <div key={d.name} className={styles.dumbbellRow} data-tone={d.tone}>
                 <span className={styles.dumbbellName}>{d.name}</span>
                 <span className={styles.dumbbellTrack}>
@@ -253,7 +258,7 @@ export function ExecBody({
               role="img"
               aria-label="Availability and visibility over the last six months"
             >
-              {LINE.grid.map((g) => (
+              {line.grid.map((g) => (
                 <g key={g.v}>
                   <line
                     x1="30"
@@ -279,8 +284,8 @@ export function ExecBody({
               <line
                 x1="30"
                 x2="352"
-                y1={LINE.t85}
-                y2={LINE.t85}
+                y1={line.t85}
+                y2={line.t85}
                 stroke="var(--neutral-500)"
                 strokeWidth="1.2"
                 strokeDasharray="5 4"
@@ -288,14 +293,28 @@ export function ExecBody({
               <line
                 x1="30"
                 x2="352"
-                y1={LINE.t45}
-                y2={LINE.t45}
+                y1={line.t45}
+                y2={line.t45}
                 stroke="var(--neutral-400)"
                 strokeWidth="1.2"
                 strokeDasharray="5 4"
               />
+              {/* The window is fixed at Feb–Jul, so when you step back through it
+                  the chart says where you are standing rather than redrawing. */}
+              {line.markX ? (
+                <line
+                  x1={line.markX}
+                  x2={line.markX}
+                  y1="12"
+                  y2="178"
+                  stroke="var(--indigo-600)"
+                  strokeWidth="1.5"
+                  strokeDasharray="3 3"
+                  opacity="0.7"
+                />
+              ) : null}
               <polyline
-                points={LINE.avail}
+                points={line.avail}
                 fill="none"
                 stroke="var(--indigo-600)"
                 strokeWidth="2.5"
@@ -303,14 +322,14 @@ export function ExecBody({
                 strokeLinejoin="round"
               />
               <polyline
-                points={LINE.vis}
+                points={line.vis}
                 fill="none"
                 stroke="var(--indigo-300)"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-              {LINE.xl.map((x) => (
+              {line.xl.map((x) => (
                 <text
                   key={x.label}
                   x={x.x}

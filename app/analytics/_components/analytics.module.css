@@ -4,6 +4,8 @@
 
 /* ---------- shared atoms ---------- */
 
+/* Rows that look like buttons but navigate. The anchor has to give up the
+   underline and pick up the row's own layout, or it collapses to inline text. */
 .reset {
   border: 0;
   background: none;
@@ -12,6 +14,7 @@
   font: inherit;
   color: inherit;
   text-align: left;
+  text-decoration: none;
 }
 
 .panel {
@@ -138,6 +141,20 @@
   cursor: pointer;
 }
 
+.ghostButton[data-active="true"] {
+  border-color: var(--indigo-300);
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+}
+
+/* February is the start of the authored window, so there is nothing to compare
+   it against and the control says so rather than lying. */
+.ghostButton:disabled {
+  color: var(--text-disabled);
+  border-color: var(--hairline);
+  cursor: not-allowed;
+}
+
 .primaryButton {
   display: inline-flex;
   align-items: center;
@@ -242,17 +259,17 @@
   gap: 8px;
 }
 
+/* The trail is a caption. Nothing in these fixtures is scoped by region, so
+   styling the crumbs as links would advertise a scope change the data cannot
+   perform — they read as a path, with the destination picked out. */
 .crumb {
   font-size: 13px;
   font-weight: 600;
-  cursor: pointer;
-  color: var(--indigo-600);
+  color: var(--text-caption);
 }
 
-/* The crumb you are scoped to is the destination, so it stops looking clickable. */
 .crumb[data-current="true"] {
   color: var(--text-heading);
-  cursor: default;
 }
 
 .crumbSep {
@@ -302,6 +319,218 @@
   color: var(--text-secondary);
   cursor: pointer;
   font-family: inherit;
+}
+
+/* ---------- popovers: month, add filter, saved views ---------- */
+
+.menuAnchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  min-width: 200px;
+  padding: 6px;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.menu[data-wide="true"] {
+  min-width: 250px;
+}
+
+/* The header's right-hand controls sit against the page edge, so their menus
+   hang the other way rather than overflowing it. */
+.menuRight {
+  left: auto;
+  right: 0;
+}
+
+.menuLabel {
+  padding: 6px 10px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-caption);
+}
+
+/* Ten dimensions and up to eight values each: tall enough to need a limit,
+   short enough that a fixed max keeps the popover on screen. */
+.menuScroll {
+  max-height: 264px;
+  overflow-y: auto;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background: var(--surface-hover);
+}
+
+.menuItem[data-active="true"] {
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+  font-weight: 600;
+}
+
+.menuItem:disabled {
+  cursor: default;
+}
+
+.menuCount {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.menuBack {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 6px 8px 8px;
+  margin-bottom: 4px;
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  background: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-heading);
+  cursor: pointer;
+}
+
+.menuEmpty {
+  padding: 8px 10px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-caption);
+}
+
+.savedRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.savedApply {
+  flex: 1;
+  min-width: 0;
+  display: block;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.savedApply:hover {
+  background: var(--surface-hover);
+}
+
+.savedName {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.savedMeta {
+  display: block;
+  font-size: 11px;
+  color: var(--text-caption);
+  margin-top: 1px;
+}
+
+.savedDelete {
+  display: inline-flex;
+  flex: none;
+  padding: 6px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--text-caption);
+  cursor: pointer;
+}
+
+.savedDelete:hover {
+  color: var(--danger);
+  background: var(--danger-subtle);
+}
+
+.saveForm {
+  display: flex;
+  gap: 6px;
+  padding: 8px 4px 4px;
+  margin-top: 4px;
+  border-top: 1px solid var(--hairline);
+}
+
+.saveInput {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--text-body);
+}
+
+.saveButton {
+  flex: none;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--indigo-600);
+  color: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.saveButton:disabled {
+  background: var(--neutral-300);
+  cursor: not-allowed;
+}
+
+/* ---------- empty states ---------- */
+
+.emptyState {
+  padding: 22px 18px;
+  font-size: 12.5px;
+  color: var(--text-caption);
+  text-align: center;
 }
 
 /* ---------- band scaffold ---------- */
@@ -488,6 +717,16 @@
   background: var(--neutral-600);
 }
 
+/* Where the metric stood a month ago. Dashed and thin so it reads as a memory
+   of the bar rather than a second target. */
+.heroGhost {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 0;
+  border-left: 2px dashed var(--neutral-500);
+}
+
 .heroScale {
   display: flex;
   justify-content: space-between;
@@ -617,6 +856,7 @@
 }
 
 .rankTrack {
+  position: relative;
   height: 12px;
   background: var(--neutral-100);
   border-radius: 999px;
@@ -628,6 +868,15 @@
   height: 100%;
   background: var(--indigo-500);
   border-radius: 999px;
+}
+
+/* The previous month, on the same 0–100 track as the bar itself. */
+.rankGhost {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 2px dashed var(--neutral-500);
 }
 
 .rankValue {
@@ -937,6 +1186,10 @@
   text-align: left;
 }
 
+.leagueRow:last-child {
+  border-bottom: none;
+}
+
 .leagueStore {
   color: var(--text-heading);
   font-weight: 500;
@@ -956,10 +1209,13 @@
   color: var(--text-heading);
 }
 
+/* Padded so the right-aligned value cannot butt against the next
+   column, which has no gap and starts flush. */
 .leagueMonoDim {
   font-family: var(--font-mono);
   text-align: right;
-  color: var(--text-secondary);
+  color: var(--text-secondary);  padding-right: 12px;
+
 }
 
 .leagueVisit {
@@ -1186,6 +1442,10 @@
   font-size: 11.5px;
 }
 
+.missingRow:last-child {
+  border-bottom: none;
+}
+
 .missingName {
   color: var(--text-heading);
   white-space: nowrap;
@@ -1207,11 +1467,14 @@
   font-weight: 600;
 }
 
+/* Padded so the right-aligned value cannot butt against the next
+   column, which has no gap and starts flush. */
 .missingOsa {
   font-family: var(--font-mono);
   font-size: 11.5px;
   font-weight: 700;
-  text-align: right;
+  text-align: right;  padding-right: 12px;
+
 }
 
 .missingOsa[data-tier="good"] {
@@ -1389,6 +1652,10 @@
   gap: 14px;
   padding: 13px 20px;
   border-bottom: 1px solid var(--hairline);
+}
+
+.fixRow:last-child {
+  border-bottom: none;
 }
 
 .fixDot {

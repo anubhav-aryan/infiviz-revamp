@@ -1,9 +1,9 @@
 import {
-  PINS,
+  type MapPin,
+  type PinStatus,
   VN_HEIGHT,
   VN_PATH,
   VN_VIEWBOX,
-  type PinStatus,
 } from "../_data/vietnam-map";
 
 /** Matches the three-dot legend above the map. */
@@ -13,7 +13,7 @@ const PIN_COLOR: Record<PinStatus, string> = {
   none: "#CBD5E1",
 };
 
-export function VietnamMap() {
+export function VietnamMap({ pins }: { pins: MapPin[] }) {
   return (
     // Vietnam is height-bound under the baked projection, so `meet` at a fixed
     // 520px height reproduces the design at any panel width.
@@ -24,10 +24,10 @@ export function VietnamMap() {
       height={VN_HEIGHT}
       style={{ display: "block" }}
       role="img"
-      aria-label="Map of Vietnam showing stores visited today, stores visited in range, and stores not visited"
+      aria-label={`Map of Vietnam showing ${pins.length} stores, coloured by whether they were visited today, visited in range, or not visited`}
     >
       <path d={VN_PATH} fill="#EEF2FF" stroke="#C7D2FE" strokeWidth={1} />
-      {PINS.map((pin, i) => (
+      {pins.map((pin, i) => (
         <circle
           key={i}
           cx={pin.x}
