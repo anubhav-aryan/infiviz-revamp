@@ -35,9 +35,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    // suppressHydrationWarning is scoped to this element's own attributes and
+    // does not reach its descendants, so app-level mismatches still surface.
+    // It is here because extensions stamp the root before React hydrates —
+    // Scribe adds `data-scribe-recorder-ready`, Grammarly and dark-mode
+    // extensions do the same — and React cannot tell that from a real mismatch.
+    // The server sends only `lang` and `class`; anything else is not ours.
     <html
       lang="en"
       className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
     >
       <body>{children}</body>
     </html>

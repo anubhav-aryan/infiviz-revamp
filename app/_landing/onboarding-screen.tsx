@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/app/_components/icon";
 import { ActivityFeed } from "./activity-feed";
+import { OnboardingStepper } from "./onboarding-stepper";
 import {
   CONFIRM_B,
   HEADER_B,
@@ -14,10 +15,14 @@ import {
 } from "./_data/landing";
 import styles from "./landing.module.css";
 
-/** State B — master data is configured and captures have started, no analytics. */
-export function StateB() {
+/**
+ * Onboarding — master data configured and captures arriving, analytics not yet.
+ * The stepper sits above the activity layout so progress and live data are read
+ * together; the design kept them on separate screens.
+ */
+export function OnboardingScreen() {
   return (
-    <div className={styles.stateB}>
+    <div className={styles.onboardingScreen}>
       <div className={styles.pageHead}>
         <div>
           <h1 className={styles.pageTitle}>{HEADER_B.title}</h1>
@@ -33,6 +38,11 @@ export function StateB() {
             {HEADER_B.locked}
           </span>
         </div>
+      </div>
+
+      {/* Full width, above the two-column body — see OnboardingStepper. */}
+      <div className={styles.stepperBlock}>
+        <OnboardingStepper />
       </div>
 
       {/* confirmation band — proof the account is configured */}

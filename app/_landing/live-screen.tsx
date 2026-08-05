@@ -64,10 +64,10 @@ function HeroTile({ tile, footer }: { tile: HeroTileData; footer: ReactNode }) {
   );
 }
 
-/** State C — every surface is live and shelf metrics lead the page. */
-export function StateC() {
+/** Live — every surface is unlocked and shelf metrics lead the page. */
+export function LiveScreen() {
   return (
-    <div className={styles.stateC}>
+    <div className={styles.liveScreen}>
       <div className={styles.pageHead}>
         <div>
           <h1 className={styles.pageTitle}>{HEADER_C.title}</h1>

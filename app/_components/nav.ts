@@ -44,7 +44,7 @@ export const NAV_BY_ID = Object.fromEntries(NAV.map((n) => [n.id, n])) as Record
 >;
 
 /**
- * Landing's onboarding states show a reduced nav where surfaces that have no
+ * The onboarding phase shows a reduced nav where surfaces that have no
  * data yet are visibly locked rather than absent.
  */
 export type NavState = "active" | "normal" | "locked";
@@ -59,19 +59,9 @@ export type NavEntry = {
 export const UNLOCK = {
   catalog: "Unlocks when your catalog is digitised",
   analytics: "Unlocks when the first sessions are processed",
-  configured: "Available once master data is configured",
 } as const;
 
-/** State A — empty account, master data hasn't arrived. */
-export const NAV_ONBOARDING: NavEntry[] = [
-  { id: "activity", state: "active" },
-  { id: "store-explorer", state: "locked", tooltip: UNLOCK.configured },
-  { id: "master-data", state: "locked", tooltip: "Configuring now" },
-  { id: "catalog", state: "locked", tooltip: UNLOCK.catalog },
-  { id: "analytics", state: "locked", tooltip: UNLOCK.analytics },
-];
-
-/** State B — master data configured, captures beginning, no analytics yet. */
+/** Onboarding — master data configured, captures beginning, no analytics yet. */
 export const NAV_CAPTURING: NavEntry[] = [
   { id: "activity", state: "active" },
   { id: "store-explorer", state: "normal" },

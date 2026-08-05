@@ -15,7 +15,7 @@ import {
   periodPhrase,
   serializePeriod,
 } from "./period";
-import { PINS, type MapPin } from "./vietnam-map";
+import { STORES, storeById, type GeoStore } from "@/app/_data/stores-geo";
 
 /**
  * Demo content for the Store Explorer screen. There is no backend yet — every
@@ -67,96 +67,38 @@ export type Visit = {
  *
  * Exported because Session Viewer keys its per-store sessions off these rows.
  */
-export const VISITS: Visit[] = [
-  {
-    store: "3742 · Winlife HCM 94/54 - 56",
-    retailer: "Winmart",
-    region: "Ho Chi Minh City",
-    type: "Minimart",
-    time: "09:31",
-    merchandiser: "minh_tran",
-    photos: 7,
-    categories: "Toothpaste, Toothbrush",
-    status: "Complete",
-  },
-  {
-    store: "3207 · BHX HCM Q07 - 769A Trần",
-    retailer: "Bach Hoa Xanh",
-    region: "Ho Chi Minh City",
-    type: "Minimart",
-    time: "09:48",
-    merchandiser: "khang_nguyen",
-    photos: 5,
-    categories: "Toothpaste",
-    status: "Complete",
-  },
-  {
-    store: "14830 · BHX_HCM_TPH - 187 Tân",
-    retailer: "Bach Hoa Xanh",
-    region: "Ho Chi Minh City",
-    type: "Minimart",
-    time: "10:05",
-    merchandiser: "khang_nguyen",
-    photos: 4,
-    categories: "Multi-category",
-    status: "Processing",
-  },
-  {
-    store: "Co.opmart Nguyễn Đình Chiểu",
-    retailer: "Co.opmart",
-    region: "Ho Chi Minh City",
-    type: "Supermarket",
-    time: "10:22",
-    merchandiser: "thao_vo",
-    photos: 8,
-    categories: "Toothpaste, Toothbrush",
-    status: "Complete",
-  },
-  {
-    store: "Aeon Mall Tân Phú Celadon",
-    retailer: "Aeon",
-    region: "Ho Chi Minh City",
-    type: "Hypermarket",
-    time: "10:40",
-    merchandiser: "huy_le",
-    photos: 6,
-    categories: "Multi-category",
-    status: "Complete",
-  },
-  {
-    store: "Emart Gò Vấp",
-    retailer: "Emart",
-    region: "Ho Chi Minh City",
-    type: "Hypermarket",
-    time: "11:02",
-    merchandiser: "quan_do",
-    photos: 3,
-    categories: "Toothbrush",
-    status: "Queued",
-  },
-  {
-    store: "3157 · Winlife 537 Nguyễn Duy",
-    retailer: "Winmart",
-    region: "South East",
-    type: "Minimart",
-    time: "11:15",
-    merchandiser: "minh_tran",
-    photos: 5,
-    categories: "Toothpaste",
-    status: "Complete",
-  },
-  {
-    store: "MM Mega Market An Phú",
-    retailer: "MM Mega Market",
-    region: "South East",
-    type: "Wholesale",
-    time: "11:40",
-    merchandiser: "mai_bui",
-    photos: 9,
-    categories: "Multi-category",
-    status: "Complete",
-  },
+/**
+ * Visit facts only. Store identity — name, retailer, region, type — comes from
+ * `STORES`, so a store is described one way across the whole app and the map
+ * cannot disagree with the list beside it.
+ *
+ * These eight `storeId`s resolve to the names that `/session-viewer/[store]`
+ * prerenders, via `slugifyStore`, with `dynamicParams = false`. Repointing one
+ * at a different store changes a live URL.
+ */
+const VISIT_SEED: (Omit<Visit, "store" | "retailer" | "region" | "type"> & {
+  storeId: string;
+})[] = [
+  { storeId: "VNC0304137", time: "09:31", merchandiser: "minh_tran", photos: 7, categories: "Toothpaste, Toothbrush", status: "Complete" },
+  { storeId: "VNC0304274", time: "09:48", merchandiser: "khang_nguyen", photos: 5, categories: "Toothpaste", status: "Complete" },
+  { storeId: "VNC0304411", time: "10:05", merchandiser: "khang_nguyen", photos: 4, categories: "Multi-category", status: "Processing" },
+  { storeId: "VNC0304548", time: "10:22", merchandiser: "thao_vo", photos: 8, categories: "Toothpaste, Toothbrush", status: "Complete" },
+  { storeId: "VNC0304685", time: "10:40", merchandiser: "huy_le", photos: 6, categories: "Multi-category", status: "Complete" },
+  { storeId: "VNC0304822", time: "11:02", merchandiser: "quan_do", photos: 3, categories: "Toothbrush", status: "Queued" },
+  { storeId: "VNC0304959", time: "11:15", merchandiser: "minh_tran", photos: 5, categories: "Toothpaste", status: "Complete" },
+  { storeId: "VNC0305096", time: "11:40", merchandiser: "mai_bui", photos: 9, categories: "Multi-category", status: "Complete" },
 ];
+
+export const VISITS: Visit[] = VISIT_SEED.map(({ storeId, ...facts }) => {
+  const store = storeById(storeId);
+  return {
+    store: store.name,
+    retailer: store.retailer,
+    region: store.region,
+    type: store.type,
+    ...facts,
+  };
+});
 
 /* ---------- the authored day ---------- */
 
@@ -254,21 +196,6 @@ function typeShare(retailer: string, types: string[]): number {
   }
   return all ? kept / all : 0;
 }
-
-/**
- * A store's format follows its banner, so the map answers Store type from a
- * pin's retailer instead of carrying a third tag. Winmart is filed under its
- * dominant format — most of its estate is Winlife minimarts.
- */
-const TYPE_BY_RETAILER: Record<string, string> = {
-  "Bach Hoa Xanh": "Minimart",
-  Winmart: "Minimart",
-  "Co.opmart": "Supermarket",
-  Aeon: "Hypermarket",
-  Lotte: "Hypermarket",
-  Emart: "Hypermarket",
-  "MM Mega Market": TAIL_TYPE,
-};
 
 /**
  * Store types for a derived period are rolled up from that period's retailer
@@ -534,7 +461,7 @@ export type View = {
   retailers: RetailerBar[];
   visitsLabel: string;
   visits: Visit[];
-  pins: MapPin[];
+  pins: GeoStore[];
 };
 
 const VISIT_ACCESSORS = {
@@ -544,9 +471,11 @@ const VISIT_ACCESSORS = {
 };
 
 const PIN_ACCESSORS = {
-  [DIM_RETAILER]: (pin: MapPin) => pin.retailer,
-  [DIM_REGION]: (pin: MapPin) => pin.region,
-  [DIM_TYPE]: (pin: MapPin) => TYPE_BY_RETAILER[pin.retailer],
+  // Stores now carry their own type, so this reads the field instead of
+  // inferring the format from the banner.
+  [DIM_RETAILER]: (store: GeoStore) => store.retailer,
+  [DIM_REGION]: (store: GeoStore) => store.region,
+  [DIM_TYPE]: (store: GeoStore) => store.type,
 };
 
 function facetFor(facts: Facts, dim: string): FacetRow[] {
@@ -652,7 +581,7 @@ export function build(facts: Facts, filters: ActiveFilter[]): View {
     })),
     visitsLabel: `${group(visits)} visits`,
     visits: applyFilters(facts.visitRows, filters, VISIT_ACCESSORS),
-    pins: applyFilters(PINS, filters, PIN_ACCESSORS),
+    pins: applyFilters(STORES, filters, PIN_ACCESSORS),
   };
 }
 

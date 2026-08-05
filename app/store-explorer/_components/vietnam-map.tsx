@@ -1,43 +1,27 @@
-import {
-  type MapPin,
-  type PinStatus,
-  VN_HEIGHT,
-  VN_PATH,
-  VN_VIEWBOX,
-} from "../_data/vietnam-map";
+import { StoreMap, type StatusStyle } from "@/app/_components/store-map/store-map";
+import type { GeoStore } from "@/app/_data/stores-geo";
+import styles from "@/app/_components/store-map/store-map.module.css";
 
-/** Matches the three-dot legend above the map. */
-const PIN_COLOR: Record<PinStatus, string> = {
-  today: "#4F46E5",
-  range: "#A5B4FC",
-  none: "#CBD5E1",
+/**
+ * The ramp mirrors the legend rendered above the map in `explorer-view.tsx`.
+ * Both read the same design tokens — the legend through its own inline
+ * `var(--indigo-600)`, the markers through these module classes — so they can
+ * no longer drift, which they could when the SVG hardcoded hex.
+ */
+const VISIT_RAMP: Record<string, StatusStyle> = {
+  none: { className: styles.none, size: 9, label: "Not visited", layer: 0 },
+  range: { className: styles.range, size: 9, label: "Visited in range", layer: 1 },
+  today: { className: styles.today, size: 11, label: "Visited today", layer: 2 },
 };
 
-export function VietnamMap({ pins }: { pins: MapPin[] }) {
+export function VietnamMap({ pins }: { pins: GeoStore[] }) {
   return (
-    // Vietnam is height-bound under the baked projection, so `meet` at a fixed
-    // 520px height reproduces the design at any panel width.
-    <svg
-      viewBox={VN_VIEWBOX}
-      preserveAspectRatio="xMidYMid meet"
-      width="100%"
-      height={VN_HEIGHT}
-      style={{ display: "block" }}
-      role="img"
-      aria-label={`Map of Vietnam showing ${pins.length} stores, coloured by whether they were visited today, visited in range, or not visited`}
-    >
-      <path d={VN_PATH} fill="#EEF2FF" stroke="#C7D2FE" strokeWidth={1} />
-      {pins.map((pin, i) => (
-        <circle
-          key={i}
-          cx={pin.x}
-          cy={pin.y}
-          r={pin.s === "today" ? 4.6 : 3.8}
-          fill={PIN_COLOR[pin.s]}
-          stroke="#fff"
-          strokeWidth={1}
-        />
-      ))}
-    </svg>
+    <StoreMap
+      points={pins}
+      statusKey="visit"
+      ramp={VISIT_RAMP}
+      height={520}
+      ariaLabel={`Map of Vietnam showing ${pins.length} stores, coloured by whether they were visited today, visited in range, or not visited. Use the zoom buttons, or tab to a store for its details.`}
+    />
   );
 }

@@ -1,42 +1,33 @@
-import {
-  COVERAGE_DOTS,
-  COVERAGE_HEIGHT,
-  COVERAGE_PATH,
-  COVERAGE_VIEWBOX,
-  type CoverageStatus,
-} from "@/app/_data/vietnam-coverage-map";
+"use client";
 
-/** Matches the three-dot legend on the coverage card. */
-const DOT_COLOR: Record<CoverageStatus, string> = {
-  covered: "#4F46E5",
-  overdue: "#F59E0B",
-  notyet: "#CBD5E1",
+import { StoreMap, type StatusStyle } from "./store-map/store-map";
+import { STORES } from "@/app/_data/stores-geo";
+import styles from "./store-map/store-map.module.css";
+
+/**
+ * `"use client"` because Leaflet is browser-only. A Server Component can render
+ * a Client Component directly, so `merch-activity-report.tsx` needs no change.
+ *
+ * `STORES` is imported here rather than passed down as a prop: as a prop it
+ * would be serialised into the RSC payload of all seven merch-activity pages,
+ * where importing it puts the data in one shared client chunk instead.
+ */
+
+/** Matches the legend in `merch-activity-report.tsx`. */
+const COVERAGE_RAMP: Record<string, StatusStyle> = {
+  notyet: { className: styles.notyet, size: 9, label: "Not visited", layer: 0 },
+  overdue: { className: styles.overdue, size: 10, label: "Overdue", layer: 1 },
+  covered: { className: styles.covered, size: 9, label: "Covered", layer: 2 },
 };
 
 export function CoverageMap() {
   return (
-    <svg
-      viewBox={COVERAGE_VIEWBOX}
-      preserveAspectRatio="xMidYMid meet"
-      width="100%"
-      height={COVERAGE_HEIGHT}
-      style={{ display: "block" }}
-      role="img"
-      aria-label="Map of Vietnam showing covered, overdue, and not-yet-visited stores"
-    >
-      <path d={COVERAGE_PATH} fill="#F1F5F9" stroke="#CBD5E1" strokeWidth={1} />
-      {COVERAGE_DOTS.map((dot, i) => (
-        <circle
-          key={i}
-          cx={dot.x}
-          cy={dot.y}
-          r={dot.s === "covered" ? 3.4 : 3.8}
-          fill={DOT_COLOR[dot.s]}
-          stroke="#fff"
-          strokeWidth={0.8}
-          opacity={dot.s === "notyet" ? 0.9 : 1}
-        />
-      ))}
-    </svg>
+    <StoreMap
+      points={STORES}
+      statusKey="coverage"
+      ramp={COVERAGE_RAMP}
+      height={440}
+      ariaLabel="Map of Vietnam showing covered, overdue and not-yet-visited stores. Use the zoom buttons, or tab to a store for its details."
+    />
   );
 }

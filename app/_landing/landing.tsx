@@ -2,57 +2,47 @@
 
 import { useState, type ReactElement } from "react";
 import { AppShell, type Callout } from "@/app/_components/app-shell";
-import {
-  NAV_CAPTURING,
-  NAV_ONBOARDING,
-  fullNav,
-  type NavEntry,
-} from "@/app/_components/nav";
+import { NAV_CAPTURING, fullNav, type NavEntry } from "@/app/_components/nav";
 import type { LandingStateId } from "./_data/landing";
-import { StateA } from "./state-a";
-import { StateB } from "./state-b";
-import { StateC } from "./state-c";
+import { OnboardingScreen } from "./onboarding-screen";
+import { LiveScreen } from "./live-screen";
 import styles from "./landing.module.css";
 
 /**
- * The design stacks three complete app states. Each one changes the nav and the
- * sidebar callout as well as the main surface, so the whole screen — sidebar
- * included — is driven from here.
+ * Two phases of the same screen. Each changes the nav and the sidebar callout
+ * as well as the main surface, so the whole screen — sidebar included — is
+ * driven from here.
  */
 const STATES: Record<
   LandingStateId,
-  { nav: NavEntry[]; callout: Callout; render: () => ReactElement }
+  { label: string; nav: NavEntry[]; callout: Callout; render: () => ReactElement }
 > = {
-  A: {
-    nav: NAV_ONBOARDING,
-    callout: {
-      title: "Phase 1 · Onboarding",
-      body: "Surfaces appear as your data is configured.",
-    },
-    render: () => <StateA />,
-  },
-  B: {
+  onboarding: {
+    label: "Onboarding",
+    // NAV_CAPTURING, not a locked-down nav: this screen links to the two
+    // operational reports, so their surfaces have to be reachable.
     nav: NAV_CAPTURING,
     callout: {
       title: "Phase 1 · Onboarding",
       body: "Analytics unlocks once sessions are processed.",
     },
-    render: () => <StateB />,
+    render: () => <OnboardingScreen />,
   },
-  C: {
+  live: {
+    label: "Live",
     nav: fullNav("activity"),
     callout: {
       title: "Phase 4 · Live",
       body: "Full shelf metrics available.",
     },
-    render: () => <StateC />,
+    render: () => <LiveScreen />,
   },
 };
 
-const STATE_IDS: LandingStateId[] = ["A", "B", "C"];
+const STATE_IDS: LandingStateId[] = ["onboarding", "live"];
 
 export function Landing() {
-  const [stateId, setStateId] = useState<LandingStateId>("C");
+  const [stateId, setStateId] = useState<LandingStateId>("live");
   const state = STATES[stateId];
 
   return (
@@ -61,11 +51,11 @@ export function Landing() {
         {state.render()}
       </AppShell>
 
-      {/* Not in the design — a demo affordance for stepping through the three
-          onboarding states the doc specifies. */}
+      {/* Not in the design — a demo affordance for stepping between the
+          onboarding and live phases. */}
       <div className={styles.statePicker}>
         <span className={styles.statePickerLabel} id="landing-state-picker">
-          Onboarding state
+          Demo state
         </span>
         <div
           className={styles.statePickerOptions}
@@ -78,10 +68,10 @@ export function Landing() {
               type="button"
               className={styles.statePickerOption}
               aria-pressed={id === stateId}
-              aria-label={`Show onboarding state ${id}`}
+              aria-label={`Show the ${STATES[id].label.toLowerCase()} state`}
               onClick={() => setStateId(id)}
             >
-              {id}
+              {STATES[id].label}
             </button>
           ))}
         </div>

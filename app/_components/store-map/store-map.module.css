@@ -1,0 +1,215 @@
+/*
+ * The shared map surface. Every colour here comes from a design token, and the
+ * two hand-built legends (explorer-view.tsx, merch-activity.module.css) read
+ * the same tokens — so marker and legend can no longer drift apart, which they
+ * could when the markers hardcoded hex in TSX.
+ */
+
+.wrap {
+  position: relative;
+  height: var(--map-h);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* The Leaflet container needs a definite box before it initialises. */
+.host {
+  position: absolute;
+  inset: 0;
+  /* Close to the fill the old baked SVG used, so a tile-less map still reads
+     as a map rather than as a hole in the card. */
+  background: var(--neutral-100);
+}
+
+/* ---------- markers ---------- */
+
+.marker {
+  border-radius: 999px;
+  border: 1px solid var(--neutral-0);
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: transform var(--transition-snap);
+}
+
+.marker:hover,
+.marker:focus-visible {
+  transform: scale(1.35);
+}
+
+/* Status ramps. `visit` is Store Explorer, `coverage` is Merch activity. */
+.today {
+  background: var(--indigo-600);
+}
+
+.range {
+  background: var(--indigo-300);
+}
+
+.none {
+  background: var(--neutral-300);
+}
+
+.covered {
+  background: var(--indigo-600);
+}
+
+.overdue {
+  background: var(--amber-500);
+}
+
+.notyet {
+  background: var(--neutral-300);
+  opacity: 0.9;
+}
+
+/* ---------- hover card ---------- */
+
+/*
+ * A sibling of the Leaflet container, not a child: `.leaflet-container` sets
+ * `overflow: hidden`, which would clip this for any store near the map edge —
+ * and on a country-shaped dataset that is a lot of stores.
+ */
+.card {
+  position: absolute;
+  z-index: 500;
+  width: 232px;
+  padding: 11px 13px;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 14px));
+}
+
+/* Near an edge the centred card would spill outside the map. */
+.card[data-flip="left"] {
+  transform: translate(-100%, calc(-100% - 14px));
+}
+
+.card[data-flip="right"] {
+  transform: translate(0, calc(-100% - 14px));
+}
+
+.card[data-flip="below"] {
+  transform: translate(-50%, 14px);
+}
+
+.cardName {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+  line-height: 1.3;
+}
+
+.cardCode {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-caption);
+  margin-top: 2px;
+}
+
+.cardMeta {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  line-height: 1.35;
+}
+
+.cardFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid var(--hairline);
+}
+
+.cardStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cardDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex: none;
+}
+
+.cardPhotos {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-caption);
+  white-space: nowrap;
+}
+
+/* ---------- tile failure ---------- */
+
+.notice {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 400;
+  max-width: 220px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-sm);
+  font-size: 11.5px;
+  color: var(--text-caption);
+  text-align: center;
+  pointer-events: none;
+}
+
+/* ---------- Leaflet's own chrome, restyled to the design system ---------- */
+
+/* `:global` because these class names come from leaflet.css, which we do not
+   own. They stay nested under a hashed class, so nothing leaks. */
+.wrap :global(.leaflet-container) {
+  font-family: var(--font-ui);
+  background: var(--neutral-100);
+}
+
+.wrap :global(.leaflet-control-attribution) {
+  font-family: var(--font-ui);
+  font-size: 9.5px;
+  color: var(--text-caption);
+  background: color-mix(in oklab, var(--neutral-0) 82%, transparent);
+  padding: 1px 6px;
+  border-radius: 6px 0 0 0;
+}
+
+.wrap :global(.leaflet-control-attribution a) {
+  color: var(--indigo-600);
+  text-decoration: none;
+}
+
+.wrap :global(.leaflet-control-zoom) {
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.wrap :global(.leaflet-control-zoom a) {
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  color: var(--text-secondary);
+  background: var(--surface-card);
+  border-bottom-color: var(--hairline);
+  font-size: 16px;
+}
+
+.wrap :global(.leaflet-control-zoom a:hover) {
+  background: var(--surface-hover);
+  color: var(--text-heading);
+}

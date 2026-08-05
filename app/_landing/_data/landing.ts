@@ -1,22 +1,19 @@
 import type { IconName } from "@/app/_components/icon";
 
 /**
- * Demo content for the Landing screen, transcribed verbatim from the design
- * doc. The design stacks three complete app states, so the data is grouped the
- * same way: A (empty account), B (capturing, no analytics yet) and C (live).
+ * Demo content for the Landing screen. The design drew three states — an empty
+ * account, one with captures beginning, and a fully live one — but the first
+ * two are shown as a single screen here: the onboarding stepper sits above the
+ * same activity layout, so progress and live data are read together rather
+ * than on separate screens.
+ *
  * There is no backend yet — every figure is fixture data for
  * Colgate-Palmolive Vietnam, July 2026.
  */
 
-export type LandingStateId = "A" | "B" | "C";
+export type LandingStateId = "onboarding" | "live";
 
-/* ================= State A — empty account ================= */
-
-export const HEADER_A = {
-  title: "Welcome to InfiViz",
-  subtitle: "Colgate-Palmolive Vietnam · account setup in progress",
-  status: "Setup underway",
-};
+/* ================= Onboarding — captures beginning ================= */
 
 export const STEPPER_TITLE = "Your onboarding";
 
@@ -24,32 +21,36 @@ export type Step = {
   num: string;
   name: string;
   desc: string;
-  /** The design also modelled a `done` step, but never sets it on this screen. */
-  state: "active" | "pending";
+  state: "done" | "active" | "pending";
   status: string;
 };
 
+/**
+ * Progress matches what the rest of the screen shows: master data is confirmed
+ * by the band below, and captures are visibly arriving in the feed, so the bar
+ * sits on "First captures" rather than back on step 1.
+ */
 export const STEPS: Step[] = [
   {
     num: "1",
     name: "Master data received",
-    desc: "Configuring your stores, users and journey plans.",
-    state: "active",
-    status: "In progress",
+    desc: "Stores, users and journey plans configured.",
+    state: "done",
+    status: "Done",
   },
   {
     num: "2",
     name: "Catalog configured",
     desc: "Digitising your product catalogue.",
-    state: "pending",
-    status: "Upcoming",
+    state: "done",
+    status: "Done",
   },
   {
     num: "3",
     name: "First captures",
     desc: "Photos begin arriving from the field.",
-    state: "pending",
-    status: "Upcoming",
+    state: "active",
+    status: "In progress",
   },
   {
     num: "4",
@@ -59,37 +60,6 @@ export const STEPS: Step[] = [
     status: "Upcoming",
   },
 ];
-
-/** The design bolds the duration mid-sentence, so the copy is split around it. */
-export const WHATS_NEXT = {
-  title: "What happens next",
-  bodyBefore:
-    "Your store list, field users and journey plans are being configured now. This usually takes ",
-  bodyStrong: "3–5 business days",
-  bodyAfter:
-    ". As soon as it's done, capture tasks appear in the InfiShots mobile app and photos begin arriving from the field — and this page fills with live activity.",
-};
-
-export type TimelineRow = { icon: IconName; text: string; when: string };
-
-export const TIMELINE: TimelineRow[] = [
-  { icon: "database", text: "Master data configured", when: "~3–5 days" },
-  { icon: "smartphone", text: "Capture tasks pushed to InfiShots", when: "then" },
-  { icon: "camera", text: "Photos start arriving", when: "~1 day" },
-  { icon: "bar-chart-3", text: "Analytics live", when: "~2 weeks" },
-];
-
-export const CONTACT = {
-  title: "Your onboarding contact",
-  initials: "LT",
-  name: "Linh Tran",
-  role: "Customer Success · InfiViz",
-  email: "linh.tran@infilect.com",
-  primaryAction: "Message on Slack",
-  secondaryAction: "Email",
-};
-
-/* ================= State B — captures beginning ================= */
 
 export const HEADER_B = {
   title: "Activity",
