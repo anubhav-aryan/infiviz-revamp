@@ -809,6 +809,138 @@
   align-items: start;
 }
 
+/* ---------- gauge ---------- */
+
+.gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gaugeTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-caption);
+  text-align: center;
+}
+
+.gaugeSvg {
+  display: block;
+  width: 100%;
+  max-width: 190px;
+  overflow: visible;
+}
+
+.gaugeTrack {
+  fill: none;
+  stroke: var(--neutral-200);
+  stroke-width: 16;
+  stroke-linecap: round;
+}
+
+.gaugeValue {
+  fill: none;
+  stroke-width: 16;
+  stroke-linecap: round;
+  stroke: var(--indigo-600);
+}
+
+.gaugeValue[data-tone="secondary"] {
+  stroke: var(--indigo-300);
+}
+
+.gaugeValue[data-tone="tertiary"] {
+  stroke: var(--indigo-800);
+}
+
+.gaugeValue[data-tone="success"] {
+  stroke: var(--success);
+}
+
+.gaugeValue[data-tone="warning"] {
+  stroke: var(--warning);
+}
+
+.gaugeValue[data-tone="danger"] {
+  stroke: var(--danger);
+}
+
+/* Where the value should be, drawn across the band rather than from the hub —
+   the dial has no hub, so a pointer would have nothing to pivot on. */
+.gaugeNeedle {
+  stroke: var(--neutral-700);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.gaugeReadout {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  fill: var(--text-heading);
+}
+
+.gaugeCaption {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  fill: var(--text-caption);
+}
+
+.gaugeScale {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 190px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-caption);
+}
+
+.gaugeRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+
+/* ---------- stacked area ---------- */
+
+.band {
+  stroke: var(--surface-card);
+  stroke-width: 0.5;
+}
+
+.band[data-tone="primary"] {
+  fill: var(--indigo-600);
+}
+
+.band[data-tone="secondary"] {
+  fill: var(--indigo-300);
+}
+
+.band[data-tone="tertiary"] {
+  fill: var(--indigo-800);
+}
+
+.band[data-tone="muted"] {
+  fill: var(--neutral-300);
+}
+
+.band[data-tone="target"] {
+  fill: var(--indigo-200);
+}
+
+.band[data-tone="success"] {
+  fill: var(--indigo-400);
+}
+
+.band[data-tone="warning"] {
+  fill: var(--indigo-100);
+}
+
 /* ---------- month matrix ---------- */
 
 /* One of the three tables that genuinely cannot be column-subset — the columns

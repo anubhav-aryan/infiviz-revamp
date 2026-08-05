@@ -215,6 +215,55 @@ export function pieSlices(
   return slices;
 }
 
+/**
+ * A gauge's track, filled portion and optional target marker, in one call —
+ * about twenty dials across the dashboard need exactly this.
+ *
+ * The sweep runs `startDeg` to `endDeg` clockwise from twelve o'clock, so a
+ * semicircle is -90 to 90 and PowerBI's wider dial is -120 to 120.
+ */
+export function gaugeGeometry(
+  value: number,
+  min: number,
+  max: number,
+  options: {
+    cx: number;
+    cy: number;
+    r: number;
+    startDeg: number;
+    endDeg: number;
+    target?: number;
+    /** How far the target marker overhangs the band, each side. */
+    needleOverhang?: number;
+  },
+) {
+  const { cx, cy, r, startDeg, endDeg, target, needleOverhang = 11 } = options;
+  const span = max - min || 1;
+  const clamp = (v: number) => Math.max(min, Math.min(max, v));
+  const angleAt = (v: number) =>
+    startDeg + ((clamp(v) - min) / span) * (endDeg - startDeg);
+
+  const valueAngle = angleAt(value);
+  const inner = target === undefined ? null : polar(cx, cy, r - needleOverhang, angleAt(target));
+  const outer = target === undefined ? null : polar(cx, cy, r + needleOverhang, angleAt(target));
+
+  return {
+    track: arcPath(cx, cy, r, startDeg, endDeg),
+    /* A value sitting exactly on the start would produce a zero-length arc,
+       which some renderers drop entirely; nudge it so the cap still shows. */
+    value: arcPath(cx, cy, r, startDeg, Math.max(valueAngle, startDeg + 0.01)),
+    needle:
+      inner && outer
+        ? {
+            x1: Number(fx(inner.x)),
+            y1: Number(fx(inner.y)),
+            x2: Number(fx(outer.x)),
+            y2: Number(fx(outer.y)),
+          }
+        : undefined,
+  };
+}
+
 export type RingSegment = {
   label: string;
   /** `stroke-dasharray` — drawn length, then the rest of the circumference. */

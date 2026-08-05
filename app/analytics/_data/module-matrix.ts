@@ -100,6 +100,7 @@ export const MODULES: Record<ModuleId, ModuleDef> = {
     icon: "check-circle-2",
     blurb: "One score per store, and its four components",
     tabs: ["analytics"],
+    built: true,
   },
   "category-management": {
     id: "category-management",
@@ -126,6 +127,7 @@ export const MODULES: Record<ModuleId, ModuleDef> = {
     icon: "list",
     blurb: "Brand, format and flavour blocks",
     tabs: ["analytics"],
+    built: true,
   },
   availability: {
     id: "availability",
@@ -152,6 +154,7 @@ export const MODULES: Record<ModuleId, ModuleDef> = {
     icon: "trending-up",
     blurb: "Revenue impact, uplift and payout savings",
     tabs: ["analytics"],
+    built: true,
   },
   merchandiser: {
     id: "merchandiser",
@@ -160,6 +163,7 @@ export const MODULES: Record<ModuleId, ModuleDef> = {
     icon: "users",
     blurb: "Attendance, PJP adherence and photo quality",
     tabs: ["attendance", "photo-quality", "raw-data"],
+    built: true,
   },
   "store-management": {
     id: "store-management",
@@ -168,6 +172,7 @@ export const MODULES: Record<ModuleId, ModuleDef> = {
     icon: "store",
     blurb: "Coverage and store standardisation",
     tabs: ["store-coverage", "category-coverage", "store-standardisation"],
+    built: true,
   },
 };
 

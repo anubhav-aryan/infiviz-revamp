@@ -19,6 +19,18 @@ import { TrendChart } from "@/app/_charts/trend-chart";
 import charts from "@/app/_charts/charts.module.css";
 import { CURRENT_MONTH, MONTHS, MONTH_KEYS, type MonthKey } from "@/app/_time/periods";
 import { METRIC_MODULES } from "../_data/module-registry";
+import { MERCHANDISER_VIEWS } from "../_data/merchandiser";
+import { PERFECT_STORE_VIEWS } from "../_data/perfect-store";
+import { ROI_VIEWS } from "../_data/roi";
+import { SHELVING_VIEWS } from "../_data/shelving";
+import { STORE_MANAGEMENT_VIEWS } from "../_data/store-management";
+import {
+  MerchandiserBody,
+  PerfectStoreBody,
+  RoiBody,
+  ShelvingBody,
+  StoreManagementBody,
+} from "./bespoke-bodies";
 import { defaultMeasureId, type MetricModuleView } from "../_data/metric-module";
 import {
   MODULES,
@@ -84,13 +96,16 @@ export function ModuleScreen({ persona, module, tab }: Props) {
     return raw ? `?${raw}` : "";
   }, [params]);
 
-  if (!entry || !view || !measureId) return null;
-
   const tabs = def.tabs.map((id) => ({
     id,
     label: TAB_LABELS[id],
     href: modulePath(persona, module, id),
   }));
+
+  const headline = view
+    ? { value: view.headline, delta: view.headlineDelta }
+    : headlineFor(module, period);
+  const monthLabel = view?.monthLabel ?? MONTHS[MONTH_KEYS.indexOf(period)].label;
 
   return (
     <div className={styles.screen}>
@@ -99,14 +114,17 @@ export function ModuleScreen({ persona, module, tab }: Props) {
           <div>
             <h1 className={styles.title}>{def.label}</h1>
             <p className={styles.subtitle}>
-              Colgate-Palmolive Vietnam · {view.monthLabel} · {view.measureLabel}
+              Colgate-Palmolive Vietnam · {monthLabel}
+              {view ? ` · ${view.measureLabel}` : ` · ${def.blurb}`}
             </p>
           </div>
 
           <div className={styles.headActions}>
             <span className={styles.headline}>
-              {view.headline}
-              <span className={styles.headlineDelta}>{view.headlineDelta} MoM</span>
+              {headline.value}
+              {headline.delta ? (
+                <span className={styles.headlineDelta}>{headline.delta} MoM</span>
+              ) : null}
             </span>
             <Segmented
               options={MONTH_OPTIONS}
@@ -125,6 +143,7 @@ export function ModuleScreen({ persona, module, tab }: Props) {
         />
 
         <div className={styles.controls}>
+          {measures.length > 1 && measureId ? (
           <Segmented
             options={measures.map((measure) => ({
               id: measure.id,
@@ -135,6 +154,7 @@ export function ModuleScreen({ persona, module, tab }: Props) {
             label="Measure"
             tone="dark"
           />
+          ) : null}
           <span className={styles.scope}>
             <Icon name="info" size={14} />
             National · all retailers · all store types
@@ -143,10 +163,57 @@ export function ModuleScreen({ persona, module, tab }: Props) {
       </header>
 
       <div className={styles.body}>
-        <TabBody tab={tab} view={view} />
+        {entry && view && measureId ? (
+          <TabBody tab={tab} view={view} />
+        ) : (
+          <BespokeBody module={module} tab={tab} period={period} />
+        )}
       </div>
     </div>
   );
+}
+
+/** Headline for the modules the factory does not drive. */
+function headlineFor(module: ModuleId, period: MonthKey) {
+  switch (module) {
+    case "perfect-store": {
+      const v = PERFECT_STORE_VIEWS[period];
+      return { value: v.score, delta: v.scoreDelta };
+    }
+    case "roi": {
+      const v = ROI_VIEWS[period];
+      return { value: v.total.value, delta: v.total.delta };
+    }
+    case "merchandiser":
+      return { value: MERCHANDISER_VIEWS[period].photoQuality.overall, delta: "" };
+    default:
+      return { value: "", delta: "" };
+  }
+}
+
+function BespokeBody({
+  module,
+  tab,
+  period,
+}: {
+  module: ModuleId;
+  tab: TabId;
+  period: MonthKey;
+}) {
+  switch (module) {
+    case "perfect-store":
+      return <PerfectStoreBody view={PERFECT_STORE_VIEWS[period]} />;
+    case "roi":
+      return <RoiBody view={ROI_VIEWS[period]} />;
+    case "shelving":
+      return <ShelvingBody view={SHELVING_VIEWS[period]} />;
+    case "merchandiser":
+      return <MerchandiserBody view={MERCHANDISER_VIEWS[period]} tab={tab} />;
+    case "store-management":
+      return <StoreManagementBody view={STORE_MANAGEMENT_VIEWS[period]} tab={tab} />;
+    default:
+      return null;
+  }
 }
 
 function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {

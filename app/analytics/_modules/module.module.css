@@ -87,6 +87,34 @@
   align-items: start;
 }
 
+/* A column of cards inside one half of a split. */
+.stackCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.triple {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.roiDelta {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.roiDelta[data-tone="up"] {
+  color: var(--success);
+}
+
+.roiDelta[data-tone="down"] {
+  color: var(--danger);
+}
+
 .sectionLabel {
   margin-bottom: 10px;
   font-size: 11px;
