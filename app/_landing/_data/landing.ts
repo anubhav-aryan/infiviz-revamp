@@ -192,12 +192,14 @@ export const REPORTS: ReportCard[] = [
 
 export const REPORT_CTA = "Open report";
 
-/* ================= Activity feed — shared by B and C ================= */
+/* ================= Activity feed — shared by both states ================= */
 
 export const FEED_CARD = { title: "Activity feed", caption: "Today" };
 
+/* Rows are ordered oldest to newest; the card's "Today" caption carries the
+   timeframe, so individual rows are not timestamped. `text` is the React key,
+   so keep each row's text distinct. */
 export type FeedRow = {
-  time: string;
   icon: IconName;
   text: string;
   figure: string;
@@ -206,18 +208,16 @@ export type FeedRow = {
 };
 
 export const FEED: FeedRow[] = [
-  { time: "09:12", icon: "users", text: "Merchandisers active in the field", figure: "142" },
-  { time: "09:40", icon: "map-pin", text: "Stores visited today", figure: "418" },
-  { time: "10:05", icon: "camera", text: "Photos captured", figure: "6,204" },
-  { time: "10:28", icon: "cpu", text: "Sessions processed", figure: "1,880" },
+  { icon: "users", text: "Merchandisers active in the field", figure: "142" },
+  { icon: "map-pin", text: "Stores visited today", figure: "418" },
+  { icon: "camera", text: "Photos captured", figure: "6,204" },
+  { icon: "cpu", text: "Sessions processed", figure: "1,880" },
   {
-    time: "11:02",
     icon: "target",
     text: "Coverage milestone — Ho Chi Minh City",
     figure: "75%",
   },
   {
-    time: "11:15",
     icon: "alert-triangle",
     text: "Photo quality dipped at MM Mega Market",
     figure: "88%",
@@ -225,13 +225,11 @@ export const FEED: FeedRow[] = [
     pillTone: "warning",
   },
   {
-    time: "11:40",
     icon: "package",
     text: "Catalog updated — Optic White SKUs added",
     figure: "+3",
   },
   {
-    time: "12:03",
     icon: "trending-down",
     text: "North Highlands behind plan this week",
     figure: "−18%",

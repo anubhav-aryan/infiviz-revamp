@@ -535,14 +535,6 @@
   border-top: 1px solid var(--hairline);
 }
 
-.feedTime {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-caption);
-  width: 34px;
-  flex: none;
-}
-
 .feedIcon {
   width: 30px;
   height: 30px;

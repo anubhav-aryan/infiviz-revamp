@@ -2,7 +2,7 @@ import { Icon } from "@/app/_components/icon";
 import { FEED, FEED_CARD } from "./_data/landing";
 import styles from "./landing.module.css";
 
-/** The same feed, bound to the same rows, in both State B and State C. */
+/** The same feed, bound to the same rows, in both the onboarding and live states. */
 export function ActivityFeed() {
   return (
     <div className={`${styles.card} ${styles.feedCard}`}>
@@ -12,8 +12,7 @@ export function ActivityFeed() {
       </div>
 
       {FEED.map((row) => (
-        <div key={row.time} className={styles.feedRow}>
-          <span className={styles.feedTime}>{row.time}</span>
+        <div key={row.text} className={styles.feedRow}>
           <span className={styles.feedIcon} aria-hidden="true">
             <Icon name={row.icon} />
           </span>
