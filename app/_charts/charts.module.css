@@ -1,0 +1,952 @@
+/* Shared chart primitives.
+   `_reports/reports.module.css` owns the same card atoms, but it is scoped to
+   the two operational reports; these are used by Analytics' modules too, so
+   they live here rather than growing a cross-section import. Values match the
+   report card deliberately — a panel should look the same on both surfaces. */
+
+/* ---------- card atoms ---------- */
+
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+}
+
+.cardPad {
+  padding: 20px 22px;
+}
+
+/* Tables bleed their header strip to the card edge, so the radius has to clip. */
+.tableCard {
+  overflow: hidden;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.cardCaption {
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+/* ---------- tab strip ---------- */
+
+/* The -1px pulls each tab's own border over the strip's border-bottom, so the
+   active tab reads as a continuous 2px rule rather than stacking on top. */
+.tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--hairline);
+  overflow-x: auto;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  padding: 11px 14px;
+  margin-bottom: -1px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.tab:hover {
+  color: var(--text-body);
+}
+
+.tab[data-active="true"] {
+  border-bottom-color: var(--indigo-600);
+  color: var(--indigo-700);
+  font-weight: 600;
+}
+
+/* ---------- segmented control ---------- */
+
+/* Geometry copied exactly from `analytics.module.css` .segmented/.segButton, so
+   that screen can swap its local copy for this one without any visual change. */
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+}
+
+.segButton {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: background var(--transition-snap), color var(--transition-snap);
+}
+
+.segButton:hover {
+  color: var(--text-body);
+}
+
+.segButton[data-active="true"],
+.segButton[data-active="true"]:hover {
+  background: var(--surface-card);
+  color: var(--indigo-700);
+  box-shadow: var(--shadow-sm);
+}
+
+/* A dark segmented control, for the metric toggle that PowerBI renders on a
+   near-black pill (SOF / SOS / LSOS / ASOS). */
+.segmented[data-tone="dark"] {
+  background: var(--neutral-900);
+  border-color: var(--neutral-900);
+}
+
+.segmented[data-tone="dark"] .segButton {
+  color: var(--neutral-400);
+}
+
+.segmented[data-tone="dark"] .segButton:hover {
+  color: var(--neutral-100);
+}
+
+.segmented[data-tone="dark"] .segButton[data-active="true"],
+.segmented[data-tone="dark"] .segButton[data-active="true"]:hover {
+  background: none;
+  color: var(--neutral-0);
+  box-shadow: inset 0 -2px 0 var(--indigo-400);
+  border-radius: 0;
+}
+
+/* ---------- stat card ---------- */
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-caption);
+}
+
+.statValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+}
+
+.statValue[data-size="sm"] {
+  font-size: 22px;
+}
+
+.statUnit {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-left: 1px;
+}
+
+.statCaption {
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+.statSpark {
+  display: block;
+  width: 92px;
+  height: 28px;
+  margin-left: auto;
+}
+
+.statFoot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* ---------- gap cards ---------- */
+
+.gapGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.gapCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+}
+
+.gapName {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+/* The gap headline is the point of the card, so it takes the tone colour and
+   the actual/target pair beside it stays muted. */
+.gapAmount {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.gapAmount[data-tone="behind"] {
+  color: var(--danger);
+}
+
+.gapAmount[data-tone="ahead"] {
+  color: var(--success);
+}
+
+.gapAmountLabel {
+  font-size: 11px;
+  color: var(--text-caption);
+  margin-left: 5px;
+  font-weight: 500;
+}
+
+.gapPair {
+  display: flex;
+  gap: 18px;
+  text-align: right;
+}
+
+.gapFigure {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gapValue {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.gapValue[data-muted="true"] {
+  color: var(--text-caption);
+  font-weight: 500;
+}
+
+.gapLabel {
+  font-size: 10.5px;
+  color: var(--text-caption);
+}
+
+/* ---------- horizontal bar list ---------- */
+
+.barList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: var(--bar-name, 150px) 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+}
+
+.barRowName {
+  font-size: 12px;
+  color: var(--text-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barTrack {
+  display: block;
+  height: 12px;
+  background: var(--neutral-100);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--indigo-500);
+}
+
+.barRow[data-tone="danger"] .barFill {
+  background: var(--danger);
+}
+
+.barRowValue {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  text-align: right;
+  min-width: 34px;
+}
+
+/* ---------- tables ---------- */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+/* Sticks the header while the card's own scroller moves the body, so a long
+   table keeps its column names. */
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--indigo-50);
+  padding: 11px 12px;
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+  border-bottom: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+
+.table th[data-align="right"],
+.table td[data-align="right"] {
+  text-align: right;
+}
+
+.table tbody td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--hairline);
+  color: var(--text-body);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:nth-child(even) {
+  background: var(--surface-sunken);
+}
+
+.numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* An in-cell bar, for tables that double as a ranked list. Fixed track width
+   so the numeral beside it stays column-aligned down the table. */
+.cellBar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cellBar .barTrack {
+  width: 72px;
+  height: 8px;
+  flex: none;
+}
+
+/* Colour-scaled measure cells, the conditional formatting PowerBI leans on. */
+.scaleCell {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  text-align: right;
+}
+
+.scaleCell[data-tier="good"] {
+  background: var(--success-subtle);
+  color: #14532d;
+}
+
+.scaleCell[data-tier="warn"] {
+  background: var(--warning-subtle);
+  color: #78350f;
+}
+
+.scaleCell[data-tier="bad"] {
+  background: var(--danger-subtle);
+  color: #7f1d1d;
+}
+
+/* The total row PowerBI pins to the bottom of the Perfect Store table. */
+.totalRow td {
+  background: var(--neutral-900);
+  color: var(--neutral-0);
+  font-weight: 700;
+  border-bottom: none;
+}
+
+.tableScroll {
+  max-height: var(--table-max, 420px);
+  overflow-y: auto;
+}
+
+/* Only for the handful of tables that genuinely cannot be column-subset. The
+   scroller is inside the card, so the page itself never scrolls sideways. */
+.tableScroll[data-wide="true"] {
+  overflow-x: auto;
+}
+
+.seLink {
+  display: inline-flex;
+  color: var(--indigo-600);
+}
+
+.seLink[data-inert="true"] {
+  color: var(--neutral-300);
+  cursor: default;
+}
+
+.tableFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--hairline);
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+/* Quieter than the report header's primary export, because a Raw Data tab has
+   one and it sits beside a title rather than ending a toolbar. */
+.exportButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-card);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-body);
+}
+
+.exportButton:hover {
+  background: var(--surface-hover);
+}
+
+.exportButton:disabled {
+  color: var(--text-disabled);
+  cursor: default;
+}
+
+.sortButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+}
+
+.sortArrow {
+  color: var(--indigo-600);
+}
+
+.empty {
+  padding: 26px 22px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--text-caption);
+}
+
+/* ---------- svg charts ---------- */
+
+.chart {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.gridLine {
+  stroke: var(--hairline);
+  stroke-width: 1;
+}
+
+.targetLine {
+  stroke: var(--neutral-400);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+/* The least-squares overlay PowerBI draws over every trend. Deliberately
+   thinner and greyer than any series — it is a reading aid, not data. */
+.trendline {
+  stroke: var(--neutral-500);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+/* "You are here" when a past month is selected. */
+.markLine {
+  stroke: var(--indigo-300);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.axisLabel {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: var(--text-caption);
+}
+
+.axisTitle {
+  font-family: var(--font-ui);
+  font-size: 9.5px;
+  font-weight: 600;
+  fill: var(--text-caption);
+}
+
+.dataLabel {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  fill: var(--text-secondary);
+}
+
+.seriesLine {
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.axisCaption {
+  margin-top: 8px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--text-caption);
+}
+
+/* ---------- series tones ----------
+   One place maps a tone name to a token. Components only ever set data-tone,
+   so no component knows a colour — the same rule `thresholds.ts` sets for
+   tiers. The ramp is ordered for contrast between adjacent series, not by
+   lightness. */
+
+.seriesLine[data-tone="primary"],
+.column[data-tone="primary"],
+.pieSlice[data-tone="primary"],
+.ringSegment[data-tone="primary"],
+.legendDot[data-tone="primary"],
+.legendSwatch[data-tone="primary"] {
+  stroke: var(--indigo-600);
+  color: var(--indigo-600);
+}
+
+.column[data-tone="primary"],
+.pieSlice[data-tone="primary"],
+.legendDot[data-tone="primary"],
+.legendSwatch[data-tone="primary"] {
+  fill: var(--indigo-600);
+  background: var(--indigo-600);
+  stroke: none;
+}
+
+.seriesLine[data-tone="secondary"],
+.ringSegment[data-tone="secondary"] {
+  stroke: var(--indigo-300);
+}
+
+.column[data-tone="secondary"],
+.pieSlice[data-tone="secondary"],
+.legendDot[data-tone="secondary"],
+.legendSwatch[data-tone="secondary"] {
+  fill: var(--indigo-300);
+  background: var(--indigo-300);
+}
+
+.seriesLine[data-tone="tertiary"],
+.ringSegment[data-tone="tertiary"] {
+  stroke: var(--indigo-800);
+}
+
+.column[data-tone="tertiary"],
+.pieSlice[data-tone="tertiary"],
+.legendDot[data-tone="tertiary"],
+.legendSwatch[data-tone="tertiary"] {
+  fill: var(--indigo-800);
+  background: var(--indigo-800);
+}
+
+.seriesLine[data-tone="muted"],
+.ringSegment[data-tone="muted"] {
+  stroke: var(--neutral-300);
+}
+
+/* The grey target bar PowerBI pairs every actual with. */
+.column[data-tone="target"],
+.pieSlice[data-tone="muted"],
+.pieSlice[data-tone="target"],
+.legendDot[data-tone="target"],
+.legendDot[data-tone="muted"],
+.legendSwatch[data-tone="target"],
+.legendSwatch[data-tone="muted"] {
+  fill: var(--neutral-300);
+  background: var(--neutral-300);
+}
+
+.column[data-tone="success"],
+.pieSlice[data-tone="success"],
+.legendDot[data-tone="success"],
+.legendSwatch[data-tone="success"] {
+  fill: var(--success);
+  background: var(--success);
+}
+
+.seriesLine[data-tone="warning"] {
+  stroke: var(--warning);
+}
+
+.column[data-tone="warning"],
+.pieSlice[data-tone="warning"],
+.legendDot[data-tone="warning"],
+.legendSwatch[data-tone="warning"] {
+  fill: var(--warning);
+  background: var(--warning);
+}
+
+.seriesLine[data-tone="danger"] {
+  stroke: var(--danger);
+}
+
+.column[data-tone="danger"],
+.pieSlice[data-tone="danger"],
+.legendDot[data-tone="danger"],
+.legendSwatch[data-tone="danger"] {
+  fill: var(--danger);
+  background: var(--danger);
+}
+
+/* Fills are the series colour at low opacity, so a filled trend never competes
+   with its own line. */
+.areaFill {
+  opacity: 0.14;
+}
+
+.areaFill[data-tone="primary"] {
+  fill: var(--indigo-600);
+}
+
+.areaFill[data-tone="secondary"] {
+  fill: var(--indigo-300);
+}
+
+.areaFill[data-tone="tertiary"] {
+  fill: var(--indigo-800);
+}
+
+.seriesDot[data-tone="primary"] {
+  fill: var(--indigo-600);
+}
+
+.seriesDot[data-tone="secondary"] {
+  fill: var(--indigo-300);
+}
+
+.seriesDot[data-tone="tertiary"] {
+  fill: var(--indigo-800);
+}
+
+.pieSlice,
+.column {
+  stroke: var(--surface-card);
+  stroke-width: 1;
+}
+
+/* ---------- legend ---------- */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 10px;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex: none;
+}
+
+.legendSwatch {
+  width: 12px;
+  height: 9px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.legendValue {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text-body);
+}
+
+/* ---------- radial ---------- */
+
+.radialWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.radial {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  overflow: visible;
+}
+
+.ringSegment {
+  stroke-linecap: butt;
+}
+
+.radialValue {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  fill: var(--text-heading);
+}
+
+.radialCaption {
+  font-size: 10px;
+  fill: var(--text-caption);
+}
+
+/* ---------- layout helpers ---------- */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chartBody {
+  margin-top: 12px;
+}
+
+/* Actions tab: stats column, pie, and the two bar charts across the top. */
+.actionsTop {
+  display: grid;
+  grid-template-columns: 190px 260px minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.actionsStats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.actionsBottom {
+  display: grid;
+  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+/* ---------- month matrix ---------- */
+
+/* One of the three tables that genuinely cannot be column-subset — the columns
+   are months, and dropping one loses the trend. The scroller is inside the
+   card, so the page itself still never moves sideways. */
+.matrixScroll {
+  overflow: auto;
+  max-height: 520px;
+}
+
+.matrix {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  font-size: 12px;
+}
+
+.matrix thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--indigo-50);
+  padding: 10px 12px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-heading);
+  border-bottom: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+
+/* Sticky in both axes, so the row name survives a sideways scroll and the
+   corner cell never lets a month slide underneath it. */
+.matrixRowHead {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface-card);
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-heading);
+  border-bottom: 1px solid var(--hairline);
+  border-right: 1px solid var(--hairline);
+  min-width: 210px;
+  white-space: nowrap;
+}
+
+.matrix thead .matrixRowHead {
+  z-index: 3;
+  background: var(--indigo-50);
+}
+
+.matrixRowHead[data-child="true"] {
+  padding-left: 34px;
+  font-weight: 500;
+  color: var(--text-body);
+}
+
+.matrixGroupRow .matrixRowHead {
+  background: var(--surface-sunken);
+}
+
+.matrixToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  cursor: pointer;
+}
+
+.matrixCell {
+  padding: 8px 12px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-body);
+  border-bottom: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+
+/* The same five-step ramp the visit heatmap uses, so a reader who has learned
+   one grid on this platform can read the other. */
+.matrixCell[data-level="0"] {
+  background: var(--neutral-100);
+}
+
+.matrixCell[data-level="1"] {
+  background: var(--amber-50);
+}
+
+.matrixCell[data-level="2"] {
+  background: var(--amber-100);
+}
+
+.matrixCell[data-level="3"] {
+  background: var(--indigo-100);
+}
+
+.matrixCell[data-level="4"] {
+  background: var(--indigo-200);
+}
+
+/* ---------- tabbed table head ---------- */
+
+.tabbedHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.miniTabs {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.miniTab {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.miniTab[data-active="true"] {
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+  font-weight: 600;
+}

@@ -1,0 +1,43 @@
+/* The persona switcher in the analytics rail header. */
+
+.switcherLabel {
+  margin-bottom: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-caption);
+}
+
+/* Two-by-two rather than a four-across row: the rail is 210px wide and
+   "Executive" alone needs most of a quarter of it. */
+.switcher {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.switcherButton {
+  padding: 7px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface-card);
+  text-align: center;
+  text-decoration: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: background var(--transition-snap), color var(--transition-snap);
+}
+
+.switcherButton:hover {
+  background: var(--surface-hover);
+  color: var(--text-body);
+}
+
+.switcherButton[data-active="true"],
+.switcherButton[data-active="true"]:hover {
+  background: var(--indigo-600);
+  border-color: var(--indigo-600);
+  color: var(--neutral-0);
+}

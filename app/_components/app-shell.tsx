@@ -37,7 +37,14 @@ export function AppShell({ active, nav, children }: AppShellProps) {
 
 export type SectionGroup = {
   label: string;
-  items: { id: string; label: string; icon: Parameters<typeof Icon>[0]["name"]; href?: string }[];
+  items: {
+    id: string;
+    label: string;
+    icon: Parameters<typeof Icon>[0]["name"];
+    href?: string;
+    /** One-line caption under the label. Icon plus name alone is thin at 210px. */
+    sub?: string;
+  }[];
 };
 
 type RailShellProps = {
@@ -47,6 +54,12 @@ type RailShellProps = {
   groups: SectionGroup[];
   /** `id` of the section item to highlight. */
   activeSection: string;
+  /**
+   * Slot above the section title. Analytics puts its persona switcher here,
+   * because the persona is what decides which modules the rail lists below —
+   * the control has to sit above the thing it governs.
+   */
+  railHeader?: ReactNode;
   children: ReactNode;
 };
 
@@ -60,6 +73,7 @@ export function RailShell({
   section,
   groups,
   activeSection,
+  railHeader,
   children,
 }: RailShellProps) {
   return (
@@ -101,6 +115,9 @@ export function RailShell({
       </nav>
 
       <nav className={styles.sectionRail} aria-label={section.title}>
+        {railHeader ? (
+          <div className={styles.railHeader}>{railHeader}</div>
+        ) : null}
         <div className={styles.sectionTitle}>{section.title}</div>
         <div className={styles.sectionCaption}>{section.caption}</div>
 
@@ -117,7 +134,12 @@ export function RailShell({
                   aria-current={item.id === activeSection ? "page" : undefined}
                 >
                   <Icon name={item.icon} />
-                  {item.label}
+                  <span className={styles.sectionItemBody}>
+                    {item.label}
+                    {item.sub ? (
+                      <span className={styles.sectionItemSub}>{item.sub}</span>
+                    ) : null}
+                  </span>
                 </Link>
               ) : (
                 // Sub-surfaces with no design and no route yet. A <button> here
