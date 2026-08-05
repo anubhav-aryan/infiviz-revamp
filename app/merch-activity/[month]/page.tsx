@@ -33,13 +33,7 @@ export default async function MerchActivityMonthPage(
   if (!isMonthKey(month)) notFound();
 
   return (
-    <AppShell
-      active="merch-activity"
-      callout={{
-        title: "Phase 1 · Onboarding",
-        body: "The reports Customer Success lives in from day one.",
-      }}
-    >
+    <AppShell active="merch-activity">
       <MerchActivityReport month={month} />
     </AppShell>
   );

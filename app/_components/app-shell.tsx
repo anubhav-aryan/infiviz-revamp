@@ -1,87 +1,30 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Hint } from "./hint";
 import { Icon } from "./icon";
+import { Sidebar } from "./sidebar";
 import {
   NAV_BY_ID,
+  OTHER_APPS,
   fullNav,
   type NavEntry,
   type NavId,
 } from "./nav";
 import styles from "./app-shell.module.css";
 
-export type Callout = { title: string; body: string };
-
 type AppShellProps = {
   /** Which surface to highlight. Ignored when `nav` is supplied explicitly. */
   active: NavId;
-  /** Override the nav entirely — used by Landing's onboarding states. */
+  /** Override the nav entirely — used by Landing's onboarding state. */
   nav?: NavEntry[];
-  /** Screen-specific note pinned to the bottom of the sidebar. */
-  callout?: Callout;
   children: ReactNode;
 };
 
-export function AppShell({ active, nav, callout, children }: AppShellProps) {
+export function AppShell({ active, nav, children }: AppShellProps) {
   const entries = nav ?? fullNav(active);
 
   return (
     <div className={styles.shell}>
-      <nav className={styles.sidebar} aria-label="Primary">
-        <Link href="/" className={styles.brand}>
-          <span className={styles.brandMark} aria-hidden="true">
-            iV
-          </span>
-          <span className={styles.brandName}>InfiViz</span>
-        </Link>
-
-        <div className={styles.nav}>
-          {entries.map((entry) => {
-            const item = NAV_BY_ID[entry.id];
-
-            // Locked surfaces have no data yet, so they are not navigable.
-            if (entry.state === "locked") {
-              return (
-                // The unlock reason is the only explanation the user gets, so
-                // it goes in a focusable Hint rather than a mouse-only `title`.
-                <Hint
-                  key={entry.id}
-                  text={entry.tooltip ?? "Not available yet"}
-                  className={styles.navItem}
-                  data-state="locked"
-                  data-disabled="true"
-                >
-                  <Icon name={item.icon} />
-                  <span className={styles.navLabel}>{item.label}</span>
-                  <span className={styles.lockPill}>Locked</span>
-                </Hint>
-              );
-            }
-
-            return (
-              <Link
-                key={entry.id}
-                href={item.href}
-                className={styles.navItem}
-                data-state={entry.state}
-                aria-current={entry.state === "active" ? "page" : undefined}
-              >
-                <Icon name={item.icon} />
-                <span className={styles.navLabel}>{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-
-        {callout ? (
-          <div className={styles.footer}>
-            <div className={styles.callout}>
-              <div className={styles.calloutTitle}>{callout.title}</div>
-              <div className={styles.calloutBody}>{callout.body}</div>
-            </div>
-          </div>
-        ) : null}
-      </nav>
+      <Sidebar entries={entries} />
 
       <main className={styles.main}>
         <div className={styles.mainInner}>{children}</div>
@@ -137,6 +80,23 @@ export function RailShell({
           >
             <Icon name={item.icon} />
           </Link>
+        ))}
+
+        {/* Same sibling apps as AppShell's sidebar, so the nav doesn't lose
+            entries on the routes that use this rail. Inert, hence a plain
+            `title` — there is no focusable control here to hint against. */}
+        <span className={styles.railDivider} aria-hidden="true" />
+        {OTHER_APPS.map((app) => (
+          <span
+            key={app.label}
+            className={styles.railItem}
+            data-state="unavailable"
+            title={app.label}
+            aria-label={app.label}
+            aria-disabled="true"
+          >
+            <Icon name={app.icon} />
+          </span>
         ))}
       </nav>
 

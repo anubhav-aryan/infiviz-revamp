@@ -12,13 +12,7 @@ export const metadata: Metadata = {
 /** The base route is the current month, so existing links keep working. */
 export default function MerchActivityPage() {
   return (
-    <AppShell
-      active="merch-activity"
-      callout={{
-        title: "Phase 1 · Onboarding",
-        body: "The reports Customer Success lives in from day one.",
-      }}
-    >
+    <AppShell active="merch-activity">
       <MerchActivityReport month={CURRENT_MONTH} />
     </AppShell>
   );

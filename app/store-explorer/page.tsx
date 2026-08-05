@@ -10,13 +10,7 @@ export const metadata: Metadata = {
 
 export default function StoreExplorerPage() {
   return (
-    <AppShell
-      active="store-explorer"
-      callout={{
-        title: "Two clicks to photos",
-        body: "Every visit opens its raw App Images — no recognition overlay.",
-      }}
-    >
+    <AppShell active="store-explorer">
       <StoreExplorer />
     </AppShell>
   );

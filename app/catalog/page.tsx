@@ -10,13 +10,7 @@ export const metadata: Metadata = {
 
 export default function CatalogPage() {
   return (
-    <AppShell
-      active="catalog"
-      callout={{
-        title: "Phase 2 · Catalog",
-        body: "Your product catalog, digitised and confirmed.",
-      }}
-    >
+    <AppShell active="catalog">
       <Catalog />
     </AppShell>
   );

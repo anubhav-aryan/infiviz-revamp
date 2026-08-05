@@ -11,13 +11,7 @@ export const metadata: Metadata = {
 
 export default function AnalyticsPage() {
   return (
-    <AppShell
-      active="analytics"
-      callout={{
-        title: "One question at a time",
-        body: "No nested tabs. Scope by breadcrumb, slice by one picker.",
-      }}
-    >
+    <AppShell active="analytics">
       {/* Persona, month, dimension, compare and filters round-trip through the
           query string, and `useSearchParams` needs a boundary to suspend on.
           The accepted trade is that the route prerenders the shell and the nav

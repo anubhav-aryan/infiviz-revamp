@@ -33,13 +33,7 @@ export default async function PhotoQualityMonthPage(
   if (!isMonthKey(month)) notFound();
 
   return (
-    <AppShell
-      active="photo-quality"
-      callout={{
-        title: "Phase 1 · Onboarding",
-        body: "The reports Customer Success lives in from day one.",
-      }}
-    >
+    <AppShell active="photo-quality">
       <PhotoQualityReport month={month} />
     </AppShell>
   );

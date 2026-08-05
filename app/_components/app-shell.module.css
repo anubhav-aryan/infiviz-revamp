@@ -20,11 +20,41 @@
   flex-direction: column;
 }
 
+.sidebarHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0 18px;
+}
+
 .brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 4px 6px 18px;
+  min-width: 0;
+  flex: 1;
+  padding: 0 6px;
+  text-decoration: none;
+}
+
+.collapseButton {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: none;
+  color: var(--text-caption);
+  cursor: pointer;
+  transition: background var(--transition-snap), color var(--transition-snap);
+}
+
+.collapseButton:hover {
+  background: var(--surface-hover);
+  color: var(--text-body);
 }
 
 .brandMark {
@@ -98,8 +128,74 @@
   cursor: default;
 }
 
+/* Sibling apps that have no route here. Same muting as a locked surface, but
+   without the pill — nothing unlocks these, they simply live elsewhere. */
+.navItem[data-state="unavailable"],
+.navItem[data-state="unavailable"]:hover {
+  background: none;
+  color: var(--neutral-400);
+  cursor: default;
+}
+
+.otherApps {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hairline);
+}
+
+.otherAppsLabel {
+  padding: 0 12px;
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-caption);
+}
+
 .navLabel {
   flex: 1;
+}
+
+/* ---------- collapsed sidebar ----------
+   One attribute drives the whole rail, so collapsing never swaps markup: the
+   nav items keep their identity and React re-renders rather than remounting.
+   Deliberately not animated — the maps invalidate on every resize tick, and a
+   width transition would fire that dozens of times per toggle. */
+
+.sidebar[data-collapsed="true"] {
+  width: 72px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.sidebar[data-collapsed="true"] .sidebarHead {
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 14px;
+}
+
+.sidebar[data-collapsed="true"] .brand {
+  flex: none;
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebar[data-collapsed="true"] .brandName,
+.sidebar[data-collapsed="true"] .navLabel,
+.sidebar[data-collapsed="true"] .lockPill,
+.sidebar[data-collapsed="true"] .otherAppsLabel {
+  display: none;
+}
+
+.sidebar[data-collapsed="true"] .navItem {
+  justify-content: center;
+  padding: 9px 0;
+}
+
+.sidebar[data-collapsed="true"] .otherApps {
+  margin-top: 10px;
+  padding-top: 10px;
 }
 
 .lockPill {
@@ -112,32 +208,6 @@
   border: 1px solid var(--neutral-300);
   border-radius: 999px;
   padding: 1px 6px;
-}
-
-.footer {
-  margin-top: auto;
-}
-
-.callout {
-  padding: 12px;
-  background: var(--indigo-50);
-  border: 1px solid var(--indigo-100);
-  border-radius: 10px;
-}
-
-.calloutTitle {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--indigo-700);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.calloutBody {
-  font-size: 11.5px;
-  color: var(--indigo-800);
-  margin-top: 4px;
-  line-height: 1.4;
 }
 
 .main {
@@ -175,6 +245,8 @@
   align-items: center;
   padding: 16px 0;
   gap: 6px;
+  /* 14 icons now; a short viewport scrolls the rail rather than clipping it. */
+  overflow-y: auto;
 }
 
 .railMark {
@@ -216,6 +288,21 @@
 .railItem[data-state="active"]:hover {
   background: var(--indigo-600);
   color: #fff;
+}
+
+.railItem[data-state="unavailable"],
+.railItem[data-state="unavailable"]:hover {
+  background: none;
+  color: var(--neutral-600);
+  cursor: default;
+}
+
+.railDivider {
+  width: 24px;
+  height: 1px;
+  flex: none;
+  margin: 6px 0;
+  background: var(--neutral-700);
 }
 
 /* section rail */

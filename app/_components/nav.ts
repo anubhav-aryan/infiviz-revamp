@@ -72,6 +72,25 @@ export const NAV_CAPTURING: NavEntry[] = [
   { id: "analytics", state: "locked", tooltip: UNLOCK.analytics },
 ];
 
+/**
+ * Sibling applications, shown below the InfiViz surfaces. Deliberately not part
+ * of `NAV`: they have no route in this app, so they carry no `id`, no `href`
+ * and no active state, and every shell renders them inert. Power BI is
+ * Microsoft's, hence the neutral "Other apps" heading rather than a suite name.
+ */
+export const OTHER_APPS_LABEL = "Other apps";
+
+export type OtherApp = { label: string; icon: IconName };
+
+export const OTHER_APPS: OtherApp[] = [
+  { label: "InfiHub", icon: "boxes" },
+  { label: "Infilytics", icon: "pie-chart" },
+  { label: "Infi-C-Brain", icon: "brain" },
+  { label: "Power BI", icon: "presentation" },
+  { label: "Data Quality Studio", icon: "shield-check" },
+  { label: "InfiDocs", icon: "file-text" },
+];
+
 /** The full nav, with one surface marked active. */
 export function fullNav(active: NavId): NavEntry[] {
   return NAV.map((n) => ({

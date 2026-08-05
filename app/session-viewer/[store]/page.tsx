@@ -45,13 +45,7 @@ export default async function StoreSessionPage(
   return (
     // Analytics stays highlighted: this surface has no nav entry of its own and
     // is only ever reached by drilling into an Analytics number.
-    <AppShell
-      active="analytics"
-      callout={{
-        title: "Session Viewer",
-        body: "The evidence behind one Analytics number.",
-      }}
-    >
+    <AppShell active="analytics">
       <SessionViewer session={sessionFor(visit)} />
     </AppShell>
   );

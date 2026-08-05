@@ -12,13 +12,7 @@ export const metadata: Metadata = {
 /** The base route is the current month, so existing links keep working. */
 export default function PhotoQualityPage() {
   return (
-    <AppShell
-      active="photo-quality"
-      callout={{
-        title: "Phase 1 · Onboarding",
-        body: "The reports Customer Success lives in from day one.",
-      }}
-    >
+    <AppShell active="photo-quality">
       <PhotoQualityReport month={CURRENT_MONTH} />
     </AppShell>
   );
