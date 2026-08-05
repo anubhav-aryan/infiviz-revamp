@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
+import Link from "next/link";
 import { Icon } from "@/app/_components/icon";
 import type { CsvTable } from "@/app/_export/csv";
 import { ExportButton } from "@/app/_export/export-button";
@@ -26,6 +27,11 @@ import {
   SUGGESTED_FILTERS,
   type Persona,
 } from "../_data/analytics";
+import {
+  PERSONA_IDS,
+  modulePath,
+  railGroupsFor,
+} from "../_data/module-matrix";
 import styles from "./analytics.module.css";
 
 /**
@@ -53,6 +59,20 @@ type AnalyticsHeaderProps = {
   exportTable: CsvTable;
   exportFilename: string;
 };
+
+/**
+ * Where each persona's "all modules" link lands — the first module in that
+ * persona's rail. Derived from the same matrix the rail and the route list use,
+ * so it cannot point at a module the persona does not have.
+ */
+const MODULE_ENTRY: Record<Persona, string> = Object.fromEntries(
+  PERSONA_IDS.map((id) => {
+    const first = railGroupsFor(id)
+      .flatMap((group) => group.items)
+      .find((entry) => entry.built);
+    return [id, first ? modulePath(id, first.id, first.tabs[0]) : "/analytics"];
+  }),
+) as Record<Persona, string>;
 
 /** The three header rows are identical across all four personas. */
 export function AnalyticsHeader({
@@ -136,6 +156,14 @@ export function AnalyticsHeader({
               </button>
             ))}
           </div>
+
+          {/* The way down from the curated overview into the full modules.
+              Lands on the module that persona's rail opens on, so the role you
+              are reading as carries across. */}
+          <Link href={MODULE_ENTRY[persona]} className={styles.detailLink}>
+            All {PERSONAS.find((p) => p.key === persona)?.label.toLowerCase()} modules
+            <Icon name="arrow-right" size={14} />
+          </Link>
         </div>
 
         <div className={styles.headActions}>

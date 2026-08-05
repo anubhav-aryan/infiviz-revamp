@@ -36,10 +36,14 @@ export function vnd(amount: number): string {
   return `₫${group(Math.round(amount))}`;
 }
 
-/* Authored rates. One availability point across the audited estate is worth
-   this much incremental revenue a month; one merchandiser costs this much. */
-const REVENUE_PER_POINT = 42_000_000;
+/* Authored rates, sized so the programme reads the way the source dashboard
+   reads: uplift an order of magnitude above cost, not below it. One
+   availability point across 1,412 audited stores is worth ~₫2.8m per store a
+   month; a merchandiser costs ~₫9.4m a month, which puts the national team at
+   about the same fraction of uplift PowerBI shows (~3%). */
+const REVENUE_PER_POINT = 4_000_000_000;
 const COST_PER_MERCHANDISER = 9_400_000;
+const SAVINGS_PER_POINT = 68_000_000;
 const BASELINE_OSA = 52;
 
 const upliftAt = (i: number) =>
@@ -48,7 +52,7 @@ const costAt = (i: number) =>
   ESTATE.team * COST_PER_MERCHANDISER * (0.9 + (i / LAST) * 0.2);
 /* Payout savings track planogram compliance: a compliant shelf is one the
    retailer cannot claim a display allowance on without earning it. */
-const savingsAt = (i: number) => PLANOGRAM_SERIES[i] * 5_600_000;
+const savingsAt = (i: number) => PLANOGRAM_SERIES[i] * SAVINGS_PER_POINT;
 
 export type RoiKpi = { label: string; delta: string; current: string; previous: string };
 

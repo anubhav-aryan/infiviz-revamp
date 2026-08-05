@@ -184,8 +184,11 @@ function headlineFor(module: ModuleId, period: MonthKey) {
       const v = ROI_VIEWS[period];
       return { value: v.total.value, delta: v.total.delta };
     }
+    /* No single headline: attendance and photo quality are different measures,
+       and putting the photo-quality figure above the attendance tab would read
+       as that tab's number. The gauges carry it instead. */
     case "merchandiser":
-      return { value: MERCHANDISER_VIEWS[period].photoQuality.overall, delta: "" };
+      return { value: "", delta: "" };
     default:
       return { value: "", delta: "" };
   }
