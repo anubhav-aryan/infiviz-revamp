@@ -5,9 +5,9 @@ import Link from "next/link";
 import { Icon } from "@/app/_components/icon";
 import { PhotoLightbox } from "@/app/store-explorer/_components/photo-lightbox";
 import {
-  PHOTOS,
-  PHOTO_GROUPS,
-  VISIT_DETAIL,
+  ILLUSTRATIVE_PHOTOS,
+  ILLUSTRATIVE_PHOTO_GROUPS,
+  ILLUSTRATIVE_VISIT,
 } from "@/app/store-explorer/_data/store-explorer";
 import styles from "./session-images.module.css";
 
@@ -39,8 +39,8 @@ export function SessionImages({ store }: { store: string }) {
           <div className={styles.eyebrow}>Session images</div>
           <h1 className={styles.title}>{store}</h1>
           <p className={styles.subtitle}>
-            {PHOTOS.length} captures in this session · {VISIT_DETAIL.date} ·{" "}
-            {VISIT_DETAIL.merchandiser}
+            {ILLUSTRATIVE_PHOTOS.length} captures in this session ·{" "}
+            {ILLUSTRATIVE_VISIT.date} · {ILLUSTRATIVE_VISIT.merchandiser}
           </p>
         </div>
 
@@ -50,8 +50,8 @@ export function SessionImages({ store }: { store: string }) {
         </Link>
       </header>
 
-      {PHOTO_GROUPS.map((group) => {
-        const photos = PHOTOS.slice(group.from, group.to);
+      {ILLUSTRATIVE_PHOTO_GROUPS.map((group) => {
+        const photos = ILLUSTRATIVE_PHOTOS.slice(group.from, group.to);
         return (
           <section key={group.name} className={styles.group}>
             <div className={styles.groupHead}>
@@ -101,11 +101,14 @@ export function SessionImages({ store }: { store: string }) {
 
       {open !== null ? (
         <PhotoLightbox
+          photos={ILLUSTRATIVE_PHOTOS}
           index={open}
           onClose={() => setOpen(null)}
           onPrev={() => setOpen((i) => (i === null ? null : Math.max(0, i - 1)))}
           onNext={() =>
-            setOpen((i) => (i === null ? null : Math.min(PHOTOS.length - 1, i + 1)))
+            setOpen((i) =>
+              i === null ? null : Math.min(ILLUSTRATIVE_PHOTOS.length - 1, i + 1),
+            )
           }
         />
       ) : null}

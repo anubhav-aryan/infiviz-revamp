@@ -2,10 +2,11 @@
 
 import { useEffect, useRef } from "react";
 import { Icon } from "@/app/_components/icon";
-import { PHOTOS, photoMetadata } from "../_data/store-explorer";
+import { photoMetadata, type Photo } from "../_data/store-explorer";
 import styles from "./store-explorer.module.css";
 
 type PhotoLightboxProps = {
+  photos: Photo[];
   index: number;
   onClose: () => void;
   onPrev: () => void;
@@ -13,12 +14,13 @@ type PhotoLightboxProps = {
 };
 
 export function PhotoLightbox({
+  photos,
   index,
   onClose,
   onPrev,
   onNext,
 }: PhotoLightboxProps) {
-  const photo = PHOTOS[index];
+  const photo = photos[index];
   const closeRef = useRef<HTMLButtonElement>(null);
 
   // Keyboard control and focus handling are additions to the design, which was
@@ -74,7 +76,7 @@ export function PhotoLightbox({
             type="button"
             className={`${styles.lightboxNav} ${styles.lightboxNext}`}
             onClick={onNext}
-            disabled={index === PHOTOS.length - 1}
+            disabled={index === photos.length - 1}
             aria-label="Next photo"
           >
             <Icon name="chevron-right" />

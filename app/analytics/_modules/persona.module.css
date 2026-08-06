@@ -1,5 +1,21 @@
 /* The persona switcher in the analytics rail header. */
 
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-snap);
+}
+
+.backLink:hover {
+  color: var(--text-body);
+}
+
 .switcherLabel {
   margin-bottom: 7px;
   font-size: 10px;

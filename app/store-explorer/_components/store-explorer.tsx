@@ -11,10 +11,11 @@ import { useFilters } from "@/app/_filters/use-filters";
 import { type Period, parsePeriod, serializePeriod } from "../_data/period";
 import {
   CATALOGUE,
-  PHOTOS,
   build,
   factsFor,
+  photosFor,
   unfilteredView,
+  type Visit,
 } from "../_data/store-explorer";
 import { AppImagesView } from "./app-images-view";
 import { ExplorerView } from "./explorer-view";
@@ -47,7 +48,12 @@ function StoreExplorerInner() {
   const [initialFilters] = useState(() => parseFilters(params.get("f"), CATALOGUE));
   const { filters, add, remove, clear, replace } = useFilters(initialFilters);
 
-  const [screen, setScreen] = useState<"explorer" | "images">("explorer");
+  // Carries the visit the "images" screen is drilled into, so Open shows the
+  // row that was actually clicked instead of a fixed fixture regardless of
+  // which one it was.
+  const [screen, setScreen] = useState<
+    { name: "explorer" } | { name: "images"; visit: Visit }
+  >({ name: "explorer" });
   const [mapOpen, setMapOpen] = useState(true);
   const [listView, setListView] = useState<"list" | "gallery">("list");
   const [lightbox, setLightbox] = useState<number | null>(null);
@@ -85,15 +91,17 @@ function StoreExplorerInner() {
     [replace],
   );
 
-  const openImages = useCallback(() => {
-    setScreen("images");
+  const openImages = useCallback((visit: Visit) => {
+    setScreen({ name: "images", visit });
     setLightbox(null);
   }, []);
 
   const backToExplorer = useCallback(() => {
-    setScreen("explorer");
+    setScreen({ name: "explorer" });
     setLightbox(null);
   }, []);
+
+  const openPhotos = screen.name === "images" ? photosFor(screen.visit) : [];
 
   const closeLightbox = useCallback(() => setLightbox(null), []);
   const prevPhoto = useCallback(
@@ -101,13 +109,13 @@ function StoreExplorerInner() {
     [],
   );
   const nextPhoto = useCallback(
-    () => setLightbox((i) => Math.min(PHOTOS.length - 1, (i ?? 0) + 1)),
-    [],
+    () => setLightbox((i) => Math.min(openPhotos.length - 1, (i ?? 0) + 1)),
+    [openPhotos.length],
   );
 
   return (
     <>
-      {screen === "explorer" ? (
+      {screen.name === "explorer" ? (
         <ExplorerView
           view={view}
           facts={facts}
@@ -125,11 +133,16 @@ function StoreExplorerInner() {
           onOpenVisit={openImages}
         />
       ) : (
-        <AppImagesView onBack={backToExplorer} onOpenPhoto={setLightbox} />
+        <AppImagesView
+          visit={screen.visit}
+          onBack={backToExplorer}
+          onOpenPhoto={setLightbox}
+        />
       )}
 
       {lightbox !== null ? (
         <PhotoLightbox
+          photos={openPhotos}
           index={lightbox}
           onClose={closeLightbox}
           onPrev={prevPhoto}

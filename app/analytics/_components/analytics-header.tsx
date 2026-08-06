@@ -160,7 +160,7 @@ export function AnalyticsHeader({
               Lands on the module that persona's rail opens on, so the role you
               are reading as carries across. */}
           <Link href={MODULE_ENTRY[persona]} className={styles.detailLink}>
-            All {PERSONAS.find((p) => p.key === persona)?.label.toLowerCase()} modules
+            Detailed Dashboard
             <Icon name="arrow-right" size={14} />
           </Link>
         </div>

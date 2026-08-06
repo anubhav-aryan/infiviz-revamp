@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
+import { Icon } from "@/app/_components/icon";
 import { RailGroups, RailShell, type SectionGroup } from "@/app/_components/app-shell";
 import { ModuleScreen } from "@/app/analytics/_modules/module-screen";
 import {
@@ -8,6 +10,7 @@ import {
   PersonaSwitcherView,
   ScopePicker,
 } from "@/app/analytics/_modules/rail-controls";
+import styles from "@/app/analytics/_modules/persona.module.css";
 import {
   MODULES,
   PERSONAS,
@@ -46,6 +49,18 @@ export const dynamicParams = false;
  * boundary. Switching persona stays on the current module when the target
  * persona owns it, and otherwise lands on the module they open on.
  */
+/**
+ * Back to the curated overview, in the persona you were reading as.
+ *
+ * `/analytics` reads persona from `?persona=`, omitted for the exec default —
+ * the same rule `analytics.tsx`'s own `toQuery` follows, so this link lands
+ * exactly where the "Detailed Dashboard" link on that page would have sent you
+ * back from.
+ */
+function overviewPath(persona: PersonaId): string {
+  return persona === "exec" ? "/analytics" : `/analytics?persona=${persona}`;
+}
+
 function switcherTargets(module: ModuleId, tab: TabId) {
   return PERSONAS.map((persona) => {
     const owned = railGroupsFor(persona.id)
@@ -94,23 +109,34 @@ export default async function AnalyticsModulePage(
       groups={groups}
       activeSection={moduleId}
       railHeader={
-        /* The fallback is the switcher with plain hrefs and the scope picker
-           absent, which is exactly what the prerendered HTML should contain —
-           neither can be resolved without the query string. */
-        <Suspense
-          fallback={
-            <PersonaSwitcherView
+        <>
+          {/* The module rail has no other way back to the curated overview —
+              the product rail's mark goes to "/", not "/analytics". Plain link,
+              no query dependency, so it renders outside the Suspense boundary
+              below rather than waiting on the client. */}
+          <Link href={overviewPath(personaId)} className={styles.backLink}>
+            <Icon name="arrow-left" size={13} />
+            Back to overview
+          </Link>
+
+          {/* The fallback is the switcher with plain hrefs and the scope picker
+              absent, which is exactly what the prerendered HTML should contain —
+              neither can be resolved without the query string. */}
+          <Suspense
+            fallback={
+              <PersonaSwitcherView
+                active={personaId}
+                targets={switcherTargets(moduleId, tabId)}
+              />
+            }
+          >
+            <PersonaSwitcher
               active={personaId}
               targets={switcherTargets(moduleId, tabId)}
             />
-          }
-        >
-          <PersonaSwitcher
-            active={personaId}
-            targets={switcherTargets(moduleId, tabId)}
-          />
-          <ScopePicker persona={personaId} />
-        </Suspense>
+            <ScopePicker persona={personaId} />
+          </Suspense>
+        </>
       }
       railItems={
         <Suspense

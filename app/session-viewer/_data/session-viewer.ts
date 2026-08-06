@@ -83,7 +83,7 @@ export function sessionFor(visit: Visit): SessionIdentity {
     title: visit.store,
     header: [
       { key: "Retailer", value: visit.retailer },
-      { key: "Category", value: visit.categories },
+      { key: "Category", value: visit.category },
       { key: "Merchandiser", value: visit.merchandiser },
       { key: "Visit", value: `${VISIT_DATE} ${visit.time}` },
       { key: "Photos", value: String(visit.photos) },

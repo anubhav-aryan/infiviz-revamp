@@ -37,8 +37,28 @@ import { STORES, storeById, type GeoStore } from "@/app/_data/stores-geo";
 export const DIM_RETAILER = "Retailer";
 export const DIM_REGION = "Region";
 export const DIM_TYPE = "Store type";
+export const DIM_PLACEMENT = "Placement";
+export const DIM_CATEGORY = "Category";
+export const DIM_STORE = "Store";
+export const DIM_SESSION = "Session ID";
 
 export type FacetRow = { name: string; visits: number };
+
+/**
+ * Where on the fixture the visit's captures were taken. A separate vocabulary
+ * from Store type — a store's format doesn't say which shelf position a
+ * merchandiser was assigned that visit.
+ */
+export const PLACEMENTS = [
+  "Eye Level",
+  "Top Shelf",
+  "Bottom Shelf",
+  "End Cap",
+  "Checkout Counter",
+];
+
+/** The two categories the catalog actually knows about — see `catalog.ts`. */
+export const CATEGORIES = ["Toothpaste", "Toothbrush"];
 
 /* ---------- visits ---------- */
 
@@ -46,13 +66,18 @@ export type VisitStatus = "Complete" | "Processing" | "Queued";
 
 export type Visit = {
   store: string;
+  storeId: string;
   retailer: string;
   region: string;
   type: string;
   time: string;
   merchandiser: string;
   photos: number;
-  categories: string;
+  /** One category per visit — a merchandiser session is scoped to a single
+      category capture, never a summary of several. */
+  category: string;
+  placement: string;
+  sessionId: string;
   status: VisitStatus;
 };
 
@@ -79,20 +104,21 @@ export type Visit = {
 const VISIT_SEED: (Omit<Visit, "store" | "retailer" | "region" | "type"> & {
   storeId: string;
 })[] = [
-  { storeId: "VNC0304137", time: "09:31", merchandiser: "minh_tran", photos: 7, categories: "Toothpaste, Toothbrush", status: "Complete" },
-  { storeId: "VNC0304274", time: "09:48", merchandiser: "khang_nguyen", photos: 5, categories: "Toothpaste", status: "Complete" },
-  { storeId: "VNC0304411", time: "10:05", merchandiser: "khang_nguyen", photos: 4, categories: "Multi-category", status: "Processing" },
-  { storeId: "VNC0304548", time: "10:22", merchandiser: "thao_vo", photos: 8, categories: "Toothpaste, Toothbrush", status: "Complete" },
-  { storeId: "VNC0304685", time: "10:40", merchandiser: "huy_le", photos: 6, categories: "Multi-category", status: "Complete" },
-  { storeId: "VNC0304822", time: "11:02", merchandiser: "quan_do", photos: 3, categories: "Toothbrush", status: "Queued" },
-  { storeId: "VNC0304959", time: "11:15", merchandiser: "minh_tran", photos: 5, categories: "Toothpaste", status: "Complete" },
-  { storeId: "VNC0305096", time: "11:40", merchandiser: "mai_bui", photos: 9, categories: "Multi-category", status: "Complete" },
+  { storeId: "VNC0304137", time: "09:31", merchandiser: "minh_tran", photos: 7, category: "Toothpaste", placement: "Eye Level", sessionId: "a3f5c9e1-6b42-4d8a-9c17-2e5f8a1b3d47", status: "Complete" },
+  { storeId: "VNC0304274", time: "09:48", merchandiser: "khang_nguyen", photos: 5, category: "Toothpaste", placement: "End Cap", sessionId: "b7d2e4f8-3a19-4c6b-8e05-7f9c2a4d6b81", status: "Complete" },
+  { storeId: "VNC0304411", time: "10:05", merchandiser: "khang_nguyen", photos: 4, category: "Toothbrush", placement: "Top Shelf", sessionId: "c1e8a5d3-9f24-4b7e-a316-5d8f1c3e7a92", status: "Processing" },
+  { storeId: "VNC0304548", time: "10:22", merchandiser: "thao_vo", photos: 8, category: "Toothpaste", placement: "Eye Level", sessionId: "d4f9b2c7-1e83-4a5d-9c47-8b2e5f7a1d63", status: "Complete" },
+  { storeId: "VNC0304685", time: "10:40", merchandiser: "huy_le", photos: 6, category: "Toothbrush", placement: "Checkout Counter", sessionId: "e6a3c8f1-4d97-4e2b-8f15-3c7a9e2b4d58", status: "Complete" },
+  { storeId: "VNC0304822", time: "11:02", merchandiser: "quan_do", photos: 3, category: "Toothbrush", placement: "Bottom Shelf", sessionId: "f2b7d4e9-8c31-4f6a-9e02-6d4f8b1c3a75", status: "Queued" },
+  { storeId: "VNC0304959", time: "11:15", merchandiser: "minh_tran", photos: 5, category: "Toothpaste", placement: "End Cap", sessionId: "a8c4f1e6-5b29-4d3a-8c67-1e9f4a2d6b34", status: "Complete" },
+  { storeId: "VNC0305096", time: "11:40", merchandiser: "mai_bui", photos: 9, category: "Toothpaste", placement: "Eye Level", sessionId: "b3e9d5a2-7f14-4c8b-9a53-4f2c8e6b1d97", status: "Complete" },
 ];
 
 export const VISITS: Visit[] = VISIT_SEED.map(({ storeId, ...facts }) => {
   const store = storeById(storeId);
   return {
     store: store.name,
+    storeId,
     retailer: store.retailer,
     region: store.region,
     type: store.type,
@@ -241,6 +267,26 @@ export const CATALOGUE: FilterDimension[] = [
     key: DIM_TYPE,
     label: DIM_TYPE,
     values: CURRENT_FACTS.storeTypes.map((row) => row.name),
+  },
+  {
+    key: DIM_PLACEMENT,
+    label: DIM_PLACEMENT,
+    values: PLACEMENTS,
+  },
+  {
+    key: DIM_CATEGORY,
+    label: DIM_CATEGORY,
+    values: CATEGORIES,
+  },
+  {
+    key: DIM_STORE,
+    label: DIM_STORE,
+    values: VISITS.map((visit) => visit.store),
+  },
+  {
+    key: DIM_SESSION,
+    label: DIM_SESSION,
+    values: VISITS.map((visit) => visit.sessionId),
   },
 ];
 
@@ -468,6 +514,10 @@ const VISIT_ACCESSORS = {
   [DIM_RETAILER]: (visit: Visit) => visit.retailer,
   [DIM_REGION]: (visit: Visit) => visit.region,
   [DIM_TYPE]: (visit: Visit) => visit.type,
+  [DIM_PLACEMENT]: (visit: Visit) => visit.placement,
+  [DIM_CATEGORY]: (visit: Visit) => visit.category,
+  [DIM_STORE]: (visit: Visit) => visit.store,
+  [DIM_SESSION]: (visit: Visit) => visit.sessionId,
 };
 
 const PIN_ACCESSORS = {
@@ -476,12 +526,33 @@ const PIN_ACCESSORS = {
   [DIM_RETAILER]: (store: GeoStore) => store.retailer,
   [DIM_REGION]: (store: GeoStore) => store.region,
   [DIM_TYPE]: (store: GeoStore) => store.type,
+  [DIM_STORE]: (store: GeoStore) => store.name,
 };
+
+/**
+ * The three original dimensions answer from authored day-level marginal
+ * tables — "Bach Hoa Xanh: 168" is a true full-day figure. Placement, Category,
+ * Store and Session ID have no such day-level truth to draw on, so they are
+ * kept out of the headline-scaling math in `build()` below and out of the map's
+ * filter set — see the comments at both call sites.
+ */
+const SCALED_DIMS = new Set([DIM_RETAILER, DIM_REGION, DIM_TYPE]);
+const PIN_DIMS = new Set([DIM_RETAILER, DIM_REGION, DIM_TYPE, DIM_STORE]);
 
 function facetFor(facts: Facts, dim: string): FacetRow[] {
   if (dim === DIM_RETAILER) return facts.retailers;
   if (dim === DIM_REGION) return facts.regions;
-  return facts.storeTypes;
+  if (dim === DIM_TYPE) return facts.storeTypes;
+
+  // No authored marginal exists for these — tallied from the sampled rows
+  // themselves, which is honest about being a sample rather than a day total.
+  const accessor = VISIT_ACCESSORS[dim as keyof typeof VISIT_ACCESSORS];
+  const counts = new Map<string, number>();
+  for (const visit of facts.visitRows) {
+    const value = accessor(visit);
+    counts.set(value, (counts.get(value) ?? 0) + 1);
+  }
+  return [...counts.entries()].map(([name, visits]) => ({ name, visits }));
 }
 
 export function facetCount(facts: Facts, dim: string, value: string): number {
@@ -508,6 +579,10 @@ export function build(facts: Facts, filters: ActiveFilter[]): View {
   const sums = new Map<string, number>();
   const fractions = new Map<string, number>();
   for (const [dim, values] of selected) {
+    // Placement/Category/Store/Session ID have no authored day-level marginal
+    // to scale the headline from — see `facetFor` — so they narrow the visit
+    // list and map below but never move these KPI tiles.
+    if (!SCALED_DIMS.has(dim)) continue;
     const sum = facetFor(facts, dim)
       .filter((row) => values.includes(row.name))
       .reduce((total, row) => total + row.visits, 0);
@@ -515,7 +590,7 @@ export function build(facts: Facts, filters: ActiveFilter[]): View {
     fractions.set(dim, facts.visits ? sum / facts.visits : 0);
   }
 
-  const dims = [...selected.keys()];
+  const dims = [...selected.keys()].filter((dim) => SCALED_DIMS.has(dim));
   let visits = facts.visits;
   if (dims.length === 1) visits = sums.get(dims[0]) ?? 0;
   else if (dims.length > 1) {
@@ -581,7 +656,15 @@ export function build(facts: Facts, filters: ActiveFilter[]): View {
     })),
     visitsLabel: `${group(visits)} visits`,
     visits: applyFilters(facts.visitRows, filters, VISIT_ACCESSORS),
-    pins: applyFilters(STORES, filters, PIN_ACCESSORS),
+    // A store can't answer for a visit-level fact like Category or Session ID
+    // — passing every filter through would blank the map the moment one of
+    // those is applied, so pins only see the dimensions they can actually be
+    // filtered by.
+    pins: applyFilters(
+      STORES,
+      filters.filter((f) => PIN_DIMS.has(f.dim)),
+      PIN_ACCESSORS,
+    ),
   };
 }
 
@@ -604,17 +687,7 @@ export function unfilteredView(period: Period): View {
   return built;
 }
 
-/* ---- App Images: the one visit that is drilled into ---- */
-
-export const VISIT_DETAIL = {
-  title: "3742 · Winlife HCM 94/54 - 56",
-  retailer: "Winmart",
-  address: "94/54 Nguyễn Duy, Q. Bình Thạnh, HCMC",
-  date: "04 Aug 2026",
-  merchandiser: "minh_tran",
-  photoCountLabel: "7 photos · raw captures",
-  totalTime: "19 min",
-};
+/* ---- App Images: whichever visit was opened ---- */
 
 export type TimelineStep = {
   icon: IconName;
@@ -623,12 +696,34 @@ export type TimelineStep = {
   gap?: string;
 };
 
-export const TIMELINE: TimelineStep[] = [
-  { icon: "log-in", label: "Arrived at store", time: "09:12" },
-  { icon: "camera", label: "Toothpaste captured", time: "09:18", gap: "6 min" },
-  { icon: "camera", label: "Toothbrush captured", time: "09:27", gap: "9 min" },
-  { icon: "check", label: "Visit confirmed", time: "09:31", gap: "4 min" },
-];
+/**
+ * Arrived, one capture, confirmed — a session is scoped to the one category it
+ * was assigned, so the timeline only ever has one capture step. Times are
+ * derived backward from `visit.time` (the confirmation) rather than authored
+ * per visit, the same "rebuild from minutes" rule `deriveVisits` already
+ * follows above.
+ */
+export function visitTiming(visit: Visit): {
+  steps: TimelineStep[];
+  totalTimeLabel: string;
+} {
+  const confirmed = toMinutes(visit.time);
+  const captured = confirmed - 4;
+  const arrived = captured - 6;
+  return {
+    steps: [
+      { icon: "log-in", label: "Arrived at store", time: clockFromMinutes(arrived) },
+      {
+        icon: "camera",
+        label: `${visit.category} captured`,
+        time: clockFromMinutes(captured),
+        gap: "6 min",
+      },
+      { icon: "check", label: "Visit confirmed", time: visit.time, gap: "4 min" },
+    ],
+    totalTimeLabel: `${confirmed - arrived} min`,
+  };
+}
 
 export type Photo = {
   category: string;
@@ -639,35 +734,51 @@ export type Photo = {
   src: string;
 };
 
-/** Flat list — the lightbox pages through it by index. */
-export const PHOTOS: Photo[] = [
+const TOOTHPASTE_PHOTOS: Photo[] = [
   { category: "Toothpaste", seq: "01", time: "09:18", quality: "good", src: "/mock-shelf/toothpaste-1.jpg" },
   { category: "Toothpaste", seq: "02", time: "09:19", quality: "good", src: "/mock-shelf/toothpaste-2.jpg" },
   { category: "Toothpaste", seq: "03", time: "09:20", quality: "flag", src: "/mock-shelf/toothpaste-3.jpg" },
   { category: "Toothpaste", seq: "04", time: "09:21", quality: "good", src: "/mock-shelf/toothpaste-4.jpg" },
-  { category: "Toothbrush", seq: "05", time: "09:27", quality: "good", src: "/mock-shelf/toothbrush-1.jpg" },
-  { category: "Toothbrush", seq: "06", time: "09:28", quality: "good", src: "/mock-shelf/toothbrush-2.jpg" },
-  { category: "Toothbrush", seq: "07", time: "09:29", quality: "good", src: "/mock-shelf/toothbrush-3.jpg" },
+];
+
+const TOOTHBRUSH_PHOTOS: Photo[] = [
+  { category: "Toothbrush", seq: "01", time: "09:27", quality: "good", src: "/mock-shelf/toothbrush-1.jpg" },
+  { category: "Toothbrush", seq: "02", time: "09:28", quality: "good", src: "/mock-shelf/toothbrush-2.jpg" },
+  { category: "Toothbrush", seq: "03", time: "09:29", quality: "good", src: "/mock-shelf/toothbrush-3.jpg" },
 ];
 
 /**
- * The visit list/gallery has no per-photo data, only a `categories` summary
- * string (e.g. "Toothpaste, Toothbrush", "Multi-category") — this picks the
- * mock thumbnail that best represents it.
+ * The mock photo pool for one visit's category. Every Open screen shows
+ * exactly one of these two pools — never both, because a visit only ever
+ * captured one category.
  */
-export function categoryThumb(categories: string): string {
-  if (categories === "Multi-category") return "/mock-shelf/toothpaste-5.jpg";
-  if (categories.includes("Toothbrush") && !categories.includes("Toothpaste")) {
-    return "/mock-shelf/toothbrush-1.jpg";
-  }
-  return "/mock-shelf/toothpaste-1.jpg";
+export function photosFor(visit: Visit): Photo[] {
+  return visit.category === "Toothbrush" ? TOOTHBRUSH_PHOTOS : TOOTHPASTE_PHOTOS;
 }
 
-/** Category groupings, addressing `PHOTOS` by index so the lightbox stays in sync. */
-export const PHOTO_GROUPS = [
+/** The mock thumbnail that represents a visit's single category. */
+export function categoryThumb(category: string): string {
+  return category === "Toothbrush"
+    ? "/mock-shelf/toothbrush-1.jpg"
+    : "/mock-shelf/toothpaste-1.jpg";
+}
+
+/**
+ * The platform's one illustrative capture set — for screens that show mock
+ * photos with no real visit behind them: Photo Quality's rejected-session
+ * thumbnails, and `/session-images`, which shows the same stack for every
+ * store because it has no per-store photo data to draw on. Store Explorer's
+ * own Open screen does not use this: `photosFor` scopes to one visit's one
+ * category, which is the whole point of that screen now.
+ */
+export const ILLUSTRATIVE_PHOTOS: Photo[] = [...TOOTHPASTE_PHOTOS, ...TOOTHBRUSH_PHOTOS];
+
+export const ILLUSTRATIVE_PHOTO_GROUPS = [
   { name: "Toothpaste", timeRange: "09:18–09:21", from: 0, to: 4 },
   { name: "Toothbrush", timeRange: "09:27–09:29", from: 4, to: 7 },
 ];
+
+export const ILLUSTRATIVE_VISIT = { date: "04 Aug 2026", merchandiser: "minh_tran" };
 
 export function photoMetadata(photo: Photo) {
   return [

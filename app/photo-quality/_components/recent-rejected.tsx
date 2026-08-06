@@ -6,12 +6,12 @@ import { Icon } from "@/app/_components/icon";
 import type { RejectedSession } from "../_data/photo-quality";
 import shared from "@/app/_reports/reports.module.css";
 import { sessionImageHref } from "@/app/session-images/_data/session-images";
-import { PHOTOS } from "@/app/store-explorer/_data/store-explorer";
+import { ILLUSTRATIVE_PHOTOS } from "@/app/store-explorer/_data/store-explorer";
 import styles from "./photo-quality.module.css";
 
 /** Cycles through the platform's one mock capture set — there's no per-session photo. */
 function rejectedThumb(index: number): string {
-  return PHOTOS[index % PHOTOS.length].src;
+  return ILLUSTRATIVE_PHOTOS[index % ILLUSTRATIVE_PHOTOS.length].src;
 }
 
 /** The only genuine client state on either report. */

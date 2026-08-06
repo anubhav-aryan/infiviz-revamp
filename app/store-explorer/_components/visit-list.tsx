@@ -2,6 +2,11 @@ import { Icon } from "@/app/_components/icon";
 import { categoryThumb, type Visit } from "../_data/store-explorer";
 import styles from "./store-explorer.module.css";
 
+/** The reference design's own truncate-with-full-value-on-hover convention. */
+function shortId(sessionId: string): string {
+  return sessionId.slice(0, 8);
+}
+
 type VisitProps = {
   visits: Visit[];
   onOpen: (visit: Visit) => void;
@@ -50,7 +55,7 @@ export function VisitList({ visits, onOpen, onClearFilters }: VisitProps) {
     <div>
       {visits.map((visit) => (
         <button
-          key={visit.store}
+          key={visit.sessionId}
           type="button"
           className={`${styles.reset} ${styles.visitRow}`}
           onClick={() => onOpen(visit)}
@@ -70,6 +75,10 @@ export function VisitList({ visits, onOpen, onClearFilters }: VisitProps) {
             </span>
             <span className={styles.visitMetaSep}>·</span>
             <span className={styles.visitMono}>{visit.merchandiser}</span>
+            <span className={styles.visitMetaSep}>·</span>
+            <span className={styles.visitMono} title={visit.sessionId}>
+              {shortId(visit.sessionId)}
+            </span>
           </span>
 
           <span className={styles.visitRowBottom}>
@@ -78,7 +87,9 @@ export function VisitList({ visits, onOpen, onClearFilters }: VisitProps) {
                 <Icon name="image" size={13} />
                 {visit.photos} photos
               </span>
-              <span className={styles.visitCategories}>{visit.categories}</span>
+              <span className={styles.visitCategories}>{visit.category}</span>
+              <span className={styles.visitMetaSep}>·</span>
+              <span className={styles.visitCategories}>{visit.placement}</span>
             </span>
             <span className={styles.openLink}>
               Open
@@ -98,7 +109,7 @@ export function VisitGallery({ visits, onOpen, onClearFilters }: VisitProps) {
     <div className={styles.gallery}>
       {visits.map((visit) => (
         <button
-          key={visit.store}
+          key={visit.sessionId}
           type="button"
           className={`${styles.reset} ${styles.galleryCard}`}
           onClick={() => onOpen(visit)}
@@ -110,7 +121,7 @@ export function VisitGallery({ visits, onOpen, onClearFilters }: VisitProps) {
             className={`${styles.galleryThumb} ${styles.photoPlaceholder}`}
             aria-hidden="true"
           >
-            <img className={styles.fillImage} src={categoryThumb(visit.categories)} alt="" />
+            <img className={styles.fillImage} src={categoryThumb(visit.category)} alt="" />
             <span className={styles.galleryThumbChip}>
               <StatusChip status={visit.status} />
             </span>
@@ -120,6 +131,12 @@ export function VisitGallery({ visits, onOpen, onClearFilters }: VisitProps) {
             <span className={styles.galleryTitle}>{visit.store}</span>
             <span className={styles.gallerySub}>
               {visit.retailer} · {visit.time} · {visit.merchandiser}
+            </span>
+            <span className={styles.gallerySub}>
+              {visit.category} · {visit.placement} ·{" "}
+              <span className={styles.visitMono} title={visit.sessionId}>
+                {shortId(visit.sessionId)}
+              </span>
             </span>
             <span className={styles.galleryFoot}>
               <span className={styles.galleryPhotos}>
