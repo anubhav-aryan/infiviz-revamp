@@ -2,12 +2,11 @@ import Link from "next/link";
 import { Icon } from "@/app/_components/icon";
 import { ActivityFeed } from "./activity-feed";
 import { OnboardingStepper } from "./onboarding-stepper";
+import { SessionsCard } from "./sessions-card";
 import {
   CONFIRM_B,
   HEADER_B,
   METERS_B,
-  MONTHS,
-  MONTHS_CARD,
   REPORTS,
   REPORT_CTA,
   RETAILERS,
@@ -117,25 +116,7 @@ export function OnboardingScreen() {
             ))}
           </div>
 
-          {/* sessions by month */}
-          <div className={`${styles.card} ${styles.monthsCard}`}>
-            <div className={`${styles.cardHead} ${styles.monthsHead}`}>
-              <div className={styles.cardTitle}>{MONTHS_CARD.title}</div>
-              <div className={styles.cardCaption}>{MONTHS_CARD.caption}</div>
-            </div>
-            <div className={styles.monthsChart}>
-              {MONTHS.map((month) => (
-                <div key={month.label} className={styles.month}>
-                  <span className={styles.monthValue}>{month.value}</span>
-                  <div
-                    className={styles.monthBar}
-                    style={{ height: `${month.height}%` }}
-                  />
-                  <span className={styles.monthLabel}>{month.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <SessionsCard />
 
           {/* report entry points */}
           <div className={styles.pair}>

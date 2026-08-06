@@ -29,15 +29,4 @@ export const SECTION_GROUPS: SectionGroup[] = [
       { id: "tasks", label: "Tasks", icon: "list-checks" },
     ],
   },
-  {
-    label: "Audit",
-    items: [
-      {
-        id: "upload-history",
-        label: "Upload history",
-        icon: "upload",
-        href: "/master-data/upload-history",
-      },
-    ],
-  },
 ];

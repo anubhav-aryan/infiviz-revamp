@@ -27,8 +27,14 @@ export type Step = {
 
 /**
  * Progress matches what the rest of the screen shows: master data is confirmed
- * by the band below, and captures are visibly arriving in the feed, so the bar
- * sits on "First captures" rather than back on step 1.
+ * by the band below, photos are visibly arriving in the feed, and the catalogue
+ * is still being digitised — which is why the sidebar keeps Catalog locked with
+ * "Unlocks when your catalog is digitised". Capture before catalogue is also
+ * the order the readiness map sets out (Phase 1 onboarding includes captures;
+ * Catalog is Phase 2), so all three agree.
+ *
+ * `num` is authored rather than derived from the index because it doubles as
+ * the React key — reordering this array means renumbering here too.
  */
 export const STEPS: Step[] = [
   {
@@ -40,15 +46,15 @@ export const STEPS: Step[] = [
   },
   {
     num: "2",
-    name: "Catalog configured",
-    desc: "Digitising your product catalogue.",
+    name: "Photo Capturing",
+    desc: "Photos begin arriving from the field.",
     state: "done",
     status: "Done",
   },
   {
     num: "3",
-    name: "First captures",
-    desc: "Photos begin arriving from the field.",
+    name: "Catalog configured",
+    desc: "Digitising your product catalogue.",
     state: "active",
     status: "In progress",
   },
@@ -141,9 +147,14 @@ export const RETAILERS = RETAILER_SHARE.map((retailer) => ({
   width: +((retailer.pct / MAX_RETAILER_PCT) * 100).toFixed(1),
 }));
 
-export const MONTHS_CARD = {
-  title: "Sessions by month",
-  caption: "Feb–Jul 2026",
+export type SessionsMode = "month" | "week";
+
+export const SESSIONS_CARD: Record<
+  SessionsMode,
+  { title: string; caption: string }
+> = {
+  month: { title: "Sessions by month", caption: "Feb–Jul 2026" },
+  week: { title: "Sessions by week", caption: "Last 6 weeks" },
 };
 
 const SESSIONS: [label: string, value: number][] = [
@@ -155,14 +166,32 @@ const SESSIONS: [label: string, value: number][] = [
   ["Jul", 12847],
 ];
 
-/** Columns are normalised against July, the tallest month. */
-const MAX_SESSIONS = 12847;
+/**
+ * The last six weeks. The four that fall inside July sum to 12,847 — the same
+ * session count the retailer card and band A quote for the month — so the two
+ * views of the card reconcile instead of being two unrelated fixtures.
+ */
+const SESSION_WEEKS: [label: string, value: number][] = [
+  ["W22", 2740],
+  ["W23", 2810],
+  ["W24", 2905],
+  ["W25", 3012],
+  ["W26", 3178],
+  ["W27", 3752],
+];
 
-export const MONTHS = SESSIONS.map(([label, value]) => ({
-  label,
-  value: `${(value / 1000).toFixed(1)}k`,
-  height: +((value / MAX_SESSIONS) * 100).toFixed(1),
-}));
+/** Bars are normalised against the tallest bucket in their own series. */
+function toBars(source: [label: string, value: number][]) {
+  const max = Math.max(...source.map(([, value]) => value));
+  return source.map(([label, value]) => ({
+    label,
+    value: `${(value / 1000).toFixed(1)}k`,
+    height: +((value / max) * 100).toFixed(1),
+  }));
+}
+
+export const MONTHS = toBars(SESSIONS);
+export const WEEKS = toBars(SESSION_WEEKS);
 
 export type ReportCard = {
   icon: IconName;

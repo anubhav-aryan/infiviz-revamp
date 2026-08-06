@@ -63,13 +63,6 @@
   padding: 14px 0;
 }
 
-.scope {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
-  color: var(--text-caption);
-}
 
 .body {
   display: flex;

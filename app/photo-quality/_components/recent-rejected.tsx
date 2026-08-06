@@ -5,16 +5,39 @@ import { useState } from "react";
 import { Icon } from "@/app/_components/icon";
 import type { RejectedSession } from "../_data/photo-quality";
 import shared from "@/app/_reports/reports.module.css";
+import { sessionImageHref } from "@/app/session-images/_data/session-images";
 import styles from "./photo-quality.module.css";
 
 /** The only genuine client state on either report. */
 type RejectedView = "gallery" | "table";
 
-/** The captures themselves live in Store explorer, so this is a real link. */
+/**
+ * Opens the store's captures on `/session-images`. Previously this pointed at
+ * `/store-explorer` with no store at all, which dropped the reader on a landing
+ * screen and made them find the visit again.
+ *
+ * A store with no capture set renders inert rather than linking to a page that
+ * would 404 — `sessionImageHref` returns null for anything outside the
+ * canonical list.
+ */
 function ViewImages({ store, className }: { store: string; className?: string }) {
+  const href = sessionImageHref(store);
+
+  if (!href) {
+    return (
+      <span
+        className={`${styles.viewImages} ${className ?? ""}`}
+        data-inert="true"
+        title="No captures stored for this visit"
+      >
+        View images
+      </span>
+    );
+  }
+
   return (
     <Link
-      href="/store-explorer"
+      href={href}
       className={`${styles.viewImages} ${className ?? ""}`}
       aria-label={`View images for ${store}`}
     >

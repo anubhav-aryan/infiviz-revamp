@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/app/_components/icon";
 import type { CsvTable } from "@/app/_export/csv";
@@ -23,7 +23,6 @@ import {
 import {
   FILTER_DIMENSIONS,
   PERSONAS,
-  SCOPE,
   SUGGESTED_FILTERS,
   type Persona,
 } from "../_data/analytics";
@@ -178,25 +177,10 @@ export function AnalyticsHeader({
         </div>
       </div>
 
+      {/* The scope trail that used to lead this row is gone — it was inert, and
+          nothing in these fixtures is region-scoped for it to describe. The
+          row's controls keep their right-hand position via `.headRow2`. */}
       <div className={`${styles.headRow} ${styles.headRow2}`}>
-        {/* A caption, not a control. Nothing in these fixtures is scoped by
-            region, so linking the crumbs would promise a scope change the data
-            cannot deliver — they read as a path instead. */}
-        <div className={styles.breadcrumb}>
-          {SCOPE.map((crumb, i) => (
-            <Fragment key={crumb.label}>
-              {i > 0 ? (
-                <span className={styles.crumbSep} aria-hidden="true">
-                  <Icon name="chevron-right" size={15} />
-                </span>
-              ) : null}
-              <span className={styles.crumb} data-current={crumb.current}>
-                {crumb.label}
-              </span>
-            </Fragment>
-          ))}
-        </div>
-
         <div className={styles.headActions}>
           <div className={styles.menuAnchor} ref={monthRef}>
             <button

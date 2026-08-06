@@ -1,3 +1,4 @@
+import { sessionImageHref } from "@/app/session-images/_data/session-images";
 import { group, pct1 } from "@/app/_format/num";
 import {
   rateTier,
@@ -385,14 +386,76 @@ export type PhotoQualityView = {
 
 /* ---- merchandisers by rejection rate ---- */
 
+/**
+ * Supervisors own regions, so a merchandiser's supervisor is derived from the
+ * region they already carry rather than being a second list to keep in step.
+ * Master data publishes 12 supervisors nationally; these are the six with field
+ * teams in the audited regions.
+ */
+const SUPERVISOR_BY_REGION: Record<string, string> = {
+  "Ho Chi Minh City": "Anand K",
+  "South East": "Đặng Quốc Việt",
+  "Mekong Delta": "Trịnh Thu Trang",
+  "Red River Delta": "Hoàng Minh Đức",
+  Central: "Lý Thanh Tùng",
+  "North Highlands": "Ngô Bảo Châu",
+};
+
+export const supervisorFor = (region: string) =>
+  SUPERVISOR_BY_REGION[region] ?? "Unassigned";
+
+/**
+ * The stores behind a merchandiser's rejection rate, revealed when their row is
+ * expanded. Authored per merchandiser because "who is doing badly" is only
+ * actionable once you know *where* — which is the whole point of the drill-down.
+ */
+type BadStoreFact = [store: string, code: string, day: number];
+
+const BAD_STORES: Record<string, BadStoreFact[]> = {
+  huy_le: [
+    ["Co.opmart Quy Nhơn", "VNC0392044", 4],
+    ["BHX Đà Nẵng Hải Châu", "VNC0410882", 11],
+    ["Winmart Huế Đông Ba", "VNC0418120", 19],
+  ],
+  nam_hoang: [
+    ["Winmart Hà Giang", "VNC0448120", 6],
+    ["BHX Lào Cai Cốc Lếu", "VNC0451903", 17],
+  ],
+  thao_vo: [
+    ["BHX Cần Thơ Ninh Kiều", "VNC0664901", 3],
+    ["Co.opmart Long Xuyên", "VNC0668250", 12],
+    ["Lotte Mart Cần Thơ", "VNC0155201", 22],
+  ],
+  duc_ngo: [
+    ["Aeon Hải Phòng", "VNC0517783", 8],
+    ["Winmart Hà Nội Cầu Giấy", "VNC0521440", 21],
+  ],
+  mai_bui: [["BHX Biên Hòa Tân Phong", "VNC0233188", 9]],
+  quan_do: [["Winmart Hà Nội Mỹ Đình", "VNC0530117", 14]],
+  linh_pham: [["MM Mega Market An Phú", "VNC0301778", 5]],
+  minh_tran: [["30151 BHX_HCM Vạn Kiếp", "VNC0304896", 16]],
+  khang_nguyen: [["Winmart Q7 Trần", "VNC0207442", 7]],
+  bao_vu: [["Emart Gò Vấp", "VNC0233900", 13]],
+};
+
+export type BadStore = {
+  store: string;
+  code: string;
+  visited: string;
+  /** Slug on `/session-images`, or null where no capture set exists. */
+  href: string | null;
+};
+
 export type WorstRow = {
   mrch: string;
+  supervisor: string;
   region: string;
   captures: number;
   rate: string;
   width: number;
   tier: RateTier;
   reason: string;
+  stores: BadStore[];
 };
 
 /* ---- recent rejected sessions ---- */
@@ -429,12 +492,19 @@ function buildView(month: Month, facts: Facts): PhotoQualityView {
     regionTargetFraction: +(TARGET_RATE / regionMax).toFixed(3),
     worst: facts.worst.map(([mrch, region, captures, rate, reason]) => ({
       mrch,
+      supervisor: supervisorFor(region),
       region,
       captures,
       reason,
       rate: rate.toFixed(1),
       width: +((rate / worstMax) * 100).toFixed(1),
       tier: rateTier(rate),
+      stores: (BAD_STORES[mrch] ?? []).map(([store, code, day]) => ({
+        store,
+        code,
+        visited: `${String(day).padStart(2, "0")} ${month.shortLabel}`,
+        href: sessionImageHref(store),
+      })),
     })),
     rejected: facts.rejected.map(([reason, store, code, score]) => ({
       reason,

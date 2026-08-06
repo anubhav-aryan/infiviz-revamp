@@ -9,6 +9,7 @@ import {
   type WorstRow,
 } from "../_data/photo-quality";
 import { RecentRejected } from "./recent-rejected";
+import { WorstTable } from "./worst-table";
 import { TrendChart } from "./trend-chart";
 import shared from "@/app/_reports/reports.module.css";
 import styles from "./photo-quality.module.css";
@@ -38,6 +39,7 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
         month={month}
         basePath="/photo-quality"
         csv={worstCsv(view.worst)}
+        detailHref="/analytics/field/merchandiser/photo-quality"
       />
 
       <div className={shared.body}>
@@ -126,33 +128,7 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
             </span>
           </div>
 
-          <div
-            className={`${styles.worstGrid} ${shared.tableHead} ${styles.worstHeadRow}`}
-          >
-            <span>Merchandiser</span>
-            <span>Region</span>
-            <span className={shared.numRight}>Captures</span>
-            <span className={shared.numRight}>Rejection rate</span>
-            <span>Top reason</span>
-          </div>
-
-          {view.worst.map((row) => (
-            <div
-              key={row.mrch}
-              className={`${styles.worstGrid} ${shared.tableRow} ${styles.worstRow}`}
-            >
-              <span className={styles.worstMrch}>{row.mrch}</span>
-              <span className={styles.worstText}>{row.region}</span>
-              <span className={styles.worstCaptures}>{row.captures}</span>
-              <span className={styles.worstRate}>
-                <Bar pct={row.width} height={6} track="w90" />
-                <span className={styles.rateValue} data-tier={row.tier}>
-                  {row.rate}%
-                </span>
-              </span>
-              <span className={styles.worstText}>{row.reason}</span>
-            </div>
-          ))}
+          <WorstTable rows={view.worst} />
         </div>
 
         <RecentRejected sessions={view.rejected} />

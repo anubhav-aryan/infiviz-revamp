@@ -77,17 +77,6 @@ export const PERSONAS: { key: Persona; label: string }[] = [
   { key: "field", label: "Field" },
 ];
 
-/**
- * The scope trail is a caption, not a control. Nothing in the fixtures is
- * scoped by region — the ranked lists are national at every persona — so the
- * crumbs are rendered as a static path rather than as links that would set a
- * scope the data cannot honour. See the note in `analytics-header.tsx`.
- */
-export const SCOPE: { label: string; current: boolean }[] = [
-  { label: "National", current: false },
-  { label: "South East", current: false },
-  { label: "Ho Chi Minh City", current: true },
-];
 
 /**
  * The design draws these as live chips on load. The screen opens unfiltered

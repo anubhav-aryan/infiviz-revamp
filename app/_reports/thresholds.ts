@@ -28,21 +28,6 @@ export function adherenceTier(adherence: number): AdherenceTier {
   return adherence >= 90 ? "success" : adherence >= 75 ? "warning" : "danger";
 }
 
-/** The heatmap's five-step ramp, from an empty day to a very busy one. */
-export type HeatLevel = 0 | 1 | 2 | 3 | 4;
-
-export function heatLevel(visits: number): HeatLevel {
-  return visits === 0
-    ? 0
-    : visits <= 2
-      ? 1
-      : visits <= 4
-        ? 2
-        : visits <= 6
-          ? 3
-          : 4;
-}
-
 /**
  * Direction and tone are separate fields on purpose. A rising rejection share
  * pairs an up arrow with `--danger`, while a rising pass rate pairs the same

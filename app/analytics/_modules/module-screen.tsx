@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
-import { Icon } from "@/app/_components/icon";
 import { ActionsBlock } from "@/app/_charts/actions-block";
 import { DetailTable } from "@/app/_charts/detail-table";
 import { GapCards } from "@/app/_charts/gap-cards";
@@ -142,8 +141,12 @@ export function ModuleScreen({ persona, module, tab }: Props) {
           query={query}
         />
 
+        {/* Rendered only when there is a measure toggle — otherwise this is an
+            empty padded strip. The hardcoded "National · all retailers · all
+            store types" line that used to live here is gone: it described a
+            scope nothing could change. */}
+        {measures.length > 1 && measureId ? (
         <div className={styles.controls}>
-          {measures.length > 1 && measureId ? (
           <Segmented
             options={measures.map((measure) => ({
               id: measure.id,
@@ -154,12 +157,8 @@ export function ModuleScreen({ persona, module, tab }: Props) {
             label="Measure"
             tone="dark"
           />
-          ) : null}
-          <span className={styles.scope}>
-            <Icon name="info" size={14} />
-            National · all retailers · all store types
-          </span>
         </div>
+        ) : null}
       </header>
 
       <div className={styles.body}>

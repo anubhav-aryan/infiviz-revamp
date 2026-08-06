@@ -34,6 +34,8 @@ type ReportHeaderProps = {
   /** Serialized by the page: `ExportButton` is a Client Component, so a column
       accessor could not cross the boundary. */
   csv: CsvTable;
+  /** Deep analytics for this report, in the Analytics module section. */
+  detailHref?: string;
 };
 
 /**
@@ -47,6 +49,7 @@ export function ReportHeader({
   month,
   basePath,
   csv,
+  detailHref,
 }: ReportHeaderProps) {
   const previous = stepMonth(month, -1);
   const next = stepMonth(month, 1);
@@ -104,6 +107,13 @@ export function ReportHeader({
               </span>
             )}
           </div>
+
+          {detailHref ? (
+            <Link href={detailHref} className={styles.secondaryButton}>
+              View detailed analytics
+              <Icon name="arrow-up-right" size={14} />
+            </Link>
+          ) : null}
 
           <ExportButton
             table={csv}

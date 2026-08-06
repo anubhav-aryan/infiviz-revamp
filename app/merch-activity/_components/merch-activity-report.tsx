@@ -1,4 +1,5 @@
 import { CoverageMap } from "@/app/_components/coverage-map";
+import Link from "next/link";
 import { Icon } from "@/app/_components/icon";
 import type { CsvTable } from "@/app/_export/csv";
 import { Bar, TargetHero, TargetRule } from "@/app/_reports/marks";
@@ -9,7 +10,6 @@ import {
   MERCH_ACTIVITY,
   type ActivityRow,
 } from "../_data/merch-activity";
-import { VisitHeatmap } from "./visit-heatmap";
 import shared from "@/app/_reports/reports.module.css";
 import styles from "./merch-activity.module.css";
 
@@ -78,6 +78,7 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
         month={month}
         basePath="/merch-activity"
         csv={activityCsv(view.activityRows)}
+        detailHref="/analytics/field/merchandiser/attendance"
       />
 
       <div className={shared.body}>
@@ -117,12 +118,7 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
           ))}
         </div>
 
-        <VisitHeatmap
-          title={view.heatTitle}
-          rows={view.heatRows}
-          days={view.heatDays}
-        />
-
+  
         <div className={`${shared.card} ${shared.tableCard}`}>
           <div className={shared.tableTitle}>Merchandiser activity</div>
 
@@ -172,15 +168,22 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
           ))}
         </div>
 
-        {/* ---- Estate coverage ---- */}
+        {/* ---- Audit state ---- */}
         <div className={styles.sectionHead} data-spaced="true">
           <span className={styles.sectionMark} aria-hidden="true">
             <Icon name="map-pin" />
           </span>
-          <h2 className={styles.sectionTitle}>Estate coverage</h2>
-          <span className={styles.sectionCaption}>
-            Are we actually reaching the estate?
-          </span>
+          <h2 className={styles.sectionTitle}>Audit State</h2>
+
+          {/* Coverage lives in a different Analytics module than attendance,
+              so this half of the screen gets its own way through. */}
+          <Link
+            href="/analytics/field/store-management/store-coverage"
+            className={styles.sectionLink}
+          >
+            View detailed analytics
+            <Icon name="arrow-up-right" size={14} />
+          </Link>
         </div>
 
         <div className={styles.coverageTop}>

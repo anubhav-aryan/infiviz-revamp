@@ -1,8 +1,10 @@
 import { Icon } from "@/app/_components/icon";
+import { ExportButton } from "@/app/_export/export-button";
 import {
   BRAND_CHIPS,
   PACKSHOT_FILTERS,
   TOOTHPASTE,
+  skuCsv,
   TRAINED_FILTERS,
   type Sku,
   type TriState,
@@ -85,6 +87,15 @@ export function ToothpasteDetail({
         </div>
 
         <div className={styles.detailTools}>
+          {/* Exports the filtered rows the table is showing, not the whole
+              fixture — the same rule every other export on the platform
+              follows. */}
+          <ExportButton
+            table={skuCsv(skus)}
+            filename="catalog-toothpaste"
+            className={styles.exportButton}
+          />
+
           <div className={styles.search}>
             <Icon name="search" aria-hidden="true" />
             {/* Search has no backend behind it yet — the design drew a static

@@ -156,9 +156,14 @@
   padding: 4px 10px;
 }
 
+/* Six data columns plus a 32px expand affordance. Supervisor sits beside the
+   merchandiser because the pair is read together. The gap is load-bearing: the
+   rate column is right-aligned, so without it its header butts straight into
+   "Top reason". */
 .worstGrid {
   display: grid;
-  grid-template-columns: 160px 150px 90px 1fr 130px;
+  grid-template-columns: 140px 125px 120px 72px 1fr 110px 32px;
+  gap: 14px;
 }
 
 .worstHeadRow {
@@ -480,4 +485,108 @@
 
 .rejectedView {
   justify-content: flex-end;
+}
+
+/* ---------- per-merchandiser store drill-down ---------- */
+
+.expandButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-caption);
+  cursor: pointer;
+}
+
+.expandButton:hover {
+  color: var(--indigo-700);
+}
+
+.expandButton:disabled {
+  color: var(--neutral-300);
+  cursor: default;
+}
+
+.worstRow[data-open="true"] {
+  background: var(--indigo-50);
+}
+
+/* Inset and tinted so the panel reads as belonging to the row above it rather
+   than as another top-level table. */
+.storePanel {
+  padding: 4px 20px 12px 34px;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.storeHeadRow,
+.storeRow {
+  display: grid;
+  grid-template-columns: 1fr 150px 110px 120px;
+  align-items: center;
+  gap: 12px;
+}
+
+.storeHeadRow {
+  padding: 8px 0 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-caption);
+}
+
+.storeRow {
+  padding: 7px 0;
+  border-top: 1px solid var(--hairline);
+  font-size: 12.5px;
+}
+
+.storeName {
+  color: var(--text-body);
+}
+
+.storeCode,
+.storeDate {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+.storeLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  justify-self: end;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--indigo-600);
+  text-decoration: none;
+}
+
+.storeLink:hover {
+  text-decoration: underline;
+}
+
+.storeLink[data-inert="true"] {
+  color: var(--text-disabled);
+  cursor: default;
+  text-decoration: none;
+}
+
+/* Same treatment the inert View images link gets in the rejected-sessions card. */
+.viewImages[data-inert="true"] {
+  color: var(--text-disabled);
+  cursor: default;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

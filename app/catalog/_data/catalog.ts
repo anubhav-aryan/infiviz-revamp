@@ -1,3 +1,4 @@
+import type { CsvTable } from "@/app/_export/csv";
 import type { IconName } from "@/app/_components/icon";
 
 /**
@@ -315,3 +316,65 @@ export function skuAttributes(sku: Sku): SkuAttribute[] {
 /** The same sentence for every SKU in the design. */
 export const RANGED_EXAMPLES =
   "Bach Hoa Xanh, Winmart, Co.opmart, Aeon and 4 other retailers across all 6 regions.";
+
+/* ---------------------------------------------------------------- */
+/* export                                                            */
+/* ---------------------------------------------------------------- */
+
+/**
+ * CSV builders for the two export buttons.
+ *
+ * These return a plain `{headers, rows}` matrix, which is the whole point —
+ * `ExportButton` is a Client Component, so a column accessor function could not
+ * cross the boundary. Calling these *inside* a client component is fine; it is
+ * passing the builder itself that breaks the build.
+ *
+ * Both take the rows the screen is currently showing, not the full fixture, so
+ * an export always matches what the user can see.
+ */
+export function skuCsv(rows: Sku[]): CsvTable {
+  return {
+    headers: [
+      "SKU name",
+      "Category",
+      "Sub-category",
+      "Brand",
+      "Variant",
+      "SKU code",
+      "EAN",
+      "Height mm",
+      "Width mm",
+      "Ranged stores",
+      "Packshot",
+      "Trained",
+    ],
+    rows: rows.map((sku) => [
+      sku.name,
+      sku.category,
+      sku.subCategory,
+      sku.brand,
+      sku.variant,
+      sku.code,
+      sku.ean,
+      sku.height,
+      sku.width,
+      sku.ranged,
+      sku.packshot ? "Yes" : "No",
+      sku.trained ? "Yes" : "No",
+    ]),
+  };
+}
+
+export function categoryCsv(rows: Category[]): CsvTable {
+  return {
+    headers: ["Category", "SKUs", "Brands", "Sub-categories", "Packshots", "Updated"],
+    rows: rows.map((category) => [
+      category.name,
+      category.skus,
+      category.brands,
+      category.subs,
+      category.packshot,
+      category.updated,
+    ]),
+  };
+}

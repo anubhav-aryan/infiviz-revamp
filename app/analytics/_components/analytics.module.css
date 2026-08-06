@@ -197,8 +197,11 @@
   padding: 18px 28px 14px;
 }
 
+/* Only the right-hand controls remain in this row, so they are pushed over
+   rather than left sitting where the removed scope trail used to start. */
 .headRow2 {
   padding: 0 28px 12px;
+  justify-content: flex-end;
 }
 
 .headRow3 {
@@ -253,29 +256,6 @@
   background: var(--indigo-500);
 }
 
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* The trail is a caption. Nothing in these fixtures is scoped by region, so
-   styling the crumbs as links would advertise a scope change the data cannot
-   perform — they read as a path, with the destination picked out. */
-.crumb {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-caption);
-}
-
-.crumb[data-current="true"] {
-  color: var(--text-heading);
-}
-
-.crumbSep {
-  color: var(--text-caption);
-  display: inline-flex;
-}
 
 .chips {
   display: flex;

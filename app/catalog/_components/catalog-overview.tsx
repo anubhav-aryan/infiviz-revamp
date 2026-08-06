@@ -1,5 +1,11 @@
 import { Icon } from "@/app/_components/icon";
-import { CATALOG_HEADER, CATEGORIES, type Category } from "../_data/catalog";
+import {
+  CATALOG_HEADER,
+  CATEGORIES,
+  categoryCsv,
+  type Category,
+} from "../_data/catalog";
+import { ExportButton } from "@/app/_export/export-button";
 import styles from "./catalog.module.css";
 
 type CatalogOverviewProps = {
@@ -65,14 +71,23 @@ export function CatalogOverview({ onOpenCategory }: CatalogOverviewProps) {
           </div>
         </div>
 
-        <span className={styles.updatedBadge}>
-          <Icon
-            name="check-circle-2"
-            className={styles.updatedBadgeIcon}
-            aria-hidden="true"
+        <div className={styles.overviewTools}>
+          {/* The category summary, so export works from this screen too rather
+              than only from inside a category. */}
+          <ExportButton
+            table={categoryCsv(CATEGORIES)}
+            filename="catalog-categories"
+            className={styles.exportButton}
           />
-          {CATALOG_HEADER.updated}
-        </span>
+          <span className={styles.updatedBadge}>
+            <Icon
+              name="check-circle-2"
+              className={styles.updatedBadgeIcon}
+              aria-hidden="true"
+            />
+            {CATALOG_HEADER.updated}
+          </span>
+        </div>
       </div>
 
       <div className={styles.categoryGrid}>

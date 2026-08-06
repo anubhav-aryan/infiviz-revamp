@@ -710,3 +710,39 @@
   margin-top: 6px;
   line-height: 1.5;
 }
+
+/* ---------- export ---------- */
+
+/* Quieter than the platform's primary export: on Catalog it sits beside a
+   disabled search field and a view toggle, so a solid indigo button would
+   outrank the controls people actually use. */
+.exportButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  padding: 8px 13px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-card);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-body);
+}
+
+.exportButton:hover {
+  background: var(--surface-hover);
+}
+
+.exportButton:disabled {
+  color: var(--text-disabled);
+  cursor: default;
+}
+
+.overviewTools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

@@ -408,6 +408,13 @@
   text-align: right;
 }
 
+/* Caption and the month/week toggle sit together on the right of the head. */
+.monthsTools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .monthsHead {
   margin-bottom: 16px;
 }

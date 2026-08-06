@@ -1,17 +1,14 @@
 import { group } from "@/app/_format/num";
 import {
   adherenceTier,
-  heatLevel,
   type AdherenceTier,
   type Delta,
-  type HeatLevel,
 } from "@/app/_reports/thresholds";
 import {
   CURRENT_MONTH,
   MONTHS,
   type Month,
   type MonthKey,
-  isWeekend,
 } from "@/app/_time/periods";
 import {
   lcg,
@@ -28,7 +25,7 @@ import {
  * other five months apply `PER_MONTH` to those facts: the team, the estate and
  * the coverage were all smaller further back.
  *
- * Everything derived — including the heatmap's ~300 cells — is computed once at
+ * Everything derived is computed once at
  * module scope, so the server and client renders are guaranteed to agree.
  */
 
@@ -39,7 +36,6 @@ export const COVERAGE_TARGET_FRACTION = TARGET_PCT / 100;
 type NotSeenFact = { name: string; region: string; days: number };
 type CoverageFact = { name: string; pct: number };
 /** Merchandiser → the run of days they were absent for. */
-type Gaps = Record<string, [from: number, to: number]>;
 type ActivityFact = [
   mrch: string,
   region: string,
@@ -66,8 +62,6 @@ type Facts = {
   avgVisitsPerDay: number;
   avgMinutesInStore: number;
   notSeen: NotSeenFact[];
-  /** Deliberate absence streaks — the story the heatmap is there to tell. */
-  gaps: Gaps;
   activity: ActivityFact[];
   /** Stores audited out of the whole estate: the coverage hero's two numbers. */
   audited: number;
@@ -91,12 +85,6 @@ const CURRENT_FACTS: Facts = {
     { name: "duc_ngo", region: "Red River Delta", days: 12 },
     { name: "ha_pham", region: "North Highlands", days: 8 },
   ],
-  gaps: {
-    huy_le: [11, 17],
-    duc_ngo: [13, 24],
-    bao_vu: [15, 22],
-    nam_hoang: [20, 27],
-  },
   activity: [
     ["khang_nguyen", "Ho Chi Minh City", 42, 152, 90, 1840, 94, "2h ago"],
     ["linh_pham", "South East", 38, 141, 93, 1712, 92, "1h ago"],
@@ -193,16 +181,9 @@ const SEED = 7000;
 
 /**
  * Absence streaks are authored per month rather than generated: they are the
- * one thing in the heatmap a reader is meant to notice, and every run is inside
+ * one thing a reader is meant to notice, and every run is inside
  * its own month's day count. July's live on `CURRENT_FACTS`.
  */
-const EARLIER_GAPS: Record<string, Gaps> = {
-  "2026-02": { thao_vo: [6, 12], nam_hoang: [9, 15], duc_ngo: [17, 24] },
-  "2026-03": { huy_le: [4, 11], bao_vu: [19, 27], mai_bui: [22, 28] },
-  "2026-04": { duc_ngo: [8, 16], nam_hoang: [12, 19], thao_vo: [24, 30] },
-  "2026-05": { bao_vu: [3, 9], huy_le: [14, 21], duc_ngo: [20, 29] },
-  "2026-06": { nam_hoang: [7, 14], duc_ngo: [11, 20], bao_vu: [23, 30] },
-};
 
 /** Coverage percentages read off the two numbers the hero caption prints. */
 function coveragePct(facts: Facts): number {
@@ -262,7 +243,6 @@ function deriveFacts(key: MonthKey, previous: Facts | null): Facts {
       // The card's own heading promises 7+ days, so the floor is part of it.
       days: Math.max(7, shiftCount(person.days, overdue, randOverdue)),
     })),
-    gaps: EARLIER_GAPS[key] ?? {},
     activity: CURRENT_FACTS.activity.map(
       ([
         mrch,
@@ -365,62 +345,13 @@ function buildTiles(facts: Facts): Tile[] {
       sub: "per merchandiser",
     },
     {
-      label: "Avg time in store",
+      label: "Avg photo taking in store",
       value: `${facts.avgMinutesInStore}m`,
       sub: "per visit",
     },
   ];
 }
 
-/* ---- visits heatmap: 10 merchandisers × the days of the month ---- */
-
-export type HeatCell = { level: HeatLevel; title: string };
-export type HeatRow = { name: string; cells: HeatCell[] };
-
-const HEAT_NAMES = [
-  "khang_nguyen",
-  "linh_pham",
-  "minh_tran",
-  "thao_vo",
-  "huy_le",
-  "nam_hoang",
-  "quan_do",
-  "mai_bui",
-  "duc_ngo",
-  "bao_vu",
-];
-
-/**
- * The weekday of a day comes from `isWeekend`, which reads a precomputed month
- * rather than constructing a `Date` — the grid is built once at module scope
- * and the same cells are what every render sees.
- */
-function buildHeatRows(month: Month, facts: Facts): HeatRow[] {
-  const shift = shiftFor(month.key, PER_MONTH.volume, SEED);
-
-  return HEAT_NAMES.map((name, rowIndex) => {
-    const rand = lcg(shift.seed + rowIndex * 131);
-    const gap = facts.gaps[name];
-    const cells: HeatCell[] = [];
-
-    for (let day = 1; day <= month.days; day++) {
-      const weekend = isWeekend(month, day);
-
-      let visits: number;
-      if (gap && day >= gap[0] && day <= gap[1]) visits = 0;
-      else if (weekend) visits = rand() < 0.75 ? 0 : 1;
-      else
-        visits = Math.max(0, Math.round((3 + (rand() - 0.35) * 7) * shift.scale));
-
-      cells.push({
-        level: heatLevel(visits),
-        title: `${name} · ${month.shortLabel} ${day} · ${visits} visits`,
-      });
-    }
-
-    return { name, cells };
-  });
-}
 
 /* ---- merchandiser activity table ---- */
 
@@ -511,10 +442,6 @@ export type MerchActivityView = {
   monthLabel: string;
   tiles: Tile[];
   notSeen: NotSeenFact[];
-  heatTitle: string;
-  heatRows: HeatRow[];
-  /** Drives the heat grid's column count, which is the month's day count. */
-  heatDays: number;
   activityRows: ActivityRow[];
   coverageHero: Hero;
   coverageRegions: CoverageFact[];
@@ -528,9 +455,6 @@ function buildView(month: Month, facts: Facts): MerchActivityView {
     monthLabel: month.label,
     tiles: buildTiles(facts),
     notSeen: facts.notSeen,
-    heatTitle: `Visits logged · ${month.label}`,
-    heatRows: buildHeatRows(month, facts),
-    heatDays: month.days,
     activityRows: facts.activity.map(
       ([mrch, region, stores, visits, adherence, photos, pass, lastActive]) => ({
         mrch,
