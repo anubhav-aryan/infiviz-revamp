@@ -1049,6 +1049,48 @@
   background: var(--indigo-200);
 }
 
+/* Status badge in a table cell. Tones are named here, not in TS — the same
+   rule `thresholds.ts` sets for tiers. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pill[data-tone="todo"] {
+  color: var(--text-caption);
+  background: var(--neutral-100);
+}
+
+.pill[data-tone="in-progress"] {
+  color: var(--indigo-700);
+  background: var(--indigo-50);
+}
+
+.pill[data-tone="done"] {
+  color: var(--success);
+  background: var(--success-subtle);
+}
+
+.pill[data-tone="high"] {
+  color: var(--danger);
+  background: var(--danger-subtle);
+}
+
+.pill[data-tone="medium"] {
+  color: var(--amber-700);
+  background: var(--amber-50);
+}
+
+.pill[data-tone="low"] {
+  color: var(--text-secondary);
+  background: var(--neutral-100);
+}
+
 /* ---------- tabbed table head ---------- */
 
 .tabbedHead {

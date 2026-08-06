@@ -11,7 +11,8 @@ export type NavId =
   | "master-data"
   | "catalog"
   | "photo-quality"
-  | "merch-activity";
+  | "merch-activity"
+  | "tickets";
 
 export type NavItem = {
   id: NavId;
@@ -36,6 +37,7 @@ export const NAV: NavItem[] = [
     icon: "users",
     href: "/merch-activity",
   },
+  { id: "tickets", label: "Tickets", title: "Tickets", icon: "list-checks", href: "/tickets" },
 ];
 
 export const NAV_BY_ID = Object.fromEntries(NAV.map((n) => [n.id, n])) as Record<
@@ -68,6 +70,10 @@ export const NAV_CAPTURING: NavEntry[] = [
   { id: "master-data", state: "normal" },
   { id: "photo-quality", state: "normal" },
   { id: "merch-activity", state: "normal" },
+  /* Not derived from `NAV` — a surface missing here silently disappears from
+     the sidebar during onboarding, with no type error to catch it. Tickets is
+     usable as soon as captures arrive, so it is open like the other reports. */
+  { id: "tickets", state: "normal" },
   { id: "catalog", state: "locked", tooltip: UNLOCK.catalog },
   { id: "analytics", state: "locked", tooltip: UNLOCK.analytics },
 ];

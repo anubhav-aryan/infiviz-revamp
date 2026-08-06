@@ -1,0 +1,611 @@
+/* Tickets — board, list, detail slide-over and compose form. */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* ---------- header ---------- */
+
+.head {
+  padding: 22px 30px 0;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.headTop {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--indigo-600);
+}
+
+.title {
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.headActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.personaRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.personaLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-caption);
+}
+
+/* Who you are acting as — the reporter any ticket you create would carry. */
+.actor {
+  font-size: 12px;
+  color: var(--text-caption);
+}
+
+.body {
+  padding: 20px 30px 40px;
+}
+
+/* ---------- buttons ---------- */
+
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  background: var(--indigo-600);
+  color: var(--text-on-brand);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primaryButton:hover {
+  background: var(--brand-hover, var(--indigo-700));
+}
+
+.ghostButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 8px 14px;
+  background: var(--surface-card);
+  color: var(--text-body);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ghostButton:hover {
+  background: var(--surface-hover);
+}
+
+/* ---------- board ---------- */
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--surface-sunken);
+  min-width: 0;
+}
+
+/* Suggestions are not tickets, so their column is not a ticket column — it is
+   tinted and its cards are dashed. */
+.column[data-kind="suggested"] {
+  background: var(--indigo-50);
+}
+
+.columnHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.columnName {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.columnCount {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-caption);
+  background: var(--surface-card);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.columnNote {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--indigo-800);
+}
+
+.columnEmpty {
+  padding: 14px 4px;
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+/* Each column scrolls on its own, the way a board does — otherwise a long
+   suggestion feed makes the whole page three screens tall and the other three
+   columns unreadable beside it. */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100dvh - 320px);
+  min-height: 120px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+/* ---------- cards ---------- */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--surface-card);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.card[data-clickable="true"] {
+  cursor: pointer;
+  transition: box-shadow var(--transition-snap), border-color var(--transition-snap);
+}
+
+.card[data-clickable="true"]:hover {
+  border-color: var(--indigo-300);
+  box-shadow: var(--shadow-md);
+}
+
+/* Dashed, because nobody has committed to it yet. */
+.card[data-kind="suggested"] {
+  border-style: dashed;
+  border-color: var(--indigo-200);
+  background: var(--surface-card);
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ticketKey {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-caption);
+}
+
+.source {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--indigo-700);
+  text-decoration: none;
+}
+
+.source:hover {
+  text-decoration: underline;
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-heading);
+}
+
+.cardDetail {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.cardSubject {
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+.cardFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.figure {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.createButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid var(--indigo-200);
+  border-radius: 7px;
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.createButton:hover {
+  background: var(--indigo-100);
+}
+
+.labels {
+  display: inline-flex;
+  gap: 4px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: var(--neutral-100);
+  white-space: nowrap;
+}
+
+.assignee {
+  display: inline-flex;
+  flex: none;
+}
+
+/* ---------- avatar ---------- */
+
+/* Derived from `.brandMark` in app-shell.module.css — same display font and
+   weight — with a full radius so it reads as a person rather than a product. */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--indigo-100);
+  color: var(--indigo-800);
+  font-family: var(--font-display);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.avatar[data-size="md"] {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
+/* ---------- pills ---------- */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pill[data-tone="todo"] {
+  color: var(--text-caption);
+  background: var(--neutral-100);
+}
+
+.pill[data-tone="in-progress"] {
+  color: var(--indigo-700);
+  background: var(--indigo-50);
+}
+
+.pill[data-tone="done"] {
+  color: var(--success);
+  background: var(--success-subtle);
+}
+
+.pill[data-tone="high"] {
+  color: var(--danger);
+  background: var(--danger-subtle);
+}
+
+.pill[data-tone="medium"] {
+  color: var(--amber-700);
+  background: var(--amber-50);
+}
+
+.pill[data-tone="low"] {
+  color: var(--text-secondary);
+  background: var(--neutral-100);
+}
+
+/* ---------- slide-over ---------- */
+
+/* Geometry lifted from catalog's SKU panel, the app's established overlay. */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(15, 23, 41, 0.45);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.panel {
+  width: 460px;
+  flex: none;
+  height: 100%;
+  background: var(--surface-card);
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.panelEyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-caption);
+}
+
+.panelClose {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.panelClose:hover {
+  background: var(--surface-hover);
+}
+
+.panelBody {
+  padding: 24px;
+}
+
+.panelTitle {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-heading);
+}
+
+.panelDetail {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.sourceLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 7px 11px;
+  border: 1px solid var(--indigo-200);
+  border-radius: 8px;
+  background: var(--indigo-50);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--indigo-700);
+  text-decoration: none;
+}
+
+.sourceLink[data-static="true"] {
+  cursor: default;
+}
+
+/* ---------- attributes ---------- */
+
+.attributes {
+  margin-top: 20px;
+  border-top: 1px solid var(--hairline);
+}
+
+.attributeRow {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.attributeKey {
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+.attributeValue {
+  font-size: 12.5px;
+  color: var(--text-body);
+  min-width: 0;
+}
+
+.person {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.personRole {
+  display: block;
+  font-size: 10.5px;
+  color: var(--text-caption);
+}
+
+.labelRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+/* Says plainly that this is a mockup rather than letting the form imply that
+   pressing Create filed something. */
+.mockNote {
+  margin-top: 18px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-caption);
+}
+
+/* ---------- compose form ---------- */
+
+.field {
+  display: block;
+  margin-top: 16px;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 130px;
+  gap: 12px;
+  align-items: start;
+}
+
+.field[data-narrow="true"] {
+  min-width: 0;
+}
+
+.fieldLabel {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.fieldHint {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--text-caption);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-card);
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--text-body);
+}
+
+.textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: 2px solid var(--indigo-300);
+  outline-offset: 1px;
+  border-color: var(--indigo-400);
+}
+
+.reporterLine {
+  margin-top: 16px;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}

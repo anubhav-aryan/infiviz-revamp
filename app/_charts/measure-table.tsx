@@ -46,6 +46,14 @@ function CellBody({ cell }: { cell: Cell }) {
     );
   }
 
+  if (cell.pill) {
+    return (
+      <span className={styles.pill} data-tone={cell.pill.tone}>
+        {cell.pill.label}
+      </span>
+    );
+  }
+
   if (cell.delta) return <DeltaChip {...cell.delta} size="inline" />;
 
   const label = cell.href ? (

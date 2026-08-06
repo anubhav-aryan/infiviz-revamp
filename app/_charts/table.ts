@@ -31,6 +31,12 @@ export type Cell = {
   href?: string;
   /** Renders the session-evidence glyph; inert when `href` is absent. */
   seLink?: boolean;
+  /**
+   * A status badge. `tier` only spans good/warn/bad, which cannot express a
+   * workflow state like "In progress", so anything with a status column needs
+   * this. `tone` is a name, not a colour — the stylesheet maps it.
+   */
+  pill?: { label: string; tone: string };
   /** Tabular figures. Set for anything that should column-align. */
   mono?: boolean;
 };
