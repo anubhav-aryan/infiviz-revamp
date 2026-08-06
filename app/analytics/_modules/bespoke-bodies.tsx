@@ -134,8 +134,8 @@ export function RoiBody({ view }: { view: RoiView }) {
         </div>
 
         <Card
-          title="Revenue impact by region"
-          caption="Net of merchandising cost, shared out by each region's audited store count."
+          title={view.byRegionTitle}
+          caption={view.byRegionCaption}
         >
           <div className={charts.chartBody}>
             <HBarList rows={view.byRegion} nameWidth="minmax(140px, 40%)" />

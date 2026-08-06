@@ -54,6 +54,11 @@ export function PhotoLightbox({
         onClick={(event) => event.stopPropagation()}
       >
         <div className={`${styles.lightboxStage} ${styles.photoPlaceholderLarge}`}>
+          <img
+            className={styles.fillImage}
+            src={photo.src}
+            alt={`${photo.category} shelf capture #${photo.seq}`}
+          />
           {/* Disabled at the ends rather than silently clamping, so the control
               never looks available when it cannot move. */}
           <button

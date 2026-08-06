@@ -113,8 +113,6 @@
   cursor: pointer;
 }
 
-/* Captures are not stored in this build, so the frame is a placeholder that
-   still carries the two things the grid is read for — sequence and quality. */
 .frame {
   position: relative;
   display: flex;
@@ -133,6 +131,16 @@
 
 .tile:hover .frame {
   border-color: var(--indigo-300);
+}
+
+.frameImage {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
 }
 
 .quality {

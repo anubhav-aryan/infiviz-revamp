@@ -107,6 +107,11 @@ export function AppImagesView({ onBack, onOpenPhoto }: AppImagesViewProps) {
                     <span
                       className={`${styles.photoFrame} ${styles.photoPlaceholder}`}
                     >
+                      <img
+                        className={styles.fillImage}
+                        src={photo.src}
+                        alt={`${photo.category} shelf capture #${photo.seq}`}
+                      />
                       <span
                         className={styles.photoQuality}
                         data-quality={photo.quality}

@@ -155,13 +155,16 @@ export const BOX_LEGEND: { kind: BoxKind; label: string }[] = [
   { kind: "unrecognised", label: "Unrecognised" },
 ];
 
+/** The mock photograph standing in for the stitched shelf capture. */
+export const SHELF_IMAGE = "/mock-shelf/shelf-toothpaste-wide.jpg";
+
 /** The five raw captures the stitch was assembled from, in capture order. */
 export const STITCH_PHOTOS = [
-  "09:18 · #01",
-  "09:19 · #02",
-  "09:20 · #03",
-  "09:21 · #04",
-  "09:22 · #05",
+  { label: "09:18 · #01", src: "/mock-shelf/toothpaste-1.jpg" },
+  { label: "09:19 · #02", src: "/mock-shelf/toothpaste-2.jpg" },
+  { label: "09:20 · #03", src: "/mock-shelf/toothpaste-3.jpg" },
+  { label: "09:21 · #04", src: "/mock-shelf/toothpaste-4.jpg" },
+  { label: "09:22 · #05", src: "/mock-shelf/toothpaste-5.jpg" },
 ];
 
 /* ---- shelf metrics ---- */

@@ -1,5 +1,5 @@
 import { Icon } from "@/app/_components/icon";
-import type { Visit } from "../_data/store-explorer";
+import { categoryThumb, type Visit } from "../_data/store-explorer";
 import styles from "./store-explorer.module.css";
 
 type VisitProps = {
@@ -110,6 +110,7 @@ export function VisitGallery({ visits, onOpen, onClearFilters }: VisitProps) {
             className={`${styles.galleryThumb} ${styles.photoPlaceholder}`}
             aria-hidden="true"
           >
+            <img className={styles.fillImage} src={categoryThumb(visit.categories)} alt="" />
             <span className={styles.galleryThumbChip}>
               <StatusChip status={visit.status} />
             </span>

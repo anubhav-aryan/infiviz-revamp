@@ -2,6 +2,10 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Icon } from "@/app/_components/icon";
 import { ActivityFeed } from "./activity-feed";
+import { OverdueStoresCard, QualityAlertsCard } from "./alert-strips";
+import { HIGH_PRIORITY_COUNT, NeedsAttention, OPEN_TICKET_COUNT } from "./needs-attention";
+import { RegionalCoverage } from "./regional-coverage";
+import { SessionsCard } from "./sessions-card";
 import {
   ACTIONS,
   HEADER_C,
@@ -134,6 +138,8 @@ export function LiveScreen() {
             />
           </div>
 
+          <NeedsAttention />
+
           {/* secondary KPIs */}
           <div>
             <div className={styles.secondaryTitle}>{SECONDARY_TITLE}</div>
@@ -159,8 +165,20 @@ export function LiveScreen() {
             </div>
           </div>
 
-          {/* primary actions */}
+          {/* trend + geography */}
           <div className={styles.pair}>
+            <SessionsCard />
+            <RegionalCoverage />
+          </div>
+
+          {/* what needs following up, on the ground */}
+          <div className={styles.pair}>
+            <OverdueStoresCard />
+            <QualityAlertsCard />
+          </div>
+
+          {/* primary actions */}
+          <div className={styles.trio}>
             <Link
               href={ACTIONS.analytics.href}
               className={`${styles.actionCard} ${styles.actionPrimary}`}
@@ -182,6 +200,19 @@ export function LiveScreen() {
               </span>
               <span className={styles.actionTitle}>{ACTIONS.explorer.title}</span>
               <span className={styles.actionDesc}>{ACTIONS.explorer.desc}</span>
+            </Link>
+            <Link
+              href={ACTIONS.tickets.href}
+              className={`${styles.actionCard} ${styles.actionSecondary}`}
+            >
+              <span className={styles.actionHead}>
+                <Icon name={ACTIONS.tickets.icon} />
+                <Icon name="arrow-right" />
+              </span>
+              <span className={styles.actionTitle}>{ACTIONS.tickets.title}</span>
+              <span className={styles.actionDesc}>
+                {OPEN_TICKET_COUNT} open · {HIGH_PRIORITY_COUNT} high priority
+              </span>
             </Link>
           </div>
         </div>

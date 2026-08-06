@@ -60,8 +60,74 @@ type RailShellProps = {
    * the control has to sit above the thing it governs.
    */
   railHeader?: ReactNode;
+  /**
+   * Replaces the rendered `groups` when a section needs its links to carry
+   * something the server cannot know — Analytics appends the current scope,
+   * month and measure so navigating the rail does not drop them. The default is
+   * `RailGroups` over the same `groups`, which is also what a Suspense fallback
+   * should render so the prerendered HTML is identical either way.
+   */
+  railItems?: ReactNode;
   children: ReactNode;
 };
+
+/**
+ * The section rail's grouped links.
+ *
+ * Split out of `RailShell` so a client component can render exactly this markup
+ * with query-carrying hrefs. Both callers use the same classes, which is what
+ * stops the two renderings from drifting apart visually.
+ */
+export function RailGroups({
+  groups,
+  activeSection,
+}: {
+  groups: SectionGroup[];
+  activeSection: string;
+}) {
+  return (
+    <>
+      {groups.map((group) => (
+        <div key={group.label}>
+          <div className={styles.sectionGroup}>{group.label}</div>
+          {group.items.map((item) =>
+            item.href ? (
+              <Link
+                key={item.id}
+                href={item.href}
+                className={styles.sectionItem}
+                data-state={item.id === activeSection ? "active" : "normal"}
+                aria-current={item.id === activeSection ? "page" : undefined}
+              >
+                <Icon name={item.icon} />
+                <span className={styles.sectionItemBody}>
+                  {item.label}
+                  {item.sub ? (
+                    <span className={styles.sectionItemSub}>{item.sub}</span>
+                  ) : null}
+                </span>
+              </Link>
+            ) : (
+              // Sub-surfaces with no design and no route yet. A <button> here
+              // would take focus and announce as a control that does nothing,
+              // so these stay inert text — the same treatment locked items get
+              // in AppShell.
+              <span
+                key={item.id}
+                className={styles.sectionItem}
+                data-state="unavailable"
+                aria-disabled="true"
+              >
+                <Icon name={item.icon} />
+                {item.label}
+              </span>
+            ),
+          )}
+        </div>
+      ))}
+    </>
+  );
+}
 
 /**
  * Master data's two-rail shell: a collapsed icon-only product rail plus a
@@ -74,6 +140,7 @@ export function RailShell({
   groups,
   activeSection,
   railHeader,
+  railItems,
   children,
 }: RailShellProps) {
   return (
@@ -121,44 +188,7 @@ export function RailShell({
         <div className={styles.sectionTitle}>{section.title}</div>
         <div className={styles.sectionCaption}>{section.caption}</div>
 
-        {groups.map((group) => (
-          <div key={group.label}>
-            <div className={styles.sectionGroup}>{group.label}</div>
-            {group.items.map((item) =>
-              item.href ? (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={styles.sectionItem}
-                  data-state={item.id === activeSection ? "active" : "normal"}
-                  aria-current={item.id === activeSection ? "page" : undefined}
-                >
-                  <Icon name={item.icon} />
-                  <span className={styles.sectionItemBody}>
-                    {item.label}
-                    {item.sub ? (
-                      <span className={styles.sectionItemSub}>{item.sub}</span>
-                    ) : null}
-                  </span>
-                </Link>
-              ) : (
-                // Sub-surfaces with no design and no route yet. A <button> here
-                // would take focus and announce as a control that does nothing,
-                // so these stay inert text — the same treatment locked items get
-                // in AppShell.
-                <span
-                  key={item.id}
-                  className={styles.sectionItem}
-                  data-state="unavailable"
-                  aria-disabled="true"
-                >
-                  <Icon name={item.icon} />
-                  {item.label}
-                </span>
-              ),
-            )}
-          </div>
-        ))}
+        {railItems ?? <RailGroups groups={groups} activeSection={activeSection} />}
       </nav>
 
       <main className={styles.main}>

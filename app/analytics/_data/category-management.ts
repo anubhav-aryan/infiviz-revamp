@@ -125,6 +125,10 @@ const CONFIG: MetricModuleConfig = {
   /* Brand and outlet figures are shares of shelf; the others scale off them. */
   baseMeasure: "sos",
 
+  /* This module's spine is share of shelf, so a region moves it by its own
+     share-of-shelf standing rather than by its availability. */
+  scopeAxis: "sos",
+
   actionsTotal: 700,
   actionsClosedPct: 27.9,
 

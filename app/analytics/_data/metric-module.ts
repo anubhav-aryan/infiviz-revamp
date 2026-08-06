@@ -27,6 +27,16 @@ import type { CsvTable } from "@/app/_export/csv";
 import { group } from "@/app/_format/num";
 import { MONTHS, MONTH_KEYS, type MonthKey } from "@/app/_time/periods";
 import { ESTATE, LAST, MINUS, MONTH_INDEX, before } from "./spine";
+import {
+  CATEGORY_BRANDS,
+  CATEGORY_SEGMENTS,
+  NATIONAL,
+  OUTLETS_BY_REGION,
+  type CategoryScopeId,
+  type RegionScopeId,
+  type Scope,
+  type ScopeId,
+} from "./scope";
 
 /**
  * The factory behind Category Management, Availability, Revenue and Space.
@@ -104,6 +114,14 @@ export type MetricModuleConfig = {
    * the first measure.
    */
   baseMeasure?: string;
+  /**
+   * Which of a region's two factors this module moves with. A region is ahead
+   * on availability by a different amount than it is ahead on share of shelf,
+   * so a module has to say which of the two its spine belongs to. Compliance
+   * modules have no per-region fact of their own and take `osa` as the proxy
+   * for how well the region executes. Defaults to `osa`.
+   */
+  scopeAxis?: "osa" | "sos";
 };
 
 /* ---------------------------------------------------------------- */
@@ -119,6 +137,17 @@ const at = (series: number[], i: number) =>
 const levelOf = (series: number[], i: number) => at(series, i) / series[LAST];
 
 const round2 = (v: number) => +v.toFixed(2);
+
+/**
+ * A percentage, rounded and held below 100.
+ *
+ * The ceiling only bites once a scope multiplies things up: Ho Chi Minh City
+ * runs 11.6% ahead of the nation, and must-stock availability is already at
+ * 72.5, so the two together would print an availability of 101.5%. Every
+ * national figure sits under the ceiling, so this is `round2` on the unscoped
+ * path — which is what keeps that output unchanged.
+ */
+const capped = (v: number) => Math.min(100, round2(v));
 
 const pct = (v: number) => `${v.toFixed(2)}%`;
 
@@ -153,6 +182,15 @@ export type MetricModuleView = {
   monthLabel: string;
   measureId: string;
   measureLabel: string;
+  scopeId: ScopeId;
+  /** "Mekong Delta · 300 stores" — the header's scope line. */
+  scopeCaption: string;
+  /**
+   * What the group cards are of. "Category" everywhere except inside a
+   * category, where they are that category's segments — a card headed
+   * "category wise" listing "Daily whitening" would be naming them wrongly.
+   */
+  groupNoun: string;
   /** Headline value for the selected measure, e.g. `"38.70%"`. */
   headline: string;
   headlineDelta: string;
@@ -353,6 +391,85 @@ function barsFrom(facts: [string, number][], scale: number): BarRow[] {
 }
 
 /* ---------------------------------------------------------------- */
+/* scoping                                                           */
+/* ---------------------------------------------------------------- */
+
+/**
+ * How far this scope sits from the nation, in this module's own terms.
+ *
+ * A category reads its scale out of the module's own `groups` row rather than
+ * out of `scope.factors`. That is what makes a category-scoped headline
+ * reconcile: open Availability nationally, read the Toothpaste card, then scope
+ * to Toothpaste and the headline is that card's number. Two independent
+ * authorings could not promise that.
+ */
+function scopeScaleFor(
+  config: MetricModuleConfig,
+  base: Measure,
+  scope: Scope,
+): number {
+  if (scope.kind === "national") return 1;
+  if (scope.kind === "region") return scope.factors[config.scopeAxis ?? "osa"];
+  const fact = config.groups.find(([name]) => name === scope.label);
+  return fact ? fact[1] / base.series[LAST] : scope.factors.osa;
+}
+
+/**
+ * Rows are authored in pre-scale space — the value they would have if the
+ * module were sitting on its base measure, nationally. `level` then applies the
+ * month, the measure and the scope in one multiplication, so an override only
+ * has to say how a row relates to its own category: `base × skew`.
+ */
+const preScale = (base: Measure, skew: number) => round2(base.series[LAST] * skew);
+
+function scopedBrands(
+  config: MetricModuleConfig,
+  base: Measure,
+  scope: Scope,
+): BrandFact[] {
+  if (scope.kind !== "category") return config.brands;
+  const override = CATEGORY_BRANDS[scope.id as CategoryScopeId];
+  /* Toothpaste has no override: every module's brand list already is the
+     toothpaste range, so scoping to it keeps those rows. */
+  if (!override) return config.brands;
+  return override.map(([name, skew, delta], index) => {
+    const template = config.brands[index % config.brands.length];
+    return [name, preScale(base, skew), delta, template[3]];
+  });
+}
+
+function scopedGroups(
+  config: MetricModuleConfig,
+  base: Measure,
+  scope: Scope,
+): GroupFact[] {
+  /* A region keeps the five category cards — seeing the category breakdown
+     *within* their region is the whole reason a regional lead opens this. */
+  if (scope.kind !== "category") return config.groups;
+  const target = config.groups[0]?.[3] ?? 100;
+  return CATEGORY_SEGMENTS[scope.id as CategoryScopeId].map(
+    ([name, skew, delta]) => [name, preScale(base, skew), delta, target],
+  );
+}
+
+function scopedOutlets(config: MetricModuleConfig, scope: Scope): OutletFact[] {
+  /* A category does not change which stores were visited, only what was
+     measured in them — so only a region swaps the list. Each replacement keeps
+     its template's target, so the module's own target vocabulary survives. */
+  if (scope.kind !== "region") return config.outlets;
+  return OUTLETS_BY_REGION[scope.id as RegionScopeId].map((store, index) => {
+    const template = config.outlets[index % config.outlets.length];
+    return [
+      store.outlet,
+      store.code,
+      round2(template[2] * store.skew),
+      template[3],
+      store.session,
+    ];
+  });
+}
+
+/* ---------------------------------------------------------------- */
 /* the builder                                                       */
 /* ---------------------------------------------------------------- */
 
@@ -360,29 +477,55 @@ export function buildMetricModule(
   config: MetricModuleConfig,
   measureId: string,
   period: MonthKey,
+  scope: Scope = NATIONAL,
 ): MetricModuleView {
   const measure =
     config.measures.find((m) => m.id === measureId) ?? config.measures[0];
   const i = MONTH_INDEX[period];
 
-  /* Two factors, deliberately separate. `monthLevel` is how far down the
+  /* Three factors, deliberately separate. `monthLevel` is how far down the
      six-month spine this month sits; `measureScale` is how the selected
-     measure relates to the one the facts were authored against. Without the
-     second, switching from OSA to must-stock OSA would move the headline and
-     leave every brand row untouched. */
+     measure relates to the one the facts were authored against; `scopeScale`
+     is how the region or category being looked at relates to the nation.
+     Without the second, switching from OSA to must-stock OSA would move the
+     headline and leave every brand row untouched. Without the third, every
+     persona would see the same national figures — which is what this module
+     did before scoping existed.
+
+     Percentages and counts then part company. A region holds a share of the
+     estate that has nothing to do with how well it performs, so `countLevel`
+     carries `countShare` where `pctLevel` carries `scopeScale`. Under the
+     national scope both are 1 and the two collapse back into the single
+     `level` this factory used before — which is what makes the unscoped
+     output provably unchanged. */
   const base =
     config.measures.find((m) => m.id === config.baseMeasure) ?? config.measures[0];
   const measureScale = measure.series[LAST] / base.series[LAST];
-  const level = levelOf(measure.series, i) * measureScale;
-  const headline = at(measure.series, i);
-  const headlineDelta = headline - at(measure.series, i - 1);
+  const scopeScale = scopeScaleFor(config, base, scope);
+  const monthLevel = levelOf(measure.series, i);
+  const level = monthLevel * measureScale * scopeScale;
+  const countLevel = monthLevel * measureScale * scope.countShare;
+
+  const headline = capped(at(measure.series, i) * scopeScale);
+  const headlineDelta = headline - capped(at(measure.series, i - 1) * scopeScale);
+
+  /* The chart builders read a measure's series directly, so they are handed a
+     scoped copy rather than each learning about scope. */
+  const scopedMeasure: Measure =
+    scopeScale === 1
+      ? measure
+      : { ...measure, series: measure.series.map((v) => capped(v * scopeScale)) };
+
+  const brands = scopedBrands(config, base, scope);
+  const groups = scopedGroups(config, base, scope);
+  const outlets = scopedOutlets(config, scope);
 
   /* ---- brand-wise table ---- */
 
-  const brandRows: Row[] = config.brands.map(([name, value, delta, facings]) => {
-    const scaled = round2(value * level);
+  const brandRows: Row[] = brands.map(([name, value, delta, facings]) => {
+    const scaled = capped(value * level);
     const scaledDelta = round2(delta * level);
-    const scaledFacings = Math.round(facings * level);
+    const scaledFacings = Math.round(facings * countLevel);
     return {
       id: name,
       cells: [
@@ -396,8 +539,8 @@ export function buildMetricModule(
 
   /* ---- category cards ---- */
 
-  const groupCards = config.groups.map(([name, value, delta]) => {
-    const scaled = round2(value * level);
+  const groupCards = groups.map(([name, value, delta]) => {
+    const scaled = capped(value * level);
     const scaledDelta = round2(delta * level);
     return {
       name,
@@ -410,8 +553,8 @@ export function buildMetricModule(
 
   /* ---- gap analysis ---- */
 
-  const gapCards: GapCard[] = config.groups.map(([name, value, , target]) => {
-    const scaled = round2(value * level);
+  const gapCards: GapCard[] = groups.map(([name, value, , target]) => {
+    const scaled = capped(value * level);
     const gap = round2(Math.abs(target - scaled));
     return {
       name,
@@ -433,9 +576,9 @@ export function buildMetricModule(
     { key: "se", label: "SE Link", align: "right", width: "72px", unsortable: true },
   ];
 
-  const outletRows: Row[] = config.outlets.map(
+  const outletRows: Row[] = outlets.map(
     ([outlet, code, value, target, session], index) => {
-      const scaled = round2(value * level);
+      const scaled = capped(value * level);
       return {
         id: `${code}-${index}`,
         cells: [
@@ -456,8 +599,8 @@ export function buildMetricModule(
     { key: "value", label: measure.short, align: "right" },
   ];
 
-  const storeRows: Row[] = config.outlets.map(([outlet, code, value], index) => {
-    const scaled = round2(value * level);
+  const storeRows: Row[] = outlets.map(([outlet, code, value], index) => {
+    const scaled = capped(value * level);
     return {
       id: `store-${code}-${index}`,
       cells: [
@@ -470,10 +613,13 @@ export function buildMetricModule(
 
   /* ---- actions ---- */
 
-  const actionsTotal = Math.round(config.actionsTotal * (2 - level));
-  const closedPct = round2(config.actionsClosedPct * level);
+  /* More actions where execution is worse, hence `2 - level`; fewer of them in
+     a region that holds a smaller slice of the estate, hence `countShare`. */
+  const actionsTotal = Math.round(config.actionsTotal * (2 - level) * scope.countShare);
+  const closedPct = capped(config.actionsClosedPct * level);
   const closed = Math.round((actionsTotal * closedPct) / 100);
-  const perVisit = actionsTotal / Math.max(1, Math.round(ESTATE.sessions * level));
+  const sessions = Math.max(1, Math.round(ESTATE.sessions * countLevel));
+  const perVisit = actionsTotal / sessions;
 
   const actions: ActionsBlockData = {
     stats: [
@@ -488,7 +634,7 @@ export function buildMetricModule(
            different things in one card. */
         label: "Actions per session",
         value: perVisit.toFixed(2),
-        caption: `across ${group(Math.round(ESTATE.sessions * level))} sessions`,
+        caption: `across ${group(sessions)} sessions`,
       },
       {
         label: "Actions completed",
@@ -500,12 +646,12 @@ export function buildMetricModule(
     openClosed: buildOpenClosed(actionsTotal, closedPct),
     reasons: {
       title: `Why ${config.measureNoun} was not fixed`,
-      rows: barsFrom(config.reasons, level),
+      rows: barsFrom(config.reasons, countLevel),
       axisLabel: "Number of actions",
     },
     byCategory: {
       title: "Brand-wise actions generated",
-      rows: barsFrom(config.actionsByBrand, level),
+      rows: barsFrom(config.actionsByBrand, countLevel),
       axisLabel: "Number of actions",
     },
     completion: {
@@ -517,8 +663,8 @@ export function buildMetricModule(
         { key: "pct", label: "Completion", align: "right" },
       ],
       rows: config.completion.map(([name, open, closedCount]) => {
-        const scaledOpen = Math.round(open * (2 - level));
-        const scaledClosed = Math.round(closedCount * level);
+        const scaledOpen = Math.round(open * (2 - level) * scope.countShare);
+        const scaledClosed = Math.round(closedCount * countLevel);
         const rate = (scaledClosed / Math.max(1, scaledOpen + scaledClosed)) * 100;
         return {
           id: name,
@@ -540,7 +686,7 @@ export function buildMetricModule(
         { key: "reason", label: "Reason" },
         { key: "status", label: "Status" },
       ],
-      rows: config.outlets.map(([outlet, code], index) => ({
+      rows: outlets.map(([outlet, code], index) => ({
         id: `action-${code}-${index}`,
         cells: [
           text(`${String((index % 27) + 2).padStart(2, "0")} ${MONTH_SHORT[i]} 2026`),
@@ -559,7 +705,7 @@ export function buildMetricModule(
     ? (() => {
         const facts = config.merchImpact.map(
           ([name, beforeValue, afterValue]) =>
-            [name, round2(beforeValue * level), round2(afterValue * level)] as const,
+            [name, capped(beforeValue * level), capped(afterValue * level)] as const,
         );
         const max = Math.max(...facts.map(([, , after]) => after));
 
@@ -631,9 +777,9 @@ export function buildMetricModule(
               { key: "after", label: "After", align: "right" as const },
               { key: "uplift", label: "Uplift", align: "right" as const },
             ],
-            rows: config.outlets.map(([outlet, code, value], index) => {
-              const beforeValue = round2(value * level * 0.6);
-              const afterValue = round2(value * level);
+            rows: outlets.map(([outlet, code, value], index) => {
+              const beforeValue = capped(value * level * 0.6);
+              const afterValue = capped(value * level);
               const uplift = round2(afterValue - beforeValue);
               return {
                 id: `impact-${code}-${index}`,
@@ -661,9 +807,9 @@ export function buildMetricModule(
     { key: "value", label: measure.short, align: "right" },
   ];
 
-  const rawRows: Row[] = config.outlets.flatMap(([outlet, code, value], outletIndex) =>
-    config.brands.map(([brand, brandValue], brandIndex) => {
-      const scaled = round2(((value + brandValue) / 2) * level);
+  const rawRows: Row[] = outlets.flatMap(([outlet, code, value], outletIndex) =>
+    brands.map(([brand, brandValue], brandIndex) => {
+      const scaled = capped(((value + brandValue) / 2) * level);
       return {
         id: `raw-${code}-${brandIndex}`,
         cells: [
@@ -692,10 +838,10 @@ export function buildMetricModule(
       { key: "absent", label: "Absent", align: "right" as const },
       { key: "osa", label: measure.short, align: "right" as const },
     ],
-    rows: config.brands
+    rows: brands
       .map(([name, value, , facings]) => {
-        const ranged = Math.round(facings / 46);
-        const scaled = round2(value * level);
+        const ranged = Math.round((facings / 46) * scope.countShare);
+        const scaled = capped(value * level);
         const present = Math.round((ranged * scaled) / 100);
         return { name, ranged, present, absent: ranged - present, scaled };
       })
@@ -717,9 +863,10 @@ export function buildMetricModule(
   /* Retailer opens into its stores, each cell one month. Levels come from the
      measure's own range across the window rather than a fixed scale, so a
      compliance measure sitting in the 50s is still legible. */
-  const span = Math.max(...measure.series) - Math.min(...measure.series) || 1;
+  const span =
+    Math.max(...scopedMeasure.series) - Math.min(...scopedMeasure.series) || 1;
   const levelOfValue = (value: number): 0 | 1 | 2 | 3 | 4 => {
-    const share = (value - Math.min(...measure.series) * 0.8) / (span * 2.2);
+    const share = (value - Math.min(...scopedMeasure.series) * 0.8) / (span * 2.2);
     return Math.max(0, Math.min(4, Math.round(share * 4))) as 0 | 1 | 2 | 3 | 4;
   };
 
@@ -742,8 +889,8 @@ export function buildMetricModule(
   const retailerOf = (outlet: string) =>
     RETAILER_TOKENS.find(([token]) => outlet.includes(token))?.[1] ?? "Other";
 
-  const byRetailer = new Map<string, typeof config.outlets>();
-  for (const outlet of config.outlets) {
+  const byRetailer = new Map<string, OutletFact[]>();
+  for (const outlet of outlets) {
     const retailer = retailerOf(outlet[0]);
     const existing = byRetailer.get(retailer);
     if (existing) existing.push(outlet);
@@ -752,12 +899,14 @@ export function buildMetricModule(
 
   const matrixGroups: MatrixGroup[] = [...byRetailer.entries()].map(
     ([retailer, stores], groupIndex) => {
-      const cellsFor = (base: number, seed: number) =>
-        measure.series.map((monthValue, monthIndex) => {
+      const cellsFor = (storeBase: number, seed: number) =>
+        scopedMeasure.series.map((monthValue, monthIndex) => {
           /* A store with no visit that month leaves the cell blank — a zero
              would read as "measured, and it was zero". */
           if ((seed + monthIndex) % 7 === 3) return { text: "" };
-          const value = round2(base * (monthValue / measure.series[LAST]));
+          const value = capped(
+            storeBase * scopeScale * (monthValue / scopedMeasure.series[LAST]),
+          );
           return { text: pct(value), level: levelOfValue(value) };
         });
 
@@ -785,6 +934,9 @@ export function buildMetricModule(
     monthLabel: MONTHS[i].label,
     measureId: measure.id,
     measureLabel: measure.label,
+    scopeId: scope.id,
+    scopeCaption: scope.caption,
+    groupNoun: scope.kind === "category" ? "segment" : "category",
     headline: pct(round2(headline)),
     headlineDelta: signed2(round2(headlineDelta)),
 
@@ -799,9 +951,9 @@ export function buildMetricModule(
     },
     groupCards,
     donut: measure.competitive
-      ? buildDonut(measure, i, round2(at(measure.series, i)))
+      ? buildDonut(scopedMeasure, i, round2(headline))
       : undefined,
-    trend: buildTrend(measure, i, measure.label),
+    trend: buildTrend(scopedMeasure, i, measure.label),
     detailViews: [
       {
         id: "visit",
@@ -820,7 +972,7 @@ export function buildMetricModule(
     ],
 
     gapCards,
-    gapColumns: buildGapColumns(measure, measure.label),
+    gapColumns: buildGapColumns(scopedMeasure, measure.label),
     gapDetail: { columns: outletColumns, rows: outletRows },
 
     actions,
@@ -855,6 +1007,38 @@ export function precomputeModule(config: MetricModuleConfig) {
     ) as Record<MonthKey, MetricModuleView>;
   }
   return out;
+}
+
+/**
+ * A view for any scope, built once and kept.
+ *
+ * The national scope reads straight out of `precomputeModule`, so the default
+ * path keeps its contract exactly: nothing is computed after hydration, and the
+ * authored month is still returned by reference.
+ *
+ * The other eleven scopes are built on first open and cached. Building all of
+ * them at module scope would mean roughly eight hundred `buildMetricModule`
+ * calls before the first byte of any page — for combinations most sessions
+ * never look at. The property that actually matters is upheld either way: the
+ * builder is pure, so the same key always yields the same view, and a scope is
+ * only ever computed once.
+ */
+export function scopedViewFor(
+  config: MetricModuleConfig,
+  precomputed: Record<string, Record<MonthKey, MetricModuleView>>,
+  scope: Scope,
+  measureId: string,
+  period: MonthKey,
+  cache: Map<string, MetricModuleView>,
+): MetricModuleView | undefined {
+  if (scope.kind === "national") return precomputed[measureId]?.[period];
+  if (!precomputed[measureId]) return undefined;
+  const key = `${scope.id}:${measureId}:${period}`;
+  const hit = cache.get(key);
+  if (hit) return hit;
+  const built = buildMetricModule(config, measureId, period, scope);
+  cache.set(key, built);
+  return built;
 }
 
 /** The measure a module opens on — its base, never a positional guess. */

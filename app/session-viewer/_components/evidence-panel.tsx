@@ -3,6 +3,7 @@ import {
   BOX_LEGEND,
   BOX_PAINT,
   RECOGNITION_BOXES,
+  SHELF_IMAGE,
   STITCH_PHOTOS,
 } from "../_data/session-viewer";
 import styles from "./session-viewer.module.css";
@@ -32,6 +33,11 @@ export function EvidencePanel({ boxes, onToggleBoxes }: EvidencePanelProps) {
         </div>
 
         <div className={styles.shelf}>
+          <img
+            className={styles.shelfImage}
+            src={SHELF_IMAGE}
+            alt="Stitched shelf capture"
+          />
           {boxes ? (
             // `preserveAspectRatio="none"` is deliberate: the boxes were placed
             // against the stitch, so they must stretch with it rather than
@@ -83,9 +89,9 @@ export function EvidencePanel({ boxes, onToggleBoxes }: EvidencePanelProps) {
         </span>
         <div className={styles.photoGrid}>
           {STITCH_PHOTOS.map((photo) => (
-            <div key={photo}>
-              <div className={styles.photoThumb} />
-              <div className={styles.photoLabel}>{photo}</div>
+            <div key={photo.label}>
+              <img className={styles.photoThumb} src={photo.src} alt={photo.label} />
+              <div className={styles.photoLabel}>{photo.label}</div>
             </div>
           ))}
         </div>

@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
-import { RailShell, type SectionGroup } from "@/app/_components/app-shell";
+import { RailGroups, RailShell, type SectionGroup } from "@/app/_components/app-shell";
 import { ModuleScreen } from "@/app/analytics/_modules/module-screen";
+import {
+  AnalyticsRailItems,
+  PersonaSwitcher,
+  PersonaSwitcherView,
+  ScopePicker,
+} from "@/app/analytics/_modules/rail-controls";
 import {
   MODULES,
   PERSONAS,
   allRoutes,
+  landingModule,
   modulePath,
   railGroupsFor,
   type ModuleId,
   type PersonaId,
   type TabId,
 } from "@/app/analytics/_data/module-matrix";
-import styles from "@/app/analytics/_modules/persona.module.css";
 
 export const metadata: Metadata = {
   title: "Analytics",
@@ -33,57 +38,29 @@ export function generateStaticParams() {
 export const dynamicParams = false;
 
 /**
- * The persona switcher. Links rather than buttons: the persona is a path
- * segment, so it should be deep-linkable and prerendered — and this keeps the
- * control a Server Component.
+ * Where each persona's switcher button goes.
+ *
+ * Computed here, on the server, because it is a fact about the matrix rather
+ * than about the current URL — which keeps the client component that renders
+ * the buttons free of routing logic and takes only plain data across the
+ * boundary. Switching persona stays on the current module when the target
+ * persona owns it, and otherwise lands on the module they open on.
  */
-function PersonaSwitcher({
-  active,
-  module,
-  tab,
-}: {
-  active: PersonaId;
-  module: ModuleId;
-  tab: TabId;
-}) {
-  return (
-    <div>
-      <div className={styles.switcherLabel}>Viewing as</div>
-      <div className={styles.switcher} role="group" aria-label="Persona">
-        {PERSONAS.map((persona) => {
-          /* Stay on the same module when switching persona if that persona
-             owns it; otherwise land on the first module that is theirs. */
-          const owned = railGroupsFor(persona.id)
-            .flatMap((group) => group.items)
-            .some((entry) => entry.id === module);
-          const target = owned
-            ? modulePath(persona.id, module, tab)
-            : firstBuiltPath(persona.id);
-
-          return (
-            <Link
-              key={persona.id}
-              href={target}
-              className={styles.switcherButton}
-              data-active={persona.id === active}
-              aria-current={persona.id === active ? "page" : undefined}
-              title={persona.blurb}
-            >
-              {persona.label}
-            </Link>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function firstBuiltPath(persona: PersonaId): string {
-  const first = railGroupsFor(persona)
-    .flatMap((group) => group.items)
-    .find((entry) => entry.built);
-  // Every persona has at least one built module by construction of the matrix.
-  return first ? modulePath(persona, first.id, first.tabs[0]) : "/analytics";
+function switcherTargets(module: ModuleId, tab: TabId) {
+  return PERSONAS.map((persona) => {
+    const owned = railGroupsFor(persona.id)
+      .flatMap((group) => group.items)
+      .some((entry) => entry.id === module);
+    const landing = landingModule(persona.id);
+    return {
+      id: persona.id,
+      label: persona.label,
+      blurb: persona.blurb,
+      href: owned
+        ? modulePath(persona.id, module, tab)
+        : modulePath(persona.id, landing.id, landing.tabs[0]),
+    };
+  });
 }
 
 export default async function AnalyticsModulePage(
@@ -117,7 +94,30 @@ export default async function AnalyticsModulePage(
       groups={groups}
       activeSection={moduleId}
       railHeader={
-        <PersonaSwitcher active={personaId} module={moduleId} tab={tabId} />
+        /* The fallback is the switcher with plain hrefs and the scope picker
+           absent, which is exactly what the prerendered HTML should contain —
+           neither can be resolved without the query string. */
+        <Suspense
+          fallback={
+            <PersonaSwitcherView
+              active={personaId}
+              targets={switcherTargets(moduleId, tabId)}
+            />
+          }
+        >
+          <PersonaSwitcher
+            active={personaId}
+            targets={switcherTargets(moduleId, tabId)}
+          />
+          <ScopePicker persona={personaId} />
+        </Suspense>
+      }
+      railItems={
+        <Suspense
+          fallback={<RailGroups groups={groups} activeSection={moduleId} />}
+        >
+          <AnalyticsRailItems groups={groups} activeSection={moduleId} />
+        </Suspense>
       }
     >
       {/* Month and measure round-trip through the query string, and

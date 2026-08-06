@@ -5,7 +5,14 @@ import { text, tiered } from "@/app/_charts/table";
 import { bandX, gridLines, linearScale, stackBands } from "@/app/_charts/geom";
 import { MONTHS, MONTH_KEYS, type MonthKey } from "@/app/_time/periods";
 import { AVAIL_SERIES, LAST, MONTH_INDEX } from "./spine";
-import { GAUGE_LABEL, PLOT, VIEW_BOX, buildGauge } from "./bespoke-shared";
+import {
+  GAUGE_LABEL,
+  PLOT,
+  VIEW_BOX,
+  buildGauge,
+  scopedLookup,
+} from "./bespoke-shared";
+import { NATIONAL, OUTLETS_BY_REGION, type RegionScopeId, type Scope } from "./scope";
 
 /**
  * Shelving — how well the shelf is blocked by brand, format and flavour.
@@ -22,7 +29,13 @@ import { GAUGE_LABEL, PLOT, VIEW_BOX, buildGauge } from "./bespoke-shared";
  * the chart, which is where anyone reading sixteen series was going to end up.
  */
 
-const CATEGORY_TABS = ["Toothpaste", "Toothbrush", "Mouthwash", "Kids oral care"];
+const CATEGORY_TABS = [
+  "Toothpaste",
+  "Toothbrush",
+  "Mouthwash",
+  "Kids oral care",
+  "Whitening",
+];
 
 /** Authored July block-compliance scores per category. */
 const BLOCKS: Record<string, [brand: number, brandHv: number, format: number, flavour: number]> = {
@@ -30,10 +43,42 @@ const BLOCKS: Record<string, [brand: number, brandHv: number, format: number, fl
   Toothbrush: [78.4, 74.1, 71.6, 44.2],
   Mouthwash: [69.8, 66.3, 63.9, 38.7],
   "Kids oral care": [61.2, 58.4, 55.1, 33.4],
+  Whitening: [58.6, 55.2, 51.8, 31.9],
 };
 
-const FORMATS = ["Tube 100g", "Tube 150g", "Tube 225g", "Twin pack", "Travel", "Other"];
-const FLAVOURS = ["Cavity", "Charcoal", "Herbal", "Salt", "Whitening", "Other"];
+/**
+ * Pack formats and variants, per category.
+ *
+ * These were one toothpaste list applied to every tab, which put "Tube 225g"
+ * on the toothbrush chart. A category persona spends their whole day inside one
+ * of these, so the axis has to be theirs. "Other" closes every list — the
+ * module shows the top five and rolls up the tail, which is the concession the
+ * header explains.
+ */
+const FORMATS: Record<string, string[]> = {
+  Toothpaste: ["Tube 100g", "Tube 150g", "Tube 225g", "Twin pack", "Travel", "Other"],
+  Toothbrush: ["Single", "Twin pack", "Value 3-pack", "Travel", "Kids pack", "Other"],
+  Mouthwash: ["250ml", "500ml", "750ml", "Travel 100ml", "Twin pack", "Other"],
+  "Kids oral care": ["Tube 40g", "Tube 80g", "Twin pack", "Gift pack", "Travel", "Other"],
+  Whitening: ["Tube 100g", "Tube 125g", "Twin pack", "Pen", "Kit", "Other"],
+};
+
+const FLAVOURS: Record<string, string[]> = {
+  Toothpaste: ["Cavity", "Charcoal", "Herbal", "Salt", "Whitening", "Other"],
+  Toothbrush: ["Soft", "Medium", "Charcoal", "Firm", "Kids", "Other"],
+  Mouthwash: ["Fresh mint", "Peppermint", "Herbal", "Zero alcohol", "Whitening", "Other"],
+  "Kids oral care": ["Bubble fruit", "Strawberry", "Mild mint", "Watermelon", "Character", "Other"],
+  Whitening: ["Charcoal", "Purple", "Advanced", "Mint", "Sparkling", "Other"],
+};
+
+const BLOCK_STORES = [
+  "3742 · Winlife HCM 94/54",
+  "3207 · BHX HCM Q07 769A",
+  "14830 · BHX HCM TPH 187",
+  "Emart Gò Vấp",
+  "Co.opmart Nguyễn Đình Chiểu",
+  "Aeon Tân Phú",
+];
 
 const BAND_TONES: SeriesTone[] = [
   "tertiary",
@@ -104,12 +149,27 @@ function buildStack(
   };
 }
 
-function build(period: MonthKey): ShelvingView {
+function build(period: MonthKey, scope: Scope = NATIONAL): ShelvingView {
   const i = MONTH_INDEX[period];
-  const level = AVAIL_SERIES[i] / AVAIL_SERIES[LAST];
+  /* A region shifts every category's blocking by how well it executes. A
+     category does not: `BLOCKS` already holds that category's own scores, so
+     scaling by its factor as well would count it twice. Scoping to a category
+     therefore narrows the tab strip rather than moving the numbers. */
+  const scopeFactor = scope.kind === "region" ? scope.factors.osa : 1;
+  const level = (AVAIL_SERIES[i] / AVAIL_SERIES[LAST]) * scopeFactor;
+
+  const categories =
+    scope.kind === "category" && CATEGORY_TABS.includes(scope.label)
+      ? [scope.label]
+      : CATEGORY_TABS;
+
+  const stores =
+    scope.kind === "region"
+      ? OUTLETS_BY_REGION[scope.id as RegionScopeId].map((store) => store.outlet)
+      : BLOCK_STORES;
 
   const byCategory = Object.fromEntries(
-    CATEGORY_TABS.map((category, categoryIndex) => {
+    categories.map((category, categoryIndex) => {
       const [brand, brandHv, format, flavour] = BLOCKS[category];
       const scaled = (value: number) => +(value * level).toFixed(2);
 
@@ -137,8 +197,18 @@ function build(period: MonthKey): ShelvingView {
             gauge("Format block compliance", format, "secondary"),
             gauge("Flavour block compliance", flavour, flavour * level >= 80 ? "success" : "warning"),
           ],
-          formatTrend: buildStack(FORMATS, categoryIndex, level, "Format block"),
-          flavourTrend: buildStack(FLAVOURS, categoryIndex + 3, level, "Flavour block"),
+          formatTrend: buildStack(
+            FORMATS[category] ?? FORMATS.Toothpaste,
+            categoryIndex,
+            level,
+            "Format block",
+          ),
+          flavourTrend: buildStack(
+            FLAVOURS[category] ?? FLAVOURS.Toothpaste,
+            categoryIndex + 3,
+            level,
+            "Flavour block",
+          ),
           blockTable: {
             columns: [
               { key: "store", label: "Store" },
@@ -147,14 +217,7 @@ function build(period: MonthKey): ShelvingView {
               { key: "format", label: "Format block", align: "right" },
               { key: "flavour", label: "Flavour block", align: "right" },
             ],
-            rows: [
-              "3742 · Winlife HCM 94/54",
-              "3207 · BHX HCM Q07 769A",
-              "14830 · BHX HCM TPH 187",
-              "Emart Gò Vấp",
-              "Co.opmart Nguyễn Đình Chiểu",
-              "Aeon Tân Phú",
-            ].map((store, storeIndex) => {
+            rows: stores.map((store, storeIndex) => {
               const skew = 1.12 - storeIndex * 0.07;
               const cell = (value: number) => {
                 const v = +(value * level * skew).toFixed(2);
@@ -180,7 +243,7 @@ function build(period: MonthKey): ShelvingView {
   return {
     period,
     monthLabel: MONTHS[i].label,
-    categories: CATEGORY_TABS,
+    categories,
     byCategory,
   };
 }
@@ -188,5 +251,7 @@ function build(period: MonthKey): ShelvingView {
 export const SHELVING_VIEWS = Object.fromEntries(
   MONTH_KEYS.map((key) => [key, build(key)]),
 ) as Record<MonthKey, ShelvingView>;
+
+export const shelvingView = scopedLookup(SHELVING_VIEWS, build);
 
 export { GAUGE_LABEL };

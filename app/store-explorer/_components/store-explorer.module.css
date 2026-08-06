@@ -47,6 +47,16 @@
     linear-gradient(160deg, #eef1f6, #dbe1ea);
 }
 
+/* Mock product photography fills whichever placeholder frame it sits in. */
+.fillImage {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .statusChip {
   display: inline-flex;
   align-items: center;

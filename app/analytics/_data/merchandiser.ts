@@ -12,8 +12,11 @@ import {
   VIEW_BOX,
   buildGauge,
   buildSeriesTrend,
+  clampPct,
   pct1,
+  scopedLookup,
 } from "./bespoke-shared";
+import { NATIONAL, OUTLETS_BY_REGION, type RegionScopeId, type Scope } from "./scope";
 
 /**
  * Merchandiser Management — attendance and photo quality.
@@ -47,21 +50,64 @@ const DEFECT_SHARES: [string, number][] = [
   ["First/last bay missing", 0.01],
 ];
 
-const MERCHANDISERS: [name: string, adherence: number, visits: number, minutes: number][] = [
-  ["Nguyễn Văn An", 97, 223, 41],
-  ["Trần Thị Bích", 94, 219, 38],
-  ["Lê Minh Quân", 89, 168, 34],
-  ["Phạm Thu Hà", 86, 136, 31],
-  ["Võ Hoàng Nam", 81, 104, 29],
-  ["Đỗ Thị Mai", 74, 101, 27],
-  ["Bùi Quang Huy", 66, 101, 24],
-  ["Hoàng Thị Lan", 53, 96, 21],
+/**
+ * The roster, with a region each.
+ *
+ * The regions are authored here rather than joined to the handle roster the
+ * field-ops fixtures use (`huy_le`, `thao_vo`, …). `tickets/_data/people.ts`
+ * documents why: those are different people, not the same ones spelled two
+ * ways, and inventing a join would put one person's rejection rate against
+ * another's name. Every region carries at least one merchandiser so no scope
+ * lands on an empty table.
+ */
+type MerchFact = [
+  name: string,
+  adherence: number,
+  visits: number,
+  minutes: number,
+  region: string,
+];
+
+const MERCHANDISERS: MerchFact[] = [
+  ["Nguyễn Văn An", 97, 223, 41, "Ho Chi Minh City"],
+  ["Trần Thị Bích", 94, 219, 38, "Ho Chi Minh City"],
+  ["Lê Minh Quân", 89, 168, 34, "South East"],
+  ["Phạm Thu Hà", 86, 136, 31, "South East"],
+  ["Võ Hoàng Nam", 81, 104, 29, "Mekong Delta"],
+  ["Đỗ Thị Mai", 74, 101, 27, "Red River Delta"],
+  ["Bùi Quang Huy", 66, 101, 24, "Central"],
+  ["Hoàng Thị Lan", 53, 96, 21, "North Highlands"],
 ];
 
 /** Weighted mean of the per-merchandiser adherence the platform publishes. */
-const PJP_ADHERENCE =
-  MERCHANDISERS.reduce((sum, [, adherence, visits]) => sum + adherence * visits, 0) /
-  MERCHANDISERS.reduce((sum, [, , visits]) => sum + visits, 0);
+const adherenceOf = (team: MerchFact[]) =>
+  team.reduce((sum, [, adherence, visits]) => sum + adherence * visits, 0) /
+  team.reduce((sum, [, , visits]) => sum + visits, 0);
+
+const PJP_ADHERENCE = adherenceOf(MERCHANDISERS);
+
+/**
+ * A region's own team, and with it its own adherence.
+ *
+ * The headline gauge is recomputed from whoever is on screen rather than scaled
+ * off the national figure, so the number above the table is the table's own
+ * mean — the two can never disagree.
+ */
+function teamFor(scope: Scope): MerchFact[] {
+  if (scope.kind !== "region") return MERCHANDISERS;
+  const team = MERCHANDISERS.filter(([, , , , region]) => region === scope.label);
+  return team.length > 0 ? team : MERCHANDISERS;
+}
+
+/** Stores with no recent visit. Each is filed under the region that owns it. */
+const NOT_COVERED: [region: string, outlet: string, code: string, last: string][] = [
+  ["Ho Chi Minh City", "MM Mega Market An Phú", "0123555", "18 days"],
+  ["North Highlands", "Winmart Hà Giang", "0448120", "26 days"],
+  ["Central", "Co.opmart Quy Nhơn", "0392044", "31 days"],
+  ["Red River Delta", "Aeon Hải Phòng", "0517783", "22 days"],
+  ["Mekong Delta", "BHX Cần Thơ Ninh Kiều", "0664901", "19 days"],
+  ["South East", "Lotte Mart Biên Hòa", "0731064", "24 days"],
+];
 
 export type MerchandiserView = {
   period: MonthKey;
@@ -81,16 +127,23 @@ export type MerchandiserView = {
   };
 };
 
-function build(period: MonthKey): MerchandiserView {
+function build(period: MonthKey, scope: Scope = NATIONAL): MerchandiserView {
   const i = MONTH_INDEX[period];
   const level = AVAIL_SERIES[i] / AVAIL_SERIES[LAST];
   const days = MONTHS[i].days;
+  const share = scope.countShare;
 
-  const active = Math.round(ESTATE.activeToday * level);
-  const visited = Math.round(ESTATE.stores * level);
-  const planned = Math.round(ESTATE.estate * level);
-  const pjp = PJP_ADHERENCE * level;
-  const geo = 91 * level;
+  const team = teamFor(scope);
+  const teamSize = Math.max(team.length, Math.round(ESTATE.team * share));
+  const active = Math.round(ESTATE.activeToday * level * share);
+  const visited = Math.round(ESTATE.stores * level * share);
+  const planned = Math.round(ESTATE.estate * level * share);
+  /* Recomputed from whoever is on screen, so the gauge is the table's own
+     weighted mean rather than the nation's scaled. */
+  const pjp = adherenceOf(team) * level;
+  /* Geo compliance has no per-region fact; availability standing is the proxy
+     for how carefully a region works. */
+  const geo = clampPct(91 * level * scope.factors.osa);
 
   /* Daily planned-vs-actual across the month. Weekly rhythm rather than noise:
      visits dip at weekends, which is what the shape should say. */
@@ -113,10 +166,29 @@ function build(period: MonthKey): MerchandiserView {
     1,
   );
 
-  const overallQuality = PASS_RATE * (0.97 + level * 0.03);
-  const qualitySeries = AVAIL_SERIES.map(
-    (value) => +(PASS_RATE * (0.97 + (value / AVAIL_SERIES[LAST]) * 0.03)).toFixed(2),
+  /* Scoping a pass rate scales the *rejection*, not the rate: multiplying 91.3
+     by a strong region's factor would print 101.9, and clamping that to 100
+     would claim a region rejects nothing. Shrinking the 8.7% it fails on keeps
+     the direction right and the ceiling honest. */
+  const rejectionFactor = scope.kind === "national" ? 1 : 1 / scope.factors.osa;
+  const qualityAt = (monthLevel: number) =>
+    +(100 - (100 - PASS_RATE * (0.97 + monthLevel * 0.03)) * rejectionFactor).toFixed(2);
+  const overallQuality = qualityAt(level);
+  const qualitySeries = AVAIL_SERIES.map((value) =>
+    qualityAt(value / AVAIL_SERIES[LAST]),
   );
+
+  const outlierStores =
+    scope.kind === "region"
+      ? OUTLETS_BY_REGION[scope.id as RegionScopeId].map((store) => store.outlet)
+      : [
+          "3742 · Winlife HCM 94/54",
+          "3207 · BHX Q07",
+          "Emart Gò Vấp",
+          "Aeon Tân Phú",
+          "Lotte Quận 7",
+          "MM An Phú",
+        ];
 
   return {
     period,
@@ -141,16 +213,16 @@ function build(period: MonthKey): MerchandiserView {
       {
         title: "Merchandiser attendance",
         data: buildGauge({
-          value: (active / ESTATE.team) * 100,
+          value: (active / teamSize) * 100,
           min: 0,
           max: 100,
           target: 95,
-          label: `${Math.round((active / ESTATE.team) * 100)}%`,
-          caption: `${active} / ${ESTATE.team}`,
+          label: `${Math.round((active / teamSize) * 100)}%`,
+          caption: `${active} / ${teamSize}`,
           minLabel: "0%",
           maxLabel: "100%",
           tone: "primary",
-          ariaLabel: `${active} of ${ESTATE.team} merchandisers active.`,
+          ariaLabel: `${active} of ${teamSize} merchandisers active.`,
         }),
       },
       {
@@ -158,14 +230,14 @@ function build(period: MonthKey): MerchandiserView {
         data: buildGauge({
           value: visited,
           min: 0,
-          max: ESTATE.estate,
+          max: Math.round(ESTATE.estate * share),
           target: planned,
           label: group(visited),
-          caption: `of ${group(ESTATE.estate)} stores`,
+          caption: `of ${group(Math.round(ESTATE.estate * share))} stores`,
           minLabel: "0",
-          maxLabel: group(ESTATE.estate),
+          maxLabel: group(Math.round(ESTATE.estate * share)),
           tone: "tertiary",
-          ariaLabel: `${group(visited)} of ${group(ESTATE.estate)} stores visited.`,
+          ariaLabel: `${group(visited)} of ${group(Math.round(ESTATE.estate * share))} stores visited.`,
         }),
       },
       {
@@ -185,17 +257,17 @@ function build(period: MonthKey): MerchandiserView {
       },
     ],
 
-    timeSpent: MERCHANDISERS.map(([name, , , minutes]) => ({
+    timeSpent: team.map(([name, , , minutes]) => ({
       label: name,
       value: `${Math.round(minutes * level)} min`,
-      pct: +((minutes / MERCHANDISERS[0][3]) * 100).toFixed(1),
+      pct: +((minutes / team[0][3]) * 100).toFixed(1),
     })),
 
     trend: buildSeriesTrend({
       series: [
-        { label: "Store coverage", values: AVAIL_SERIES.map((v) => +(v * 1.19).toFixed(1)), tone: "primary" },
-        { label: "PJP adherence", values: AVAIL_SERIES.map((v) => +((PJP_ADHERENCE * v) / AVAIL_SERIES[LAST]).toFixed(1)), tone: "tertiary" },
-        { label: "Geo compliance", values: AVAIL_SERIES.map((v) => +((91 * v) / AVAIL_SERIES[LAST]).toFixed(1)), tone: "secondary" },
+        { label: "Store coverage", values: AVAIL_SERIES.map((v) => clampPct(+(v * 1.19 * scope.factors.osa).toFixed(1))), tone: "primary" },
+        { label: "PJP adherence", values: AVAIL_SERIES.map((v) => +((adherenceOf(team) * v) / AVAIL_SERIES[LAST]).toFixed(1)), tone: "tertiary" },
+        { label: "Geo compliance", values: AVAIL_SERIES.map((v) => clampPct(+((91 * v * scope.factors.osa) / AVAIL_SERIES[LAST]).toFixed(1))), tone: "secondary" },
       ],
       labelled: false,
       axisTitle: "Percent",
@@ -232,7 +304,7 @@ function build(period: MonthKey): MerchandiserView {
         { key: "avg", label: "Avg time in store", align: "right" },
         { key: "pjp", label: "PJP adherence", align: "right" },
       ],
-      rows: MERCHANDISERS.map(([name, adherence, visits, minutes]) => {
+      rows: team.map(([name, adherence, visits, minutes]) => {
         const scaled = adherence * level;
         return {
           id: name,
@@ -257,13 +329,9 @@ function build(period: MonthKey): MerchandiserView {
         { key: "code", label: "Outlet code" },
         { key: "last", label: "Last visited", align: "right" },
       ],
-      rows: [
-        ["Ho Chi Minh City", "MM Mega Market An Phú", "0123555", "18 days"],
-        ["North Highlands", "Winmart Hà Giang", "0448120", "26 days"],
-        ["Central", "Co.opmart Quy Nhơn", "0392044", "31 days"],
-        ["Red River Delta", "Aeon Hải Phòng", "0517783", "22 days"],
-        ["Mekong Delta", "BHX Cần Thơ Ninh Kiều", "0664901", "19 days"],
-      ].map(([region, outlet, code, last]) => ({
+      rows: NOT_COVERED.filter(
+        ([region]) => scope.kind !== "region" || region === scope.label,
+      ).map(([region, outlet, code, last]) => ({
         id: code,
         cells: [text(region), text(outlet), text(code), text(last)],
       })),
@@ -276,27 +344,27 @@ function build(period: MonthKey): MerchandiserView {
         {
           title: "Good quality",
           data: buildGauge({
-            value: Math.round((PHOTOS - REJECTED) * level),
+            value: Math.round((PHOTOS - REJECTED) * level * share),
             min: 0,
-            max: Math.round(PHOTOS * level),
-            label: group(Math.round((PHOTOS - REJECTED) * level)),
+            max: Math.round(PHOTOS * level * share),
+            label: group(Math.round((PHOTOS - REJECTED) * level * share)),
             minLabel: "0",
-            maxLabel: group(Math.round(PHOTOS * level)),
+            maxLabel: group(Math.round(PHOTOS * level * share)),
             tone: "success",
-            ariaLabel: `${group(Math.round((PHOTOS - REJECTED) * level))} captures passed quality checks.`,
+            ariaLabel: `${group(Math.round((PHOTOS - REJECTED) * level * share))} captures passed quality checks.`,
           }),
         },
-        ...DEFECT_SHARES.map(([label, share]) => {
-          const count = Math.round(REJECTED * share * level);
+        ...DEFECT_SHARES.map(([label, defectShare]) => {
+          const count = Math.round(REJECTED * defectShare * level * share);
           return {
             title: label,
             data: buildGauge({
               value: count,
               min: 0,
-              max: Math.round(REJECTED * level),
+              max: Math.round(REJECTED * level * share),
               label: group(count),
               minLabel: "0",
-              maxLabel: group(Math.round(REJECTED * level)),
+              maxLabel: group(Math.round(REJECTED * level * share)),
               tone: "warning",
               ariaLabel: `${group(count)} captures rejected for ${label.toLowerCase()}.`,
             }),
@@ -316,14 +384,12 @@ function build(period: MonthKey): MerchandiserView {
           { key: "merch", label: "Merchandiser" },
           { key: "quality", label: "Photo quality", align: "right" },
         ],
-        rows: MERCHANDISERS.slice(0, 6).map(([name, adherence], index) => {
-          const quality = adherence * 0.92 * level;
+        rows: team.slice(0, 6).map(([name, adherence], index) => {
+          const quality = clampPct(adherence * 0.92 * level);
           return {
             id: `outlier-${name}`,
             cells: [
-              text(
-                ["3742 · Winlife HCM 94/54", "3207 · BHX Q07", "Emart Gò Vấp", "Aeon Tân Phú", "Lotte Quận 7", "MM An Phú"][index],
-              ),
+              text(outlierStores[index % outlierStores.length]),
               text(name),
               tiered(
                 pct1(quality),
@@ -343,3 +409,5 @@ const pct2Local = (v: number) => `${v.toFixed(2)}%`;
 export const MERCHANDISER_VIEWS = Object.fromEntries(
   MONTH_KEYS.map((key) => [key, build(key)]),
 ) as Record<MonthKey, MerchandiserView>;
+
+export const merchandiserView = scopedLookup(MERCHANDISER_VIEWS, build);

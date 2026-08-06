@@ -14,8 +14,17 @@ import {
   VIEW_BOX,
   buildGauge,
   buildSeriesTrend,
+  clampPct,
   pct1,
+  scopedLookup,
 } from "./bespoke-shared";
+import {
+  NATIONAL,
+  OUTLETS_BY_REGION,
+  RETAILERS_BY_REGION,
+  type RegionScopeId,
+  type Scope,
+} from "./scope";
 
 /**
  * Store Management — coverage and store standardisation.
@@ -45,6 +54,24 @@ const STANDARDISATION: [string, number, number, number][] = [
 
 const STANDARD_SERIES = [73.1, 73.1, 67.3, 28.8, 59.9, 74.8];
 
+/** The national coverage sample, replaced store-for-store under a region. */
+const COVERAGE_ROWS: [store: string, brand: string, merch: string, photos: number][] = [
+  ["3742 · Winlife HCM 94/54", "Winmart", "Nguyễn Văn An", 98],
+  ["3207 · BHX HCM Q07 769A", "Bach Hoa Xanh", "Trần Thị Bích", 79],
+  ["14830 · BHX HCM TPH 187", "Bach Hoa Xanh", "Lê Minh Quân", 57],
+  ["Emart Gò Vấp", "Emart", "Phạm Thu Hà", 44],
+  ["Co.opmart Nguyễn Đình Chiểu", "Co.opmart", "Võ Hoàng Nam", 43],
+  ["Aeon Tân Phú", "Aeon", "Đỗ Thị Mai", 21],
+  ["Lotte Mart Quận 7", "Lotte", "Bùi Quang Huy", 8],
+];
+
+const NATIONAL_MATRIX: [retailer: string, stores: string[]][] = [
+  ["Bach Hoa Xanh", ["3207 · BHX HCM Q07 769A", "14830 · BHX HCM TPH 187"]],
+  ["Winmart", ["3742 · Winlife HCM 94/54"]],
+  ["Co.opmart", ["Co.opmart Nguyễn Đình Chiểu"]],
+  ["Aeon", ["Aeon Tân Phú"]],
+];
+
 export type StoreManagementView = {
   period: MonthKey;
   monthLabel: string;
@@ -56,26 +83,31 @@ export type StoreManagementView = {
   standardTrend: ReturnType<typeof buildSeriesTrend>;
 };
 
-function build(period: MonthKey): StoreManagementView {
+function build(period: MonthKey, scope: Scope = NATIONAL): StoreManagementView {
   const i = MONTH_INDEX[period];
   const level = AVAIL_SERIES[i] / AVAIL_SERIES[LAST];
   const days = MONTHS[i].days;
+  const share = scope.countShare;
 
-  const monthly = Math.round(ESTATE.stores * level);
+  /* A category is scoped by ranging, not geography: the estate does not shrink,
+     but the stores that carry Whitening are a fraction of it. Both arrive here
+     as `countShare`, which is why one expression covers the two. */
+  const estate = Math.round(ESTATE.estate * share);
+  const monthly = Math.round(ESTATE.stores * level * share);
   /* A store is visited about once a month, so a week covers roughly a quarter
      of the month's stores and a day roughly a working day's worth. */
   const weekly = Math.round(monthly / 4.3);
   const daily = Math.round(monthly / (days * 0.72));
 
   const covered = AVAIL_SERIES.map((value) =>
-    Math.round((ESTATE.stores * value) / AVAIL_SERIES[LAST]),
+    Math.round((ESTATE.stores * share * value) / AVAIL_SERIES[LAST]),
   );
-  const domain: [number, number] = [0, ESTATE.estate * 1.1];
+  const domain: [number, number] = [0, estate * 1.1];
   const y = linearScale(domain, [PLOT.y1, PLOT.y0]);
   const xs = centredBandX(6, PLOT.x0, PLOT.x1);
   const slot = (PLOT.x1 - PLOT.x0) / 6;
   const rects = groupedColumns(
-    covered.map((value) => [value, ESTATE.estate]),
+    covered.map((value) => [value, estate]),
     xs,
     slot,
     y,
@@ -83,18 +115,44 @@ function build(period: MonthKey): StoreManagementView {
     10,
   );
 
+  /* A region swaps the stores; a category swaps the columns. The two tabs are
+     scoped by different axes because they answer different questions — "which
+     of my stores did we get to" against "was my category shot when we did". */
+  const coverageRows =
+    scope.kind === "region"
+      ? OUTLETS_BY_REGION[scope.id as RegionScopeId].map((store, index) => {
+          const [, brand, merch, photos] = COVERAGE_ROWS[index % COVERAGE_ROWS.length];
+          return [store.outlet, brand, merch, photos] as (typeof COVERAGE_ROWS)[number];
+        })
+      : COVERAGE_ROWS;
+
+  const matrixGroups =
+    scope.kind === "region"
+      ? RETAILERS_BY_REGION[scope.id as RegionScopeId]
+      : NATIONAL_MATRIX;
+
+  const matrixColumns =
+    scope.kind === "category" && CATEGORIES.includes(scope.label)
+      ? [scope.label]
+      : CATEGORIES;
+
+  const standardRows =
+    scope.kind === "category"
+      ? STANDARDISATION.filter(([name]) => name === scope.label)
+      : STANDARDISATION;
+
   const gauge = (title: string, value: number, tone: "primary" | "secondary" | "tertiary") => ({
     title,
     data: buildGauge({
       value,
       min: 0,
-      max: ESTATE.estate,
+      max: estate,
       label: group(value),
-      caption: `of ${group(ESTATE.estate)} stores`,
+      caption: `of ${group(estate)} stores`,
       minLabel: "0",
-      maxLabel: group(ESTATE.estate),
+      maxLabel: group(estate),
       tone,
-      ariaLabel: `${title}: ${group(value)} of ${group(ESTATE.estate)} stores.`,
+      ariaLabel: `${title}: ${group(value)} of ${group(estate)} stores.`,
     }),
   });
 
@@ -120,7 +178,7 @@ function build(period: MonthKey): StoreManagementView {
           label: {
             x: +(rect.x + rect.width / 2).toFixed(1),
             y: +(rect.y - (barIndex === 0 ? 5 : 15)).toFixed(1),
-            text: group(barIndex === 0 ? covered[index] : ESTATE.estate),
+            text: group(barIndex === 0 ? covered[index] : estate),
           },
         })),
       })),
@@ -144,22 +202,14 @@ function build(period: MonthKey): StoreManagementView {
         { key: "merch", label: "Merchandiser" },
         { key: "photos", label: "Active photos", align: "right" },
       ],
-      rows: [
-        ["3742 · Winlife HCM 94/54", "Winmart", "Nguyễn Văn An", 98],
-        ["3207 · BHX HCM Q07 769A", "Bach Hoa Xanh", "Trần Thị Bích", 79],
-        ["14830 · BHX HCM TPH 187", "Bach Hoa Xanh", "Lê Minh Quân", 57],
-        ["Emart Gò Vấp", "Emart", "Phạm Thu Hà", 44],
-        ["Co.opmart Nguyễn Đình Chiểu", "Co.opmart", "Võ Hoàng Nam", 43],
-        ["Aeon Tân Phú", "Aeon", "Đỗ Thị Mai", 21],
-        ["Lotte Mart Quận 7", "Lotte", "Bùi Quang Huy", 8],
-      ].map(([store, brand, merch, photos], index) => ({
+      rows: coverageRows.map(([store, brand, merch, photos], index) => ({
         id: `cov-${index}`,
         cells: [
           text(`${String((index % 27) + 2).padStart(2, "0")} ${MONTH_SHORT[i]} 2026`),
-          text(store as string),
-          text(brand as string),
-          text(merch as string),
-          num(group(Math.round((photos as number) * level)), photos as number),
+          text(store),
+          text(brand),
+          text(merch),
+          num(group(Math.round(photos * level)), photos),
         ],
       })),
     },
@@ -168,22 +218,17 @@ function build(period: MonthKey): StoreManagementView {
        category was not shot on that visit — the same convention the trend
        matrix uses, so the two grids read the same way. */
     categoryMatrix: {
-      columns: CATEGORIES,
-      groups: [
-        ["Bach Hoa Xanh", ["3207 · BHX HCM Q07 769A", "14830 · BHX HCM TPH 187"]],
-        ["Winmart", ["3742 · Winlife HCM 94/54"]],
-        ["Co.opmart", ["Co.opmart Nguyễn Đình Chiểu"]],
-        ["Aeon", ["Aeon Tân Phú"]],
-      ].map(([retailer, stores], groupIndex) => {
+      columns: matrixColumns,
+      groups: matrixGroups.map(([retailer, stores], groupIndex) => {
         const cellsFor = (seed: number) =>
-          CATEGORIES.map((_, index) =>
+          matrixColumns.map((_, index) =>
             (seed + index) % 6 === 4 ? { text: "" } : { text: "1", level: 3 as const },
           );
         return {
-          id: `cat-${retailer as string}`,
-          label: retailer as string,
+          id: `cat-${retailer}`,
+          label: retailer,
           cells: cellsFor(groupIndex),
-          children: (stores as string[]).map((store, storeIndex) => ({
+          children: stores.map((store, storeIndex) => ({
             id: `cat-${store}`,
             label: store,
             cells: cellsFor(groupIndex + storeIndex + 1),
@@ -199,7 +244,7 @@ function build(period: MonthKey): StoreManagementView {
         { key: "facings", label: "Facings count (median)", align: "right" },
         { key: "linear", label: "Linear length (median)", align: "right" },
       ],
-      rows: STANDARDISATION.map(([name, photos, facings, linear]) => {
+      rows: standardRows.map(([name, photos, facings, linear]) => {
         const scaledPhotos = Math.round(photos * level);
         return {
           id: name,
@@ -219,7 +264,17 @@ function build(period: MonthKey): StoreManagementView {
 
     standardTrend: buildSeriesTrend({
       series: [
-        { label: "Store standardisation", values: STANDARD_SERIES, tone: "primary", fill: true },
+        {
+          label: "Store standardisation",
+          values:
+            scope.kind === "national"
+              ? STANDARD_SERIES
+              : STANDARD_SERIES.map((value) =>
+                  +clampPct(value * scope.factors.osa).toFixed(1),
+                ),
+          tone: "primary",
+          fill: true,
+        },
       ],
       format: pct1,
       axisTitle: "Compliance",
@@ -231,5 +286,7 @@ function build(period: MonthKey): StoreManagementView {
 export const STORE_MANAGEMENT_VIEWS = Object.fromEntries(
   MONTH_KEYS.map((key) => [key, build(key)]),
 ) as Record<MonthKey, StoreManagementView>;
+
+export const storeManagementView = scopedLookup(STORE_MANAGEMENT_VIEWS, build);
 
 export { GAUGE_LABEL };

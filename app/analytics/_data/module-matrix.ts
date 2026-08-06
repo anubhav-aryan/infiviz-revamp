@@ -184,12 +184,24 @@ export const MODULES: Record<ModuleId, ModuleDef> = {
  * here is a visible change to someone's job rather than a side effect.
  */
 export const PERSONA_MODULES: Record<PersonaId, ModuleId[]> = {
-  exec: ["perfect-store", "roi", "category-management", "availability", "store-management"],
+  /* Owns the national P&L, so pricing compliance is theirs as much as
+     availability is. */
+  exec: [
+    "perfect-store",
+    "roi",
+    "category-management",
+    "availability",
+    "revenue",
+    "store-management",
+  ],
+  /* Owns the programme's return inside one region, which is why ROI is here
+     and not only at the top. */
   regional: [
     "perfect-store",
     "availability",
     "revenue",
     "space",
+    "roi",
     "merchandiser",
     "store-management",
   ],
@@ -201,14 +213,26 @@ export const PERSONA_MODULES: Record<PersonaId, ModuleId[]> = {
     "shelving",
     "store-management",
   ],
-  field: [
-    "perfect-store",
-    "availability",
-    "merchandiser",
-    "store-management",
-    "category-management",
-  ],
+  /* Category Management is gone: which brands to range is a category lead's
+     decision, and a supervisor cannot act on it tomorrow. */
+  field: ["perfect-store", "availability", "merchandiser", "store-management"],
 };
+
+/**
+ * The order rail groups appear in, for every persona.
+ *
+ * Groups used to fall out of whichever module happened to be listed first,
+ * which put "Shelf & space" at the top for a category lead and at the bottom
+ * for a field supervisor. The rail is the same map wherever you stand in the
+ * hierarchy; only its contents change.
+ */
+export const GROUP_ORDER = [
+  "Overview",
+  "Shelf & space",
+  "Availability & revenue",
+  "Commercial",
+  "Field execution",
+];
 
 export const PERSONA_IDS = PERSONAS.map((persona) => persona.id);
 
@@ -224,7 +248,17 @@ export function railGroupsFor(persona: PersonaId) {
     if (existing) existing.items.push(def);
     else groups.push({ label: def.group, items: [def] });
   }
-  return groups;
+  return groups.sort(
+    (a, b) => GROUP_ORDER.indexOf(a.label) - GROUP_ORDER.indexOf(b.label),
+  );
+}
+
+/**
+ * Where a persona lands. Kept separate from the rail's order so re-sorting the
+ * rail cannot silently change which module someone opens on.
+ */
+export function landingModule(persona: PersonaId): ModuleDef {
+  return MODULES[PERSONA_MODULES[persona][0]];
 }
 
 export const modulePath = (persona: PersonaId, module: ModuleId, tab: TabId) =>

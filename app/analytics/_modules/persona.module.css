@@ -41,3 +41,50 @@
   border-color: var(--indigo-600);
   color: var(--neutral-0);
 }
+
+/* The scope picker, directly under the switcher: persona decides which modules
+   the rail lists, scope decides whose numbers they show. */
+.scopeBlock {
+  margin-top: 14px;
+}
+
+.scopeSelect {
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface-card);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-body);
+  cursor: pointer;
+  transition: background var(--transition-snap), border-color var(--transition-snap);
+}
+
+.scopeSelect:hover {
+  background: var(--surface-hover);
+}
+
+.scopeSelect:focus-visible {
+  outline: 2px solid var(--indigo-600);
+  outline-offset: 1px;
+}
+
+/* What the executive gets in place of a control — their scope is the country,
+   so the rail states it rather than offering a list of one. */
+.scopeStatic {
+  padding: 7px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface-sunken, var(--surface-card));
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.scopeCaption {
+  margin-top: 5px;
+  font-size: 10.5px;
+  color: var(--text-caption);
+}

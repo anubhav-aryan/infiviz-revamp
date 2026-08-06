@@ -6,7 +6,13 @@ import { Icon } from "@/app/_components/icon";
 import type { RejectedSession } from "../_data/photo-quality";
 import shared from "@/app/_reports/reports.module.css";
 import { sessionImageHref } from "@/app/session-images/_data/session-images";
+import { PHOTOS } from "@/app/store-explorer/_data/store-explorer";
 import styles from "./photo-quality.module.css";
+
+/** Cycles through the platform's one mock capture set — there's no per-session photo. */
+function rejectedThumb(index: number): string {
+  return PHOTOS[index % PHOTOS.length].src;
+}
 
 /** The only genuine client state on either report. */
 type RejectedView = "gallery" | "table";
@@ -50,9 +56,14 @@ function ViewImages({ store, className }: { store: string; className?: string })
 function Gallery({ sessions }: { sessions: RejectedSession[] }) {
   return (
     <div className={styles.gallery}>
-      {sessions.map((session) => (
+      {sessions.map((session, i) => (
         <div key={session.code} className={styles.galleryItem}>
           <div className={styles.thumb}>
+            <img
+              className={styles.thumbImage}
+              src={rejectedThumb(i)}
+              alt={`Rejected capture from ${session.store}`}
+            />
             <span className={styles.scoreBadge}>
               <span className={styles.scoreBadgeLabel}>Score</span>
               <span className={styles.scoreValue} data-tier={session.tier}>
@@ -86,12 +97,17 @@ function Table({ sessions }: { sessions: RejectedSession[] }) {
         <span />
       </div>
 
-      {sessions.map((session) => (
+      {sessions.map((session, i) => (
         <div
           key={session.code}
           className={`${styles.rejectedGrid} ${styles.rejectedRow}`}
         >
           <span className={styles.thumbSmall}>
+            <img
+              className={styles.thumbImage}
+              src={rejectedThumb(i)}
+              alt={`Rejected capture from ${session.store}`}
+            />
             <span className={styles.rejectBadgeSmall} aria-hidden="true">
               <Icon name="x" size={8} />
             </span>

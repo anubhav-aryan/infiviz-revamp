@@ -856,6 +856,29 @@
   color: var(--text-secondary);
 }
 
+/* ---------- needs attention / alert cards (live screen additions) ---------- */
+
+/* Nested inside a .feedText span, so it inherits size and just dims the color. */
+.attentionSubject {
+  color: var(--text-caption);
+}
+
+.viewAllLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--indigo-600);
+  text-decoration: none;
+}
+
+.trio {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
 /* ---------- demo state picker ---------- */
 
 /* Not part of the design. This is a demo affordance for flipping between the

@@ -17,12 +17,13 @@ import { MonthMatrix } from "@/app/_charts/month-matrix";
 import { TrendChart } from "@/app/_charts/trend-chart";
 import charts from "@/app/_charts/charts.module.css";
 import { CURRENT_MONTH, MONTHS, MONTH_KEYS, type MonthKey } from "@/app/_time/periods";
-import { METRIC_MODULES } from "../_data/module-registry";
-import { MERCHANDISER_VIEWS } from "../_data/merchandiser";
-import { PERFECT_STORE_VIEWS } from "../_data/perfect-store";
-import { ROI_VIEWS } from "../_data/roi";
-import { SHELVING_VIEWS } from "../_data/shelving";
-import { STORE_MANAGEMENT_VIEWS } from "../_data/store-management";
+import { METRIC_MODULES, metricViewFor } from "../_data/module-registry";
+import { merchandiserView } from "../_data/merchandiser";
+import { perfectStoreView } from "../_data/perfect-store";
+import { roiView } from "../_data/roi";
+import { shelvingView } from "../_data/shelving";
+import { storeManagementView } from "../_data/store-management";
+import { scopeFor, type Scope } from "../_data/scope";
 import {
   MerchandiserBody,
   PerfectStoreBody,
@@ -75,7 +76,12 @@ export function ModuleScreen({ persona, module, tab }: Props) {
   const measureId =
     measures.find((measure) => measure.id === measureParam)?.id ?? defaultMeasure;
 
-  const view = entry && measureId ? entry.views[measureId][period] : undefined;
+  /* Resolution is the persona's, not the URL's: a scope outside this persona's
+     vocabulary falls back to their default rather than rendering a category
+     lead's numbers under a regional lead's rail. */
+  const scope = scopeFor(persona, params.get("scope"));
+
+  const view = measureId ? metricViewFor(module, scope, measureId, period) : undefined;
 
   /** Defaults are dropped from the URL, so the opening state is a bare path. */
   const setParam = useCallback(
@@ -103,7 +109,7 @@ export function ModuleScreen({ persona, module, tab }: Props) {
 
   const headline = view
     ? { value: view.headline, delta: view.headlineDelta }
-    : headlineFor(module, period);
+    : headlineFor(module, period, scope);
   const monthLabel = view?.monthLabel ?? MONTHS[MONTH_KEYS.indexOf(period)].label;
 
   return (
@@ -112,8 +118,12 @@ export function ModuleScreen({ persona, module, tab }: Props) {
         <div className={styles.headTop}>
           <div>
             <h1 className={styles.title}>{def.label}</h1>
+            {/* The scope line is real: it names what the figures below are of,
+                and it changes when the rail's picker changes. The hardcoded
+                "National · all retailers · all store types" that used to sit
+                here described a scope nothing could move. */}
             <p className={styles.subtitle}>
-              Colgate-Palmolive Vietnam · {monthLabel}
+              {scope.caption} · {monthLabel}
               {view ? ` · ${view.measureLabel}` : ` · ${def.blurb}`}
             </p>
           </div>
@@ -142,9 +152,7 @@ export function ModuleScreen({ persona, module, tab }: Props) {
         />
 
         {/* Rendered only when there is a measure toggle — otherwise this is an
-            empty padded strip. The hardcoded "National · all retailers · all
-            store types" line that used to live here is gone: it described a
-            scope nothing could change. */}
+            empty padded strip. */}
         {measures.length > 1 && measureId ? (
         <div className={styles.controls}>
           <Segmented
@@ -165,7 +173,7 @@ export function ModuleScreen({ persona, module, tab }: Props) {
         {entry && view && measureId ? (
           <TabBody tab={tab} view={view} />
         ) : (
-          <BespokeBody module={module} tab={tab} period={period} />
+          <BespokeBody module={module} tab={tab} period={period} scope={scope} />
         )}
       </div>
     </div>
@@ -173,14 +181,14 @@ export function ModuleScreen({ persona, module, tab }: Props) {
 }
 
 /** Headline for the modules the factory does not drive. */
-function headlineFor(module: ModuleId, period: MonthKey) {
+function headlineFor(module: ModuleId, period: MonthKey, scope: Scope) {
   switch (module) {
     case "perfect-store": {
-      const v = PERFECT_STORE_VIEWS[period];
+      const v = perfectStoreView(scope, period);
       return { value: v.score, delta: v.scoreDelta };
     }
     case "roi": {
-      const v = ROI_VIEWS[period];
+      const v = roiView(scope, period);
       return { value: v.total.value, delta: v.total.delta };
     }
     /* No single headline: attendance and photo quality are different measures,
@@ -197,22 +205,24 @@ function BespokeBody({
   module,
   tab,
   period,
+  scope,
 }: {
   module: ModuleId;
   tab: TabId;
   period: MonthKey;
+  scope: Scope;
 }) {
   switch (module) {
     case "perfect-store":
-      return <PerfectStoreBody view={PERFECT_STORE_VIEWS[period]} />;
+      return <PerfectStoreBody view={perfectStoreView(scope, period)} />;
     case "roi":
-      return <RoiBody view={ROI_VIEWS[period]} />;
+      return <RoiBody view={roiView(scope, period)} />;
     case "shelving":
-      return <ShelvingBody view={SHELVING_VIEWS[period]} />;
+      return <ShelvingBody view={shelvingView(scope, period)} />;
     case "merchandiser":
-      return <MerchandiserBody view={MERCHANDISER_VIEWS[period]} tab={tab} />;
+      return <MerchandiserBody view={merchandiserView(scope, period)} tab={tab} />;
     case "store-management":
-      return <StoreManagementBody view={STORE_MANAGEMENT_VIEWS[period]} tab={tab} />;
+      return <StoreManagementBody view={storeManagementView(scope, period)} tab={tab} />;
     default:
       return null;
   }
@@ -250,7 +260,7 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
           <div className={styles.split}>
             <div className={`${charts.card} ${charts.cardPad}`}>
               <div className={charts.cardTitle}>
-                {view.measureLabel} — category wise
+                {view.measureLabel} — {view.groupNoun} wise
               </div>
               <div className={styles.cardGrid}>
                 {view.groupCards.map((card) => (
@@ -285,7 +295,9 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
         <>
           <div className={styles.split}>
             <div>
-              <div className={styles.sectionLabel}>Category-wise gap</div>
+              <div className={styles.sectionLabel}>
+                {view.groupNoun === "segment" ? "Segment-wise" : "Category-wise"} gap
+              </div>
               <GapCards cards={view.gapCards} />
             </div>
             <div className={`${charts.card} ${charts.cardPad}`}>
@@ -317,7 +329,8 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
           <div className={styles.split}>
             <div className={`${charts.card} ${charts.cardPad}`}>
               <div className={charts.cardTitle}>
-                Category-wise {view.measureLabel.toLowerCase()} — before and after
+                {view.groupNoun === "segment" ? "Segment-wise" : "Category-wise"}{" "}
+                {view.measureLabel.toLowerCase()} — before and after
               </div>
               <div className={charts.chartBody}>
                 <HBarList rows={view.merchImpact.bars} nameWidth="minmax(140px, 38%)" />
@@ -389,7 +402,7 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
           columns={view.raw.columns}
           rows={view.raw.rows}
           csv={view.raw.csv}
-          filename={`${view.moduleId}-${view.measureId}-${view.period}`}
+          filename={`${view.moduleId}-${view.scopeId}-${view.measureId}-${view.period}`}
         />
       );
 

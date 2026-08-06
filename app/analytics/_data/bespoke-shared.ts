@@ -10,7 +10,8 @@ import {
   trendline,
 } from "@/app/_charts/geom";
 import { group } from "@/app/_format/num";
-import { MONTHS } from "@/app/_time/periods";
+import { MONTHS, type MonthKey } from "@/app/_time/periods";
+import type { Scope } from "./scope";
 
 /**
  * Shared helpers for the five modules the metric factory does not drive —
@@ -25,6 +26,39 @@ export const MONTH_SHORT = MONTHS.map((month) => month.label.slice(0, 3));
 
 export const pct2 = (v: number) => `${v.toFixed(2)}%`;
 export const pct1 = (v: number) => `${v.toFixed(1)}%`;
+
+/**
+ * A percentage held below 100. Scaling a scope up can push an already-high
+ * figure past the ceiling; nothing national reaches it, so this is the identity
+ * on the unscoped path. It deliberately does not round — `pct1` and `pct2` do
+ * the formatting, and rounding here would change figures that today are only
+ * rounded once, at the very end.
+ */
+export const clampPct = (v: number) => Math.min(100, v);
+
+/**
+ * A scoped lookup over an already-precomputed national set.
+ *
+ * The national months keep being handed back by reference, so the default path
+ * computes nothing after hydration; the eleven other scopes are built the first
+ * time someone opens them and kept. Each of the five bespoke modules needs
+ * exactly this, so it is written once.
+ */
+export function scopedLookup<T>(
+  national: Record<MonthKey, T>,
+  build: (period: MonthKey, scope: Scope) => T,
+): (scope: Scope, period: MonthKey) => T {
+  const cache = new Map<string, T>();
+  return (scope, period) => {
+    if (scope.kind === "national") return national[period];
+    const key = `${scope.id}:${period}`;
+    const hit = cache.get(key);
+    if (hit) return hit;
+    const built = build(period, scope);
+    cache.set(key, built);
+    return built;
+  };
+}
 
 /** PowerBI's wider dial: 240° of sweep, opening at the bottom-left. */
 const DIAL = { cx: 100, cy: 96, r: 68, startDeg: -120, endDeg: 120 };

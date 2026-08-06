@@ -373,4 +373,10 @@ export const ACTIONS = {
     desc: "See which stores were visited, on a map and in a list.",
     href: "/store-explorer",
   },
+  /** `desc` is left out — the live screen fills it in from ticket counts. */
+  tickets: {
+    icon: "clipboard-list" as IconName,
+    title: "Open Tickets",
+    href: "/tickets",
+  },
 };

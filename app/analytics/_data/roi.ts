@@ -14,14 +14,16 @@ import {
   PRICING_SERIES,
   VIS_SERIES,
 } from "./spine";
+import { clampPct, scopedLookup } from "./bespoke-shared";
+import {
+  DISTRICTS_BY_REGION,
+  NATIONAL,
+  type RegionScopeId,
+  type Scope,
+} from "./scope";
 
 /**
  * ROI — what the merchandising programme is worth.
- *
- * **Currency is đồng, not dollars.** The source dashboard reports a US grocery
- * account in USD; this fixture is Colgate-Palmolive Vietnam, so `$443.60K`
- * cannot be transliterated. Figures are re-authored at plausible VND
- * magnitudes.
  *
  * Nothing here is free-standing. Sales uplift is driven by the availability
  * points the platform already publishes, and merchandising cost by the team
@@ -29,30 +31,49 @@ import {
  * rather than sitting on an unrelated series.
  */
 
-/** Đồng, formatted by hand — `toLocaleString` is banned for hydration safety. */
+/** Formatted by hand — `toLocaleString` is banned for hydration safety. */
 export function vnd(amount: number): string {
-  if (amount >= 1_000_000_000) return `₫${(amount / 1_000_000_000).toFixed(2)}bn`;
-  if (amount >= 1_000_000) return `₫${(amount / 1_000_000).toFixed(1)}m`;
-  return `₫${group(Math.round(amount))}`;
+  if (amount >= 1_000_000_000) return `$${(amount / 1_000_000_000).toFixed(2)}bn`;
+  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}m`;
+  return `$${group(Math.round(amount))}`;
 }
 
 /* Authored rates, sized so the programme reads the way the source dashboard
    reads: uplift an order of magnitude above cost, not below it. One
-   availability point across 1,412 audited stores is worth ~₫2.8m per store a
-   month; a merchandiser costs ~₫9.4m a month, which puts the national team at
+   availability point across 1,412 audited stores is worth ~$2.8m per store a
+   month; a merchandiser costs ~$9.4m a month, which puts the national team at
    about the same fraction of uplift PowerBI shows (~3%). */
 const REVENUE_PER_POINT = 4_000_000_000;
 const COST_PER_MERCHANDISER = 9_400_000;
 const SAVINGS_PER_POINT = 68_000_000;
 const BASELINE_OSA = 52;
 
-const upliftAt = (i: number) =>
-  Math.max(0, AVAIL_SERIES[i] - BASELINE_OSA) * REVENUE_PER_POINT;
-const costAt = (i: number) =>
-  ESTATE.team * COST_PER_MERCHANDISER * (0.9 + (i / LAST) * 0.2);
+/**
+ * The programme's return, for whatever is being looked at.
+ *
+ * A scope enters twice, and the two are not the same thing. Its share of the
+ * estate sizes everything — a region with a fifth of the stores earns and costs
+ * about a fifth. Its availability factor decides where it sits against the
+ * baseline, and that is where the story is: the baseline is 52% OSA, so North
+ * Highlands at 52.4 barely clears it and its uplift nearly vanishes while its
+ * merchandisers still cost what they cost. That is a real finding about the
+ * region, not an artefact — it is what the availability fixture already says.
+ */
+const upliftAt = (i: number, scope: Scope) =>
+  Math.max(0, clampPct(AVAIL_SERIES[i] * scope.factors.osa) - BASELINE_OSA) *
+  REVENUE_PER_POINT *
+  scope.countShare;
+const costAt = (i: number, scope: Scope) =>
+  ESTATE.team *
+  scope.countShare *
+  COST_PER_MERCHANDISER *
+  (0.9 + (i / LAST) * 0.2);
 /* Payout savings track planogram compliance: a compliant shelf is one the
    retailer cannot claim a display allowance on without earning it. */
-const savingsAt = (i: number) => PLANOGRAM_SERIES[i] * SAVINGS_PER_POINT;
+const savingsAt = (i: number, scope: Scope) =>
+  clampPct(PLANOGRAM_SERIES[i] * scope.factors.osa) *
+  SAVINGS_PER_POINT *
+  scope.countShare;
 
 export type RoiKpi = { label: string; delta: string; current: string; previous: string };
 
@@ -61,6 +82,9 @@ export type RoiView = {
   monthLabel: string;
   total: { value: string; delta: string; caption: string };
   split: PieData;
+  /** Title above the breakdown — "by region" nationally, "by area" inside one. */
+  byRegionTitle: string;
+  byRegionCaption: string;
   byRegion: BarRow[];
   cards: {
     title: string;
@@ -98,6 +122,34 @@ function sparkOf(values: number[]): string {
   return linePoints(values.map((v, i) => ({ x: xs[i], y: y(v) })));
 }
 
+/**
+ * What the money is split across.
+ *
+ * Nationally that is the six regions. Inside a region it is that region's own
+ * districts, read off the geographic estate — a regional lead who has already
+ * scoped to Mekong Delta learns nothing from a bar saying "Mekong Delta". A
+ * category is not a geography, so it keeps the regional split.
+ */
+function breakdownFor(scope: Scope): {
+  title: string;
+  caption: string;
+  rows: [string, number][];
+} {
+  if (scope.kind !== "region") {
+    return {
+      title: "Revenue impact by region",
+      caption:
+        "Net of merchandising cost, shared out by each region's audited store count.",
+      rows: REGIONS,
+    };
+  }
+  return {
+    title: "Revenue impact by area",
+    caption: `Net of merchandising cost, shared out by each area's share of ${scope.label}'s stores.`,
+    rows: DISTRICTS_BY_REGION[scope.id as RegionScopeId],
+  };
+}
+
 function kpiRow(label: string, current: number, previous: number): Row {
   const change = ((current - previous) / previous) * 100;
   return {
@@ -119,16 +171,24 @@ function kpiRow(label: string, current: number, previous: number): Row {
   };
 }
 
-function build(period: MonthKey): RoiView {
+function build(period: MonthKey, scope: Scope = NATIONAL): RoiView {
   const i = MONTH_INDEX[period];
   const prev = Math.max(0, i - 1);
 
-  const uplift = upliftAt(i);
-  const cost = costAt(i);
-  const savings = savingsAt(i);
+  const uplift = upliftAt(i, scope);
+  const cost = costAt(i, scope);
+  const savings = savingsAt(i, scope);
   const net = uplift - cost + savings;
-  const netPrev = upliftAt(prev) - costAt(prev) + savingsAt(prev);
+  const netPrev = upliftAt(prev, scope) - costAt(prev, scope) + savingsAt(prev, scope);
   const change = netPrev === 0 ? 0 : ((net - netPrev) / netPrev) * 100;
+
+  const breakdown = breakdownFor(scope);
+  const osa = (index: number) => clampPct(AVAIL_SERIES[index] * scope.factors.osa);
+  const sos = (index: number) => clampPct(VIS_SERIES[index] * scope.factors.sos);
+  const planogram = (index: number) =>
+    clampPct(PLANOGRAM_SERIES[index] * scope.factors.osa);
+  const pricing = (index: number) =>
+    clampPct(PRICING_SERIES[index] * scope.factors.osa);
 
   const slices = pieSlices(
     [
@@ -142,7 +202,7 @@ function build(period: MonthKey): RoiView {
     84,
   );
 
-  const maxRegion = Math.max(...REGIONS.map(([, share]) => share));
+  const maxShare = Math.max(...breakdown.rows.map(([, share]) => share));
 
   const card = (
     title: string,
@@ -156,7 +216,7 @@ function build(period: MonthKey): RoiView {
       title,
       current: vnd(current),
       previous: vnd(previous),
-      delta: `${up ? "+" : "−"}${vnd(Math.abs(current - previous)).replace("₫", "₫")}`,
+      delta: `${up ? "+" : "−"}${vnd(Math.abs(current - previous))}`,
       /* Cost falling is good news, so tone is not derived from direction. */
       tone: (invert ? !up : up) ? ("up" as const) : ("down" as const),
       spark: sparkOf(series),
@@ -185,30 +245,32 @@ function build(period: MonthKey): RoiView {
       ],
       ariaLabel: `Revenue impact split: uplift ${vnd(uplift)}, savings ${vnd(savings)}, cost ${vnd(cost)}.`,
     },
-    byRegion: REGIONS.map(([name, share]) => ({
+    byRegionTitle: breakdown.title,
+    byRegionCaption: breakdown.caption,
+    byRegion: breakdown.rows.map(([name, share]) => ({
       label: name,
       value: vnd(net * share),
-      pct: +((share / maxRegion) * 100).toFixed(1),
+      pct: +((share / maxShare) * 100).toFixed(1),
     })),
     cards: [
       card(
         "Sales uplift",
         uplift,
-        upliftAt(prev),
-        AVAIL_SERIES.map((_, index) => upliftAt(index)),
+        upliftAt(prev, scope),
+        AVAIL_SERIES.map((_, index) => upliftAt(index, scope)),
       ),
       card(
         "Merchandising cost",
         cost,
-        costAt(prev),
-        AVAIL_SERIES.map((_, index) => costAt(index)),
+        costAt(prev, scope),
+        AVAIL_SERIES.map((_, index) => costAt(index, scope)),
         true,
       ),
       card(
         "Payout savings",
         savings,
-        savingsAt(prev),
-        AVAIL_SERIES.map((_, index) => savingsAt(index)),
+        savingsAt(prev, scope),
+        AVAIL_SERIES.map((_, index) => savingsAt(index, scope)),
       ),
     ],
     kpiTables: [
@@ -216,19 +278,19 @@ function build(period: MonthKey): RoiView {
         title: "Shelf performance",
         columns: KPI_COLUMNS,
         rows: [
-          kpiRow("Share of shelf", VIS_SERIES[i], VIS_SERIES[prev]),
-          kpiRow("On-shelf availability", AVAIL_SERIES[i], AVAIL_SERIES[prev]),
-          kpiRow("Planogram adherence", PLANOGRAM_SERIES[i], PLANOGRAM_SERIES[prev]),
-          kpiRow("Pricing adherence", PRICING_SERIES[i], PRICING_SERIES[prev]),
+          kpiRow("Share of shelf", sos(i), sos(prev)),
+          kpiRow("On-shelf availability", osa(i), osa(prev)),
+          kpiRow("Planogram adherence", planogram(i), planogram(prev)),
+          kpiRow("Pricing adherence", pricing(i), pricing(prev)),
         ],
       },
       {
         title: "Field execution",
         columns: KPI_COLUMNS,
         rows: [
-          kpiRow("Merchandiser score", AVAIL_SERIES[i] * 1.34, AVAIL_SERIES[prev] * 1.34),
-          kpiRow("PJP adherence", 85 * (AVAIL_SERIES[i] / AVAIL_SERIES[LAST]), 85 * (AVAIL_SERIES[prev] / AVAIL_SERIES[LAST])),
-          kpiRow("Store coverage", ESTATE.coverage * (AVAIL_SERIES[i] / AVAIL_SERIES[LAST]), ESTATE.coverage * (AVAIL_SERIES[prev] / AVAIL_SERIES[LAST])),
+          kpiRow("Merchandiser score", osa(i) * 1.34, osa(prev) * 1.34),
+          kpiRow("PJP adherence", 85 * (osa(i) / AVAIL_SERIES[LAST]), 85 * (osa(prev) / AVAIL_SERIES[LAST])),
+          kpiRow("Store coverage", ESTATE.coverage * (osa(i) / AVAIL_SERIES[LAST]), ESTATE.coverage * (osa(prev) / AVAIL_SERIES[LAST])),
         ],
       },
     ],
@@ -238,3 +300,5 @@ function build(period: MonthKey): RoiView {
 export const ROI_VIEWS = Object.fromEntries(
   MONTH_KEYS.map((key) => [key, build(key)]),
 ) as Record<MonthKey, RoiView>;
+
+export const roiView = scopedLookup(ROI_VIEWS, build);

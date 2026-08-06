@@ -73,6 +73,11 @@ export function SessionImages({ store }: { store: string }) {
                     aria-label={`Open photo ${photo.seq}, ${photo.category}, captured ${photo.time}`}
                   >
                     <span className={styles.frame}>
+                      <img
+                        className={styles.frameImage}
+                        src={photo.src}
+                        alt={`${photo.category} shelf capture #${photo.seq}`}
+                      />
                       <span
                         className={styles.quality}
                         data-quality={photo.quality}

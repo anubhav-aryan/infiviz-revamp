@@ -635,18 +635,33 @@ export type Photo = {
   seq: string;
   time: string;
   quality: "good" | "flag";
+  /** Mock capture image — real photography stands in for the raw frame. */
+  src: string;
 };
 
 /** Flat list — the lightbox pages through it by index. */
 export const PHOTOS: Photo[] = [
-  { category: "Toothpaste", seq: "01", time: "09:18", quality: "good" },
-  { category: "Toothpaste", seq: "02", time: "09:19", quality: "good" },
-  { category: "Toothpaste", seq: "03", time: "09:20", quality: "flag" },
-  { category: "Toothpaste", seq: "04", time: "09:21", quality: "good" },
-  { category: "Toothbrush", seq: "05", time: "09:27", quality: "good" },
-  { category: "Toothbrush", seq: "06", time: "09:28", quality: "good" },
-  { category: "Toothbrush", seq: "07", time: "09:29", quality: "good" },
+  { category: "Toothpaste", seq: "01", time: "09:18", quality: "good", src: "/mock-shelf/toothpaste-1.jpg" },
+  { category: "Toothpaste", seq: "02", time: "09:19", quality: "good", src: "/mock-shelf/toothpaste-2.jpg" },
+  { category: "Toothpaste", seq: "03", time: "09:20", quality: "flag", src: "/mock-shelf/toothpaste-3.jpg" },
+  { category: "Toothpaste", seq: "04", time: "09:21", quality: "good", src: "/mock-shelf/toothpaste-4.jpg" },
+  { category: "Toothbrush", seq: "05", time: "09:27", quality: "good", src: "/mock-shelf/toothbrush-1.jpg" },
+  { category: "Toothbrush", seq: "06", time: "09:28", quality: "good", src: "/mock-shelf/toothbrush-2.jpg" },
+  { category: "Toothbrush", seq: "07", time: "09:29", quality: "good", src: "/mock-shelf/toothbrush-3.jpg" },
 ];
+
+/**
+ * The visit list/gallery has no per-photo data, only a `categories` summary
+ * string (e.g. "Toothpaste, Toothbrush", "Multi-category") — this picks the
+ * mock thumbnail that best represents it.
+ */
+export function categoryThumb(categories: string): string {
+  if (categories === "Multi-category") return "/mock-shelf/toothpaste-5.jpg";
+  if (categories.includes("Toothbrush") && !categories.includes("Toothpaste")) {
+    return "/mock-shelf/toothbrush-1.jpg";
+  }
+  return "/mock-shelf/toothpaste-1.jpg";
+}
 
 /** Category groupings, addressing `PHOTOS` by index so the lightbox stays in sync. */
 export const PHOTO_GROUPS = [
