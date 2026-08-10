@@ -128,7 +128,46 @@
   background: var(--surface-hover);
 }
 
-/* thread — shared by the panel and the /assistant page */
+/* the "Ask InfiChat" button every card header gets — pair it with a title
+   inside `charts.cardHead` (declared there, unused until now) or an
+   equivalent local flex-row header class. */
+
+.askButton {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-full);
+  background: var(--brand-subtle);
+  color: var(--brand-hover);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--transition-snap);
+}
+
+.askButton:hover {
+  background: var(--brand-subtle-hover);
+}
+
+.askButton[data-compact="true"] {
+  padding: 5px;
+  border-radius: var(--radius-full);
+}
+
+/* Pairs the button with whatever a header's own trailing element already is
+   (a legend, a pill) inside a two-item space-between header, so adding the
+   button never turns a 2-item header into an unevenly-spaced 3-item one. */
+.askGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* thread — shared by the panel and the /infichat page */
 
 .thread {
   flex: 1;

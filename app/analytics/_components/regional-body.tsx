@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Fragment } from "react";
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { Icon } from "@/app/_components/icon";
 import {
   HEAT_COLS,
@@ -78,6 +79,7 @@ export function RegionalBody({
         <div className={styles.panel}>
           <span className={styles.panelTitle} data-gap="12">
             OSA by {dim.toLowerCase()}
+            <AskInfiChatButton label={`OSA by ${dim.toLowerCase()}`} compact />
           </span>
           <RankedList
             rows={view.ranked[dim]}
@@ -101,6 +103,7 @@ export function RegionalBody({
           <div className={styles.panel}>
             <span className={styles.panelTitle} data-gap="14">
               OSA · city × retailer
+              <AskInfiChatButton label="OSA · city × retailer" compact />
             </span>
             <div className={styles.heatGrid}>
               <span />
@@ -130,6 +133,7 @@ export function RegionalBody({
           <div className={styles.panel}>
             <span className={styles.panelTitle} data-gap="6">
               Audit coverage vs availability
+              <AskInfiChatButton label="Audit coverage vs availability" compact />
             </span>
             <svg
               viewBox="0 0 300 200"

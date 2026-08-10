@@ -1,3 +1,5 @@
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import type { CsvTable } from "@/app/_export/csv";
 import { Bar, DeltaChip, TargetHero, TargetRule } from "@/app/_reports/marks";
@@ -72,7 +74,10 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
         {/* why captures were rejected + rejection rate by region */}
         <div className={styles.twoUp}>
           <div className={`${shared.card} ${shared.cardPad}`}>
-            <div className={shared.cardTitle}>Why captures were rejected</div>
+            <div className={shared.cardHead}>
+              <div className={shared.cardTitle}>Why captures were rejected</div>
+              <AskInfiChatButton label="Why captures were rejected" compact />
+            </div>
             <div className={styles.reasonsCaption}>{view.reasonsCaption}</div>
 
             {view.reasons.map((reason) => (
@@ -92,9 +97,12 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
           <div className={`${shared.card} ${shared.cardPad}`}>
             <div className={shared.cardHead}>
               <div className={shared.cardTitle}>Rejection rate by region</div>
-              <span className={shared.legendNote}>
-                <span className={shared.dashSwatch} />
-                Target ≤5%
+              <span className={chatStyles.askGroup}>
+                <span className={shared.legendNote}>
+                  <span className={shared.dashSwatch} />
+                  Target ≤5%
+                </span>
+                <AskInfiChatButton label="Rejection rate by region" compact />
               </span>
             </div>
 
@@ -122,9 +130,12 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
                 worst 10 · min 20 captures
               </span>
             </div>
-            <span className={styles.worstPill}>
-              <Icon name="shield-alert" />
-              Low-sample merchandisers excluded
+            <span className={chatStyles.askGroup}>
+              <span className={styles.worstPill}>
+                <Icon name="shield-alert" />
+                Low-sample merchandisers excluded
+              </span>
+              <AskInfiChatButton label="Merchandisers by rejection rate" compact />
             </span>
           </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { ChartLegend, GroupedColumns } from "@/app/_charts/grouped-columns";
 import { Gauge } from "@/app/_charts/gauge";
 import { HBarList } from "@/app/_charts/h-bar-list";
@@ -44,16 +45,20 @@ function Card({
     <div className={`${charts.card} ${pad ? charts.cardPad : charts.tableCard}`}>
       {title ? (
         pad ? (
-          <>
-            <div className={charts.cardTitle}>{title}</div>
-            {caption ? <div className={charts.cardCaption}>{caption}</div> : null}
-          </>
+          <div className={charts.cardHead}>
+            <div>
+              <div className={charts.cardTitle}>{title}</div>
+              {caption ? <div className={charts.cardCaption}>{caption}</div> : null}
+            </div>
+            <AskInfiChatButton label={title} compact />
+          </div>
         ) : (
           <div className={charts.tabbedHead}>
             <div>
               <div className={charts.cardTitle}>{title}</div>
               {caption ? <div className={charts.cardCaption}>{caption}</div> : null}
             </div>
+            <AskInfiChatButton label={title} compact />
           </div>
         )
       ) : null}

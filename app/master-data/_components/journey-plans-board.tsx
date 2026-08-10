@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import chatStyles from "@/app/_components/chat/chat.module.css";
 import { ExportButton } from "@/app/_export/export-button";
 import type { CsvTable } from "@/app/_export/csv";
 import { Icon } from "@/app/_components/icon";
@@ -105,16 +107,19 @@ export function JourneyPlansBoard({ month }: { month: MonthKey }) {
       <div className={styles.calendarCard}>
         <div className={styles.calendarHead}>
           <span className={styles.tableTitle}>Planned vs completed visits</span>
-          <div className={styles.legend}>
-            <span className={styles.legendItem}>
-              <span className={styles.legendSwatch} data-tone="completed" />
-              Completed
-            </span>
-            <span className={styles.legendItem}>
-              <span className={styles.legendSwatch} data-tone="planned" />
-              Planned
-            </span>
-          </div>
+          <span className={chatStyles.askGroup}>
+            <div className={styles.legend}>
+              <span className={styles.legendItem}>
+                <span className={styles.legendSwatch} data-tone="completed" />
+                Completed
+              </span>
+              <span className={styles.legendItem}>
+                <span className={styles.legendSwatch} data-tone="planned" />
+                Planned
+              </span>
+            </div>
+            <AskInfiChatButton label="Planned vs completed visits" compact />
+          </span>
         </div>
 
         <div className={styles.weekRow}>
@@ -170,7 +175,10 @@ export function JourneyPlansBoard({ month }: { month: MonthKey }) {
       </div>
 
       <div className={styles.tableCard}>
-        <div className={styles.plansTitle}>Plans by merchandiser</div>
+        <div className={styles.plansTitle}>
+          Plans by merchandiser
+          <AskInfiChatButton label="Plans by merchandiser" compact />
+        </div>
 
         <div className={`${styles.plansGrid} ${styles.columnHead}`}>
           <span>Merchandiser</span>

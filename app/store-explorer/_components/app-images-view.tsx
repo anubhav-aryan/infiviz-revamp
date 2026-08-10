@@ -1,3 +1,5 @@
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { storeById } from "@/app/_data/stores-geo";
 import { photosFor, visitTiming, type Visit } from "../_data/store-explorer";
@@ -64,8 +66,11 @@ export function AppImagesView({ visit, onBack, onOpenPhoto }: AppImagesViewProps
       <div className={`${styles.card} ${styles.timelineCard}`}>
         <div className={styles.timelineHead}>
           <span className={styles.panelTitle}>Visit timeline</span>
-          <span className={styles.timelineTotal}>
-            Total time in store <b>{totalTimeLabel}</b>
+          <span className={chatStyles.askGroup}>
+            <span className={styles.timelineTotal}>
+              Total time in store <b>{totalTimeLabel}</b>
+            </span>
+            <AskInfiChatButton label="Visit timeline" compact />
           </span>
         </div>
 

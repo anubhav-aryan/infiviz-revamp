@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/app/_components/app-shell";
-import { Assistant } from "./_components/assistant";
+import { InfiChat } from "./_components/infichat";
 
 export const metadata: Metadata = {
-  title: "Assistant",
+  title: "InfiChat",
   description: "A preview of an assistant that can answer questions about any screen's data.",
 };
 
-export default function AssistantPage() {
+export default function InfiChatPage() {
   return (
-    <AppShell active="assistant">
-      <Assistant />
+    <AppShell active="infichat">
+      <InfiChat />
     </AppShell>
   );
 }

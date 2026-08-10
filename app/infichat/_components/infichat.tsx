@@ -32,7 +32,7 @@ const HUB_PROMPTS = HUB_SUGGESTIONS.map(({ id, prompt, hint }) => ({
   hint,
 }));
 
-export function Assistant() {
+export function InfiChat() {
   const threadRef = useRef<ChatThreadHandle>(null);
   const idRef = useRef(0);
 
@@ -89,7 +89,7 @@ export function Assistant() {
       <div className={styles.hubMain}>
         <ChatThread
           ref={threadRef}
-          title="InfiViz Assistant"
+          title="InfiChat"
           subtitle="A preview of an assistant that can answer questions about availability, coverage, photo quality and tickets — wherever you are in the platform."
           prompts={HUB_PROMPTS}
           hint={HUB_DEFAULT_HINT}

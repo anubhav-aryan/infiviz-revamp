@@ -122,7 +122,7 @@ export const CHAT_CONTEXT: Partial<Record<NavId, ChatContext>> = {
 };
 
 /**
- * The hub's own starter set, for `/assistant` — the four screens already
+ * The hub's own starter set, for `/infichat` — the four screens already
  * backed by real `INSIGHTS`/`SUGGESTIONS` data, not all eight. A fresh chat's
  * empty state shows a handful of good examples, not every screen in the app.
  */
@@ -133,6 +133,6 @@ export const HUB_SUGGESTIONS: { id: NavId; prompt: ChatPrompt; hint: ChatHint }[
 /** What the hub replies with when you type instead of picking a suggestion. */
 export const HUB_DEFAULT_HINT: ChatHint = {
   text: "I don't have a live answer for that yet — try one of the suggestions for a preview grounded in real platform data.",
-  label: "Assistant",
-  href: "/assistant",
+  label: "InfiChat",
+  href: "/infichat",
 };

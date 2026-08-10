@@ -1,3 +1,5 @@
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import chatStyles from "@/app/_components/chat/chat.module.css";
 import type { CsvTable } from "@/app/_export/csv";
 import { ExportButton } from "@/app/_export/export-button";
 import { MeasureTable } from "./measure-table";
@@ -43,12 +45,15 @@ export function RawTable({
     <div className={`${styles.card} ${styles.tableCard}`}>
       <div className={styles.tabbedHead}>
         <div className={styles.cardTitle}>{title}</div>
-        <ExportButton
-          table={csv}
-          filename={filename}
-          label="Export all rows"
-          className={styles.exportButton}
-        />
+        <span className={chatStyles.askGroup}>
+          <ExportButton
+            table={csv}
+            filename={filename}
+            label="Export all rows"
+            className={styles.exportButton}
+          />
+          <AskInfiChatButton label={title} compact />
+        </span>
       </div>
 
       <MeasureTable

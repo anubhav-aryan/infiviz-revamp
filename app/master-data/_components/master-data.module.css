@@ -481,6 +481,9 @@
 /* ---------- journey plans: adherence ---------- */
 
 .plansTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 14px 18px;
   border-bottom: 1px solid var(--hairline);
   font-size: 13px;

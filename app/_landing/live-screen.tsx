@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { ActivityFeed } from "./activity-feed";
 import { OverdueStoresCard, QualityAlertsCard } from "./alert-strips";
@@ -28,16 +30,19 @@ function HeroTile({ tile, footer }: { tile: HeroTileData; footer: ReactNode }) {
     <div className={styles.heroTile}>
       <div className={styles.cardHead}>
         <span className={styles.cardTitle}>{tile.title}</span>
-        <svg viewBox="0 0 100 30" className={styles.spark} aria-hidden="true">
-          <polyline
-            points={tile.spark}
-            fill="none"
-            stroke="var(--neutral-400)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <span className={chatStyles.askGroup}>
+          <svg viewBox="0 0 100 30" className={styles.spark} aria-hidden="true">
+            <polyline
+              points={tile.spark}
+              fill="none"
+              stroke="var(--neutral-400)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <AskInfiChatButton label={tile.title} compact />
+        </span>
       </div>
 
       <div className={styles.heroValueRow}>

@@ -13,7 +13,7 @@ export type NavId =
   | "photo-quality"
   | "merch-activity"
   | "tickets"
-  | "assistant";
+  | "infichat";
 
 export type NavItem = {
   id: NavId;
@@ -39,7 +39,7 @@ export const NAV: NavItem[] = [
     href: "/merch-activity",
   },
   { id: "tickets", label: "Tickets", title: "Tickets", icon: "list-checks", href: "/tickets" },
-  { id: "assistant", label: "Assistant", title: "Assistant", icon: "sparkles", href: "/assistant" },
+  { id: "infichat", label: "InfiChat", title: "InfiChat", icon: "sparkles", href: "/infichat" },
 ];
 
 export const NAV_BY_ID = Object.fromEntries(NAV.map((n) => [n.id, n])) as Record<
@@ -78,7 +78,7 @@ export const NAV_CAPTURING: NavEntry[] = [
   { id: "tickets", state: "normal" },
   /* Fully mocked, no data dependency — available from the first screen rather
      than gated behind onboarding like Catalog/Analytics. */
-  { id: "assistant", state: "normal" },
+  { id: "infichat", state: "normal" },
   { id: "catalog", state: "locked", tooltip: UNLOCK.catalog },
   { id: "analytics", state: "locked", tooltip: UNLOCK.analytics },
 ];

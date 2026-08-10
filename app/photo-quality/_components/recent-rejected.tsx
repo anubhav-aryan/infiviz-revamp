@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import type { RejectedSession } from "../_data/photo-quality";
 import shared from "@/app/_reports/reports.module.css";
@@ -140,28 +142,31 @@ export function RecentRejected({
       <div className={styles.rejectedHead}>
         <div className={shared.cardTitle}>Recent rejected sessions</div>
 
-        <div className={styles.segmented}>
-          <button
-            type="button"
-            className={styles.segmentedOption}
-            data-active={view === "gallery"}
-            aria-pressed={view === "gallery"}
-            onClick={() => setView("gallery")}
-          >
-            <Icon name="layout-grid" />
-            Gallery
-          </button>
-          <button
-            type="button"
-            className={styles.segmentedOption}
-            data-active={view === "table"}
-            aria-pressed={view === "table"}
-            onClick={() => setView("table")}
-          >
-            <Icon name="list" />
-            Table
-          </button>
-        </div>
+        <span className={chatStyles.askGroup}>
+          <div className={styles.segmented}>
+            <button
+              type="button"
+              className={styles.segmentedOption}
+              data-active={view === "gallery"}
+              aria-pressed={view === "gallery"}
+              onClick={() => setView("gallery")}
+            >
+              <Icon name="layout-grid" />
+              Gallery
+            </button>
+            <button
+              type="button"
+              className={styles.segmentedOption}
+              data-active={view === "table"}
+              aria-pressed={view === "table"}
+              onClick={() => setView("table")}
+            >
+              <Icon name="list" />
+              Table
+            </button>
+          </div>
+          <AskInfiChatButton label="Recent rejected sessions" compact />
+        </span>
       </div>
 
       {view === "gallery" ? (

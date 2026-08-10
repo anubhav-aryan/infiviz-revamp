@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { Icon } from "@/app/_components/icon";
 import { RANGED_EXAMPLES, SKUS, skuAttributes } from "../_data/catalog";
 import styles from "./catalog.module.css";
@@ -63,6 +64,7 @@ export function SkuPanel({ index, onClose }: SkuPanelProps) {
 
           <div className={styles.panelTitleRow}>
             <h2 className={styles.panelTitle}>{sku.name}</h2>
+            <AskInfiChatButton label={sku.name} compact />
           </div>
 
           <div className={styles.attributes}>
@@ -92,6 +94,7 @@ export function SkuPanel({ index, onClose }: SkuPanelProps) {
             <div className={styles.rangedTitle}>
               <Icon name="store" aria-hidden="true" />
               Ranged in {sku.ranged} stores
+              <AskInfiChatButton label={`${sku.name} — ranged stores`} compact />
             </div>
             <div className={styles.rangedBody}>{RANGED_EXAMPLES}</div>
           </div>

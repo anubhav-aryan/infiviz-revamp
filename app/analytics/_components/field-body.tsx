@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { Icon } from "@/app/_components/icon";
 import {
   FIELD_RIBBON,
@@ -57,6 +58,7 @@ export function FieldBody({
         <div className={styles.panel}>
           <span className={styles.panelTitle} data-gap="12">
             OSA by {dim.toLowerCase()}
+            <AskInfiChatButton label={`OSA by ${dim.toLowerCase()}`} compact />
           </span>
           <RankedList
             rows={view.ranked[dim]}
@@ -78,6 +80,7 @@ export function FieldBody({
           <div className={styles.panel}>
             <span className={styles.panelTitle} data-gap="12">
               MSL checklist · absent first
+              <AskInfiChatButton label="MSL checklist" compact />
             </span>
             {STORE_MSL.map((item) => (
               <div
@@ -97,6 +100,7 @@ export function FieldBody({
           <div className={styles.panel}>
             <span className={styles.panelTitle} data-gap="14">
               Shelf ribbon · what&apos;s facing out
+              <AskInfiChatButton label="Shelf ribbon" compact />
             </span>
             <Ribbon segments={FIELD_RIBBON} variant="store" />
             <RibbonLegend

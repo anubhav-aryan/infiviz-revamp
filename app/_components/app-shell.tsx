@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ChatLauncher } from "./chat/chat-launcher";
+import { ChatPaneProvider } from "./chat/chat-pane-context";
 import { Icon } from "./icon";
 import { Sidebar } from "./sidebar";
 import {
@@ -27,11 +28,13 @@ export function AppShell({ active, nav, children }: AppShellProps) {
     <div className={styles.shell}>
       <Sidebar entries={entries} />
 
-      <main className={styles.main}>
-        <div className={styles.mainInner}>{children}</div>
-      </main>
+      <ChatPaneProvider active={active}>
+        <main className={styles.main}>
+          <div className={styles.mainInner}>{children}</div>
+        </main>
 
-      <ChatLauncher active={active} />
+        <ChatLauncher active={active} />
+      </ChatPaneProvider>
     </div>
   );
 }
@@ -194,11 +197,13 @@ export function RailShell({
         {railItems ?? <RailGroups groups={groups} activeSection={activeSection} />}
       </nav>
 
-      <main className={styles.main}>
-        <div className={styles.mainInner}>{children}</div>
-      </main>
+      <ChatPaneProvider active={active}>
+        <main className={styles.main}>
+          <div className={styles.mainInner}>{children}</div>
+        </main>
 
-      <ChatLauncher active={active} />
+        <ChatLauncher active={active} />
+      </ChatPaneProvider>
     </div>
   );
 }

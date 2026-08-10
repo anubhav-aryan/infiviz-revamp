@@ -1,3 +1,5 @@
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import chatStyles from "@/app/_components/chat/chat.module.css";
 import type { Column, Row } from "./table";
 import { MeasureTable } from "./measure-table";
 import styles from "./charts.module.css";
@@ -49,7 +51,10 @@ export function DetailTable({
           <div className={styles.cardTitle}>{title}</div>
           {caption ? <div className={styles.cardCaption}>{caption}</div> : null}
         </div>
-        {action}
+        <span className={chatStyles.askGroup}>
+          {action}
+          <AskInfiChatButton label={title} compact />
+        </span>
       </div>
 
       <MeasureTable

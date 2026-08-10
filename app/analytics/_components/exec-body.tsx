@@ -1,3 +1,5 @@
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { INSIGHTS, SCATTER_GUIDES, type AnalyticsView, type DimKey } from "../_data/analytics";
 import { RankedList, Sparkline, StatStrip } from "./shared";
@@ -114,9 +116,12 @@ export function ExecBody({
               <span className={styles.panelTitle}>
                 OSA by {dim.toLowerCase()}
               </span>
-              <span className={styles.targetLegend}>
-                <span className={styles.targetLegendMark} aria-hidden="true" />
-                Target 85%
+              <span className={chatStyles.askGroup}>
+                <span className={styles.targetLegend}>
+                  <span className={styles.targetLegendMark} aria-hidden="true" />
+                  Target 85%
+                </span>
+                <AskInfiChatButton label={`OSA by ${dim.toLowerCase()}`} compact />
               </span>
             </div>
             <RankedList
@@ -130,6 +135,7 @@ export function ExecBody({
           <div className={styles.panel}>
             <span className={styles.panelTitle} data-gap="6">
               OSA vs Share of Shelf
+              <AskInfiChatButton label="OSA vs Share of Shelf" compact />
             </span>
             <svg
               viewBox="0 0 300 210"
@@ -208,6 +214,7 @@ export function ExecBody({
           <div className={styles.panel}>
             <span className={styles.panelTitle} data-gap="14">
               Biggest moves vs last month
+              <AskInfiChatButton label="Biggest moves vs last month" compact />
             </span>
             {view.dumbbell.map((d) => (
               <div key={d.name} className={styles.dumbbellRow} data-tone={d.tone}>
@@ -234,22 +241,25 @@ export function ExecBody({
           <div className={styles.panel}>
             <div className={styles.lineHead}>
               <span className={styles.panelTitle}>Six-month trend</span>
-              <div className={styles.legendRow}>
-                <span className={styles.legendItem}>
-                  <span
-                    className={styles.legendLine}
-                    style={{ background: "var(--indigo-600)" }}
-                  />
-                  Availability
-                </span>
-                <span className={styles.legendItem}>
-                  <span
-                    className={styles.legendLine}
-                    style={{ background: "var(--indigo-300)" }}
-                  />
-                  Visibility
-                </span>
-              </div>
+              <span className={chatStyles.askGroup}>
+                <div className={styles.legendRow}>
+                  <span className={styles.legendItem}>
+                    <span
+                      className={styles.legendLine}
+                      style={{ background: "var(--indigo-600)" }}
+                    />
+                    Availability
+                  </span>
+                  <span className={styles.legendItem}>
+                    <span
+                      className={styles.legendLine}
+                      style={{ background: "var(--indigo-300)" }}
+                    />
+                    Visibility
+                  </span>
+                </div>
+                <AskInfiChatButton label="Six-month trend" compact />
+              </span>
             </div>
 
             <svg

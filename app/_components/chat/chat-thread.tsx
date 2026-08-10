@@ -14,7 +14,7 @@ import type { ChatHint, ChatPrompt } from "./_data/chat-prompts";
 import styles from "./chat.module.css";
 
 /**
- * The conversation itself — shared by the floating panel and the `/assistant`
+ * The conversation itself — shared by the floating panel and the `/infichat`
  * page, which differ only in the chrome around this.
  *
  * There is no model behind it. Every send produces the same one `hint` (or
@@ -204,7 +204,7 @@ export const ChatThread = forwardRef<
           value={input}
           onChange={(event) => setInput(event.target.value)}
           placeholder="Ask a question…"
-          aria-label="Ask the assistant"
+          aria-label="Ask InfiChat"
         />
         <button
           type="submit"
@@ -217,7 +217,7 @@ export const ChatThread = forwardRef<
       </form>
 
       <p className={styles.mockNote}>
-        Preview — the assistant isn&rsquo;t connected to a model yet.
+        Preview — InfiChat isn&rsquo;t connected to a model yet.
       </p>
     </div>
   );

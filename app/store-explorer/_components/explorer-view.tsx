@@ -1,3 +1,5 @@
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { type ActiveFilter, filterKey, filterLabel } from "@/app/_filters/model";
 import type { Period } from "../_data/period";
@@ -196,29 +198,32 @@ export function ExplorerView({
               <span className={styles.panelTitle}>
                 Visited stores · {view.periodLabel}
               </span>
-              <div className={styles.legend}>
-                <span className={styles.legendItem}>
-                  <span
-                    className={styles.legendDot}
-                    style={{ background: "var(--indigo-600)" }}
-                  />
-                  Visited today
-                </span>
-                <span className={styles.legendItem}>
-                  <span
-                    className={styles.legendDot}
-                    style={{ background: "var(--indigo-300)" }}
-                  />
-                  In range
-                </span>
-                <span className={styles.legendItem}>
-                  <span
-                    className={styles.legendDot}
-                    style={{ background: "var(--neutral-300)" }}
-                  />
-                  Not visited
-                </span>
-              </div>
+              <span className={chatStyles.askGroup}>
+                <div className={styles.legend}>
+                  <span className={styles.legendItem}>
+                    <span
+                      className={styles.legendDot}
+                      style={{ background: "var(--indigo-600)" }}
+                    />
+                    Visited today
+                  </span>
+                  <span className={styles.legendItem}>
+                    <span
+                      className={styles.legendDot}
+                      style={{ background: "var(--indigo-300)" }}
+                    />
+                    In range
+                  </span>
+                  <span className={styles.legendItem}>
+                    <span
+                      className={styles.legendDot}
+                      style={{ background: "var(--neutral-300)" }}
+                    />
+                    Not visited
+                  </span>
+                </div>
+                <AskInfiChatButton label="Visited stores" compact />
+              </span>
             </div>
             <VietnamMap pins={view.pins} />
           </div>
@@ -227,7 +232,10 @@ export function ExplorerView({
         <div className={`${styles.card} ${styles.listPanel}`}>
           <div className={styles.listHead}>
             <span className={styles.panelTitle}>{view.visitsLabel}</span>
-            <span className={styles.listHint}>Tap a row to open App Images</span>
+            <span className={chatStyles.askGroup}>
+              <span className={styles.listHint}>Tap a row to open App Images</span>
+              <AskInfiChatButton label={view.visitsLabel} compact />
+            </span>
           </div>
 
           {listView === "list" ? (

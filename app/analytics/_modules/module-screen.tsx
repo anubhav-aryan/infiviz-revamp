@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import { ActionsBlock } from "@/app/_charts/actions-block";
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { DetailTable } from "@/app/_charts/detail-table";
 import { GapCards } from "@/app/_charts/gap-cards";
 import { ChartLegend, GroupedColumns } from "@/app/_charts/grouped-columns";
@@ -239,6 +240,7 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
                 <div className={charts.cardTitle}>
                   {view.measureLabel} — brand wise
                 </div>
+                <AskInfiChatButton label={`${view.measureLabel} — brand wise`} compact />
               </div>
               <SortableTable
                 columns={view.brandTable.columns}
@@ -250,8 +252,11 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
             </div>
 
             <div className={`${charts.card} ${charts.cardPad}`}>
-              <div className={charts.cardTitle}>
-                {view.measureLabel} trend — month wise
+              <div className={charts.cardHead}>
+                <div className={charts.cardTitle}>
+                  {view.measureLabel} trend — month wise
+                </div>
+                <AskInfiChatButton label={`${view.measureLabel} trend`} compact />
               </div>
               <TrendChart data={view.trend} />
             </div>
@@ -259,8 +264,14 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
 
           <div className={styles.split}>
             <div className={`${charts.card} ${charts.cardPad}`}>
-              <div className={charts.cardTitle}>
-                {view.measureLabel} — {view.groupNoun} wise
+              <div className={charts.cardHead}>
+                <div className={charts.cardTitle}>
+                  {view.measureLabel} — {view.groupNoun} wise
+                </div>
+                <AskInfiChatButton
+                  label={`${view.measureLabel} — ${view.groupNoun} wise`}
+                  compact
+                />
               </div>
               <div className={styles.cardGrid}>
                 {view.groupCards.map((card) => (
@@ -278,8 +289,14 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
 
             {view.donut ? (
               <div className={`${charts.card} ${charts.cardPad}`}>
-                <div className={charts.cardTitle}>
-                  {view.measureLabel} — own vs competition
+                <div className={charts.cardHead}>
+                  <div className={charts.cardTitle}>
+                    {view.measureLabel} — own vs competition
+                  </div>
+                  <AskInfiChatButton
+                    label={`${view.measureLabel} — own vs competition`}
+                    compact
+                  />
                 </div>
                 <Donut data={view.donut} />
               </div>
@@ -301,8 +318,11 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
               <GapCards cards={view.gapCards} />
             </div>
             <div className={`${charts.card} ${charts.cardPad}`}>
-              <div className={charts.cardTitle}>
-                {view.measureLabel} against target
+              <div className={charts.cardHead}>
+                <div className={charts.cardTitle}>
+                  {view.measureLabel} against target
+                </div>
+                <AskInfiChatButton label={`${view.measureLabel} against target`} compact />
               </div>
               <GroupedColumns data={view.gapColumns} />
               <ChartLegend items={view.gapColumns.legend} shape="swatch" />
@@ -328,17 +348,26 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
         <>
           <div className={styles.split}>
             <div className={`${charts.card} ${charts.cardPad}`}>
-              <div className={charts.cardTitle}>
-                {view.groupNoun === "segment" ? "Segment-wise" : "Category-wise"}{" "}
-                {view.measureLabel.toLowerCase()} — before and after
+              <div className={charts.cardHead}>
+                <div className={charts.cardTitle}>
+                  {view.groupNoun === "segment" ? "Segment-wise" : "Category-wise"}{" "}
+                  {view.measureLabel.toLowerCase()} — before and after
+                </div>
+                <AskInfiChatButton
+                  label={`${view.measureLabel} — before and after`}
+                  compact
+                />
               </div>
               <div className={charts.chartBody}>
                 <HBarList rows={view.merchImpact.bars} nameWidth="minmax(140px, 38%)" />
               </div>
             </div>
             <div className={`${charts.card} ${charts.cardPad}`}>
-              <div className={charts.cardTitle}>
-                {view.measureLabel} trend — before vs after
+              <div className={charts.cardHead}>
+                <div className={charts.cardTitle}>
+                  {view.measureLabel} trend — before vs after
+                </div>
+                <AskInfiChatButton label={`${view.measureLabel} trend`} compact />
               </div>
               <TrendChart data={view.merchImpact.beforeAfter} />
               <ChartLegend
@@ -385,6 +414,10 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
                 visit, not a zero.
               </div>
             </div>
+            <AskInfiChatButton
+              label={`Month-wise ${view.measureLabel.toLowerCase()} trend`}
+              compact
+            />
           </div>
           <MonthMatrix
             columns={view.matrix.columns}

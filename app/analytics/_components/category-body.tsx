@@ -1,3 +1,4 @@
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { Icon } from "@/app/_components/icon";
 import type { AnalyticsView } from "../_data/analytics";
 import { EmptyState, Ribbon, RibbonLegend, Sparkline, StatStrip } from "./shared";
@@ -98,6 +99,7 @@ export function CategoryBody({
         <div className={styles.ribbonCard}>
           <span className={styles.panelTitle} data-gap="14">
             All toothpaste facings · 100% share
+            <AskInfiChatButton label="All toothpaste facings" compact />
           </span>
           <Ribbon segments={segments} variant="brands" />
           <RibbonLegend segments={segments} showShare />
@@ -113,6 +115,7 @@ export function CategoryBody({
           <div className={styles.panel}>
             <span className={styles.panelTitle} data-gap="14">
               Who has the shelf
+              <AskInfiChatButton label="Who has the shelf" compact />
             </span>
             {view.whoShelf.map((brand) => (
               <div key={brand.name} className={styles.whoRow}>

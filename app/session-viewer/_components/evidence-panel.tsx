@@ -1,3 +1,5 @@
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import {
   BOX_LEGEND,
@@ -20,16 +22,19 @@ export function EvidencePanel({ boxes, onToggleBoxes }: EvidencePanelProps) {
       <div className={`${styles.card} ${styles.evidenceCard}`}>
         <div className={styles.shelfHead}>
           <span className={styles.cardTitle}>Stitched shelf · recognition</span>
-          <button
-            type="button"
-            className={styles.toggle}
-            data-active={boxes}
-            aria-pressed={boxes}
-            onClick={onToggleBoxes}
-          >
-            <Icon name={boxes ? "eye" : "eye-off"} size={15} />
-            {boxes ? "Boxes on" : "Boxes off"}
-          </button>
+          <span className={chatStyles.askGroup}>
+            <button
+              type="button"
+              className={styles.toggle}
+              data-active={boxes}
+              aria-pressed={boxes}
+              onClick={onToggleBoxes}
+            >
+              <Icon name={boxes ? "eye" : "eye-off"} size={15} />
+              {boxes ? "Boxes on" : "Boxes off"}
+            </button>
+            <AskInfiChatButton label="Stitched shelf · recognition" compact />
+          </span>
         </div>
 
         <div className={styles.shelf}>
@@ -84,8 +89,11 @@ export function EvidencePanel({ boxes, onToggleBoxes }: EvidencePanelProps) {
       </div>
 
       <div className={`${styles.card} ${styles.evidenceCard}`}>
-        <span className={`${styles.cardTitle} ${styles.cardTitleBlock}`}>
-          Photos in this stitch · capture order
+        <span className={styles.shelfHead}>
+          <span className={styles.cardTitle}>
+            Photos in this stitch · capture order
+          </span>
+          <AskInfiChatButton label="Photos in this stitch" compact />
         </span>
         <div className={styles.photoGrid}>
           {STITCH_PHOTOS.map((photo) => (

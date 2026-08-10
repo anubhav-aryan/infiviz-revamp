@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { Avatar, PRIORITY_LABEL, Pill, STATUS_LABEL } from "./bits";
 import { SOURCES, nameFor, type Ticket } from "../_data/tickets";
@@ -102,7 +104,10 @@ export function TicketPanel({
         </header>
 
         <div className={styles.panelBody}>
-          <h2 className={styles.panelTitle}>{ticket.title}</h2>
+          <span className={chatStyles.askGroup}>
+            <h2 className={styles.panelTitle}>{ticket.title}</h2>
+            <AskInfiChatButton label={ticket.title} compact />
+          </span>
           <p className={styles.panelDetail}>{ticket.detail}</p>
 
           {ticket.source ? (

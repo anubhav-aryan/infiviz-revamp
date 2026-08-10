@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { Segmented } from "@/app/_charts/segmented";
 import { MONTHS, SESSIONS_CARD, WEEKS, type SessionsMode } from "./_data/landing";
 import styles from "./landing.module.css";
@@ -38,6 +39,7 @@ export function SessionsCard() {
             onChange={setMode}
             label="Sessions grouping"
           />
+          <AskInfiChatButton label={card.title} compact />
         </div>
       </div>
 

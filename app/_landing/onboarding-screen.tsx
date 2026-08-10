@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { ActivityFeed } from "./activity-feed";
 import { OnboardingStepper } from "./onboarding-stepper";
@@ -68,7 +70,10 @@ export function OnboardingScreen() {
                 key={meter.title}
                 className={`${styles.card} ${styles.meterCard}`}
               >
-                <div className={styles.cardTitle}>{meter.title}</div>
+                <div className={styles.cardHead}>
+                  <div className={styles.cardTitle}>{meter.title}</div>
+                  <AskInfiChatButton label={meter.title} compact />
+                </div>
                 <div className={styles.meterValueRow}>
                   <span className={styles.meterValue}>
                     {meter.value}
@@ -98,7 +103,10 @@ export function OnboardingScreen() {
           <div className={`${styles.card} ${styles.retailerCard}`}>
             <div className={`${styles.cardHead} ${styles.retailerHead}`}>
               <div className={styles.cardTitle}>{RETAILERS_CARD.title}</div>
-              <div className={styles.cardCaption}>{RETAILERS_CARD.caption}</div>
+              <span className={chatStyles.askGroup}>
+                <div className={styles.cardCaption}>{RETAILERS_CARD.caption}</div>
+                <AskInfiChatButton label={RETAILERS_CARD.title} compact />
+              </span>
             </div>
             {RETAILERS.map((retailer) => (
               <div key={retailer.name} className={styles.retailerRow}>

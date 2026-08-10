@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { Icon } from "@/app/_components/icon";
 import { ChatThread, type ChatThreadHandle } from "./chat-thread";
-import type { ChatContext } from "./_data/chat-prompts";
+import type { ChatHint, ChatPrompt } from "./_data/chat-prompts";
 import styles from "./chat.module.css";
 
 /**
@@ -13,15 +13,22 @@ import styles from "./chat.module.css";
  * elsewhere — this is a persistent companion widget, not a blocking action, so
  * it anchors above the launcher with no backdrop and no click-outside-close,
  * the standard chat-widget convention.
+ *
+ * `label` names whatever opened this — the page itself (from the launcher) or
+ * one specific card (from its own "Ask InfiChat" button) — while `prompts`
+ * and `hint` are always the page's real data, so the reply is the same one
+ * the launcher would give, just captioned with what you actually asked from.
  */
 
 export function ChatPanel({
-  pageLabel,
-  context,
+  label,
+  prompts,
+  hint,
   onClose,
 }: {
-  pageLabel: string;
-  context: ChatContext;
+  label: string;
+  prompts: ChatPrompt[];
+  hint: ChatHint;
   onClose: () => void;
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -43,22 +50,17 @@ export function ChatPanel({
   }, [onClose]);
 
   return (
-    <div
-      className={styles.panel}
-      role="dialog"
-      aria-modal="false"
-      aria-label="InfiViz Assistant"
-    >
+    <div className={styles.panel} role="dialog" aria-modal="false" aria-label="InfiChat">
       <header className={styles.panelHead}>
         <span className={styles.panelHeadAvatar} aria-hidden="true">
           <Icon name="sparkles" size={16} />
         </span>
         <div className={styles.panelHeadBody}>
           <div className={styles.panelHeadTitleRow}>
-            <span className={styles.panelHeadTitle}>InfiViz Assistant</span>
+            <span className={styles.panelHeadTitle}>InfiChat</span>
             <span className={styles.panelBadge}>Preview</span>
           </div>
-          <div className={styles.panelHeadCaption}>Ask about {pageLabel}</div>
+          <div className={styles.panelHeadCaption}>Ask about {label}</div>
         </div>
         <button
           type="button"
@@ -74,7 +76,7 @@ export function ChatPanel({
           type="button"
           className={styles.panelIconButton}
           onClick={onClose}
-          aria-label="Close assistant"
+          aria-label="Close InfiChat"
         >
           <Icon name="x" size={15} />
         </button>
@@ -82,10 +84,10 @@ export function ChatPanel({
 
       <ChatThread
         ref={threadRef}
-        title="InfiViz Assistant"
-        subtitle={`Ask me something about ${pageLabel}, or try a suggestion below.`}
-        prompts={context.prompts}
-        hint={context.hint}
+        title="InfiChat"
+        subtitle={`Ask me something about ${label}, or try a suggestion below.`}
+        prompts={prompts}
+        hint={hint}
         variant="panel"
       />
     </div>

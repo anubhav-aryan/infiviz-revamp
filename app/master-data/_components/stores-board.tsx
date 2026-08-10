@@ -1,3 +1,5 @@
+import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import {
   REGION_MINI,
@@ -84,7 +86,10 @@ export function StoresBoard() {
       <div className={styles.tableCard}>
         <div className={styles.tableHead}>
           <span className={styles.tableTitle}>{STORES_TABLE.count}</span>
-          <span className={styles.tableCount}>{STORES_TABLE.showing}</span>
+          <span className={chatStyles.askGroup}>
+            <span className={styles.tableCount}>{STORES_TABLE.showing}</span>
+            <AskInfiChatButton label={STORES_TABLE.count} compact />
+          </span>
         </div>
 
         <div className={`${styles.storesGrid} ${styles.columnHead}`}>
