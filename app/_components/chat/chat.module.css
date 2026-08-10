@@ -1,0 +1,552 @@
+/* The floating chat launcher, its panel, and the shared thread inside both. */
+
+.launcher {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--brand);
+  color: var(--text-on-brand);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: background var(--transition-snap), box-shadow var(--transition-snap),
+    transform var(--transition-snap);
+}
+
+.launcher:hover {
+  background: var(--brand-hover);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+.launcher[data-open="true"] {
+  background: var(--neutral-800, var(--text-heading));
+}
+
+/* panel */
+
+.panel {
+  position: fixed;
+  right: 24px;
+  bottom: 88px;
+  z-index: 59;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  height: 560px;
+  max-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.panelHead {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.panelHeadAvatar {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--brand-subtle);
+  color: var(--brand);
+}
+
+.panelHeadBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.panelHeadTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.panelHeadTitle {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.panelBadge {
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  color: var(--text-caption);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.panelHeadCaption {
+  margin-top: 1px;
+  font-size: 11.5px;
+  color: var(--text-caption);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panelIconButton {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-snap);
+}
+
+.panelIconButton:hover {
+  background: var(--surface-hover);
+}
+
+/* thread — shared by the panel and the /assistant page */
+
+.thread {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* A short conversation sits at the bottom of the scroll area, the way real
+     chat UIs open — not stranded at the top with dead space below it. */
+  justify-content: flex-end;
+}
+
+.bubbleRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 88%;
+}
+
+.bubbleRow[data-role="user"] {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+  max-width: 82%;
+}
+
+.avatar {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--brand-subtle);
+  color: var(--brand);
+}
+
+.bubble {
+  padding: 9px 12px;
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.bubble[data-role="assistant"] {
+  background: var(--surface-sunken);
+  color: var(--text-body);
+  border-bottom-left-radius: 4px;
+}
+
+.bubble[data-role="user"] {
+  background: var(--brand);
+  color: var(--text-on-brand);
+  border-bottom-right-radius: 4px;
+}
+
+.bubbleText {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.bubbleLink {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand);
+  text-decoration: none;
+}
+
+.bubbleLink:hover {
+  text-decoration: underline;
+}
+
+.bubble[data-typing="true"] {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 11px 14px;
+}
+
+.typingDot {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--text-caption);
+  animation: chatTypingDot 1.1s infinite ease-in-out;
+}
+
+.typingDot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typingDot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes chatTypingDot {
+  0%, 60%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+/* empty state — the suggestion surface, the way a real assistant opens:
+   centered mark, title, subtitle, then suggestion cards. Fills the same slot
+   `.messages` occupies once a conversation starts. */
+
+.emptyState {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.emptyMark {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--brand-subtle);
+  color: var(--brand);
+  margin-bottom: 4px;
+}
+
+.emptyTitle {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.emptySubtitle {
+  max-width: 320px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.suggestionGrid {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+.suggestionCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 10px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-snap), border-color var(--transition-snap);
+}
+
+.suggestionCard:hover {
+  background: var(--surface-hover);
+  border-color: var(--brand-border);
+}
+
+.suggestionIcon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: var(--brand-subtle);
+  color: var(--brand);
+  margin-top: 1px;
+}
+
+.suggestionBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.suggestionTitle {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.suggestionQuestion {
+  font-size: 11.5px;
+  color: var(--text-caption);
+  line-height: 1.4;
+}
+
+/* The hub has room to spread suggestions into a two-column grid instead of
+   the panel's stacked single column. */
+.thread[data-variant="hub"] .suggestionGrid {
+  max-width: 560px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.thread[data-variant="hub"] .emptyMark {
+  width: 48px;
+  height: 48px;
+}
+
+.thread[data-variant="hub"] .emptyTitle {
+  font-size: 22px;
+}
+
+.thread[data-variant="hub"] .emptySubtitle {
+  max-width: 440px;
+  font-size: 13.5px;
+}
+
+.composer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--hairline);
+}
+
+.composerInput {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-full);
+  background: var(--surface-page);
+  color: var(--text-body);
+  font: inherit;
+  font-size: 13px;
+}
+
+.composerInput:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+
+.composerSend {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--brand);
+  color: var(--text-on-brand);
+  cursor: pointer;
+  transition: background var(--transition-snap), opacity var(--transition-snap);
+}
+
+.composerSend:hover:not(:disabled) {
+  background: var(--brand-hover);
+}
+
+.composerSend:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.mockNote {
+  flex: none;
+  margin: 0;
+  padding: 0 16px 12px;
+  font-size: 10.5px;
+  color: var(--text-caption);
+  text-align: center;
+}
+
+/* the /assistant page's own chrome — a history rail beside the thread,
+   the two-pane shape every real chat product uses. */
+
+.hubLayout {
+  display: flex;
+  gap: 16px;
+  /* Fill the viewport, not an arbitrary card floating above dead space —
+     `100dvh` matches the shell's own sizing, `AppShell` puts nothing above
+     this page's content, so there's no header height to subtract. */
+  height: calc(100dvh - 16px);
+  min-height: 480px;
+}
+
+.historyRail {
+  flex: none;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-xl);
+  background: var(--surface-card);
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.newChatButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-lg);
+  background: var(--brand-subtle);
+  color: var(--brand-hover);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-snap);
+}
+
+.newChatButton:hover {
+  background: var(--brand-subtle-hover);
+}
+
+.historyHead {
+  margin: 16px 4px 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-caption);
+}
+
+.historyEmpty {
+  margin: 4px;
+  font-size: 12px;
+  color: var(--text-caption);
+  line-height: 1.5;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-snap), color var(--transition-snap);
+}
+
+.historyItem svg {
+  flex: none;
+  opacity: 0.7;
+}
+
+.historyItem:hover {
+  background: var(--surface-hover);
+}
+
+.historyItem[data-active="true"] {
+  background: var(--brand-subtle);
+  color: var(--brand-hover);
+  font-weight: 600;
+}
+
+.historyItem[data-active="true"] svg {
+  opacity: 1;
+}
+
+.historyItemText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+}
+
+.hubMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-xl);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}

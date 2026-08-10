@@ -12,7 +12,8 @@ export type NavId =
   | "catalog"
   | "photo-quality"
   | "merch-activity"
-  | "tickets";
+  | "tickets"
+  | "assistant";
 
 export type NavItem = {
   id: NavId;
@@ -38,6 +39,7 @@ export const NAV: NavItem[] = [
     href: "/merch-activity",
   },
   { id: "tickets", label: "Tickets", title: "Tickets", icon: "list-checks", href: "/tickets" },
+  { id: "assistant", label: "Assistant", title: "Assistant", icon: "sparkles", href: "/assistant" },
 ];
 
 export const NAV_BY_ID = Object.fromEntries(NAV.map((n) => [n.id, n])) as Record<
@@ -74,6 +76,9 @@ export const NAV_CAPTURING: NavEntry[] = [
      the sidebar during onboarding, with no type error to catch it. Tickets is
      usable as soon as captures arrive, so it is open like the other reports. */
   { id: "tickets", state: "normal" },
+  /* Fully mocked, no data dependency — available from the first screen rather
+     than gated behind onboarding like Catalog/Analytics. */
+  { id: "assistant", state: "normal" },
   { id: "catalog", state: "locked", tooltip: UNLOCK.catalog },
   { id: "analytics", state: "locked", tooltip: UNLOCK.analytics },
 ];
