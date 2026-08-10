@@ -1,6 +1,7 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { type ActiveFilter, filterKey, filterLabel } from "@/app/_filters/model";
 import type { Period } from "../_data/period";
 import type { Facts, View, Visit } from "../_data/store-explorer";
@@ -223,6 +224,7 @@ export function ExplorerView({
                   </span>
                 </div>
                 <AskInfiChatButton label="Visited stores" compact />
+                <ExcelDownloadButton label="Visited stores" compact />
               </span>
             </div>
             <VietnamMap pins={view.pins} />
@@ -235,6 +237,7 @@ export function ExplorerView({
             <span className={chatStyles.askGroup}>
               <span className={styles.listHint}>Tap a row to open App Images</span>
               <AskInfiChatButton label={view.visitsLabel} compact />
+              <ExcelDownloadButton label={view.visitsLabel} compact />
             </span>
           </div>
 

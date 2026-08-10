@@ -4,11 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/app/_components/icon";
 import { Avatar } from "./bits";
 import { SOURCES, type Suggestion } from "../_data/tickets";
+import type { TicketContext } from "../_data/ticket-context";
 import { assignableTo, PERSONA_ACTOR } from "../_data/people";
 import styles from "./tickets.module.css";
 
 /**
- * New ticket, or a suggestion being turned into one.
+ * New ticket, or a suggestion being turned into one — or, with `context`, a
+ * ticket started from a "Create ticket" button on another screen (a chart's
+ * region/metric/period). `context` and `suggestion` are mutually exclusive in
+ * practice (a compose action starts from one or the other), but nothing here
+ * enforces that — both just prefill `title`/`detail` if present.
  *
  * The assignee list is `assignableTo(persona)` — a persona can only assign
  * downward, so an executive sees leads and supervisors while a field supervisor
@@ -19,21 +24,36 @@ import styles from "./tickets.module.css";
  * buttons says so rather than pretending the ticket was filed.
  */
 
+function titleFromContext(context: TicketContext): string {
+  const parts = [context.metric, context.region].filter(Boolean);
+  return parts.length ? `${parts.join(" — ")} needs a follow-up` : "";
+}
+
+function detailFromContext(context: TicketContext): string {
+  return context.period ? `Raised from ${context.period}'s figures.` : "";
+}
+
 export function ComposePanel({
   persona,
   suggestion,
+  context,
   onClose,
 }: {
   persona: string;
   suggestion?: Suggestion;
+  context?: TicketContext;
   onClose: () => void;
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const options = assignableTo(persona);
   const reporter = PERSONA_ACTOR[persona];
 
-  const [title, setTitle] = useState(suggestion?.title ?? "");
-  const [detail, setDetail] = useState(suggestion?.detail ?? "");
+  const [title, setTitle] = useState(
+    suggestion?.title ?? (context ? titleFromContext(context) : ""),
+  );
+  const [detail, setDetail] = useState(
+    suggestion?.detail ?? (context ? detailFromContext(context) : ""),
+  );
   const [assignee, setAssignee] = useState(
     suggestion?.assigneeId && options.some((p) => p.id === suggestion.assigneeId)
       ? suggestion.assigneeId
@@ -62,12 +82,18 @@ export function ComposePanel({
         className={styles.panel}
         role="dialog"
         aria-modal="true"
-        aria-label={suggestion ? "Create ticket from suggestion" : "New ticket"}
+        aria-label={
+          suggestion
+            ? "Create ticket from suggestion"
+            : context
+              ? "Create ticket from data"
+              : "New ticket"
+        }
         onClick={(event) => event.stopPropagation()}
       >
         <header className={styles.panelHead}>
           <span className={styles.panelEyebrow}>
-            {suggestion ? "Create from suggestion" : "New ticket"}
+            {suggestion ? "Create from suggestion" : context ? "Create from data" : "New ticket"}
           </span>
           <button
             ref={closeRef}
@@ -86,6 +112,20 @@ export function ComposePanel({
               <Icon name="star" size={13} />
               From {SOURCES[suggestion.source].label}
             </p>
+          ) : null}
+
+          {context && (context.region || context.metric || context.period) ? (
+            <div className={styles.contextRow}>
+              {context.metric ? (
+                <span className={styles.contextPill}>{context.metric}</span>
+              ) : null}
+              {context.region ? (
+                <span className={styles.contextPill}>{context.region}</span>
+              ) : null}
+              {context.period ? (
+                <span className={styles.contextPill}>{context.period}</span>
+              ) : null}
+            </div>
           ) : null}
 
           <label className={styles.field}>

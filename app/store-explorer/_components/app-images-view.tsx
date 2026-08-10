@@ -2,6 +2,7 @@ import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { storeById } from "@/app/_data/stores-geo";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { photosFor, visitTiming, type Visit } from "../_data/store-explorer";
 import styles from "./store-explorer.module.css";
 
@@ -71,6 +72,7 @@ export function AppImagesView({ visit, onBack, onOpenPhoto }: AppImagesViewProps
               Total time in store <b>{totalTimeLabel}</b>
             </span>
             <AskInfiChatButton label="Visit timeline" compact />
+            <ExcelDownloadButton label="Visit timeline" compact />
           </span>
         </div>
 

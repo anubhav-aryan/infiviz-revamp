@@ -1,5 +1,6 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import type { Column, Row } from "./table";
 import { MeasureTable } from "./measure-table";
 import styles from "./charts.module.css";
@@ -54,6 +55,7 @@ export function DetailTable({
         <span className={chatStyles.askGroup}>
           {action}
           <AskInfiChatButton label={title} compact />
+          <ExcelDownloadButton label={title} compact />
         </span>
       </div>
 

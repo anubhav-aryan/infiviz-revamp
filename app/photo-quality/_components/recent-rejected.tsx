@@ -5,6 +5,7 @@ import { useState } from "react";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import type { RejectedSession } from "../_data/photo-quality";
 import shared from "@/app/_reports/reports.module.css";
 import { sessionImageHref } from "@/app/session-images/_data/session-images";
@@ -166,6 +167,7 @@ export function RecentRejected({
             </button>
           </div>
           <AskInfiChatButton label="Recent rejected sessions" compact />
+          <ExcelDownloadButton label="Recent rejected sessions" compact />
         </span>
       </div>
 

@@ -4,6 +4,7 @@ import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import type { CsvTable } from "@/app/_export/csv";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { Bar, TargetHero, TargetRule } from "@/app/_reports/marks";
 import { ReportHeader } from "@/app/_reports/report-header";
 import type { MonthKey } from "@/app/_time/periods";
@@ -125,6 +126,7 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
           <div className={shared.tableTitle}>
             Merchandiser activity
             <AskInfiChatButton label="Merchandiser activity" compact />
+            <ExcelDownloadButton label="Merchandiser activity" compact />
           </div>
 
           <div
@@ -215,6 +217,7 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
                   {view.coverageHero.targetLabel}
                 </span>
                 <AskInfiChatButton label="Coverage by region" compact />
+                <ExcelDownloadButton label="Coverage by region" compact />
               </span>
             </div>
 
@@ -263,6 +266,7 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
             <div className={shared.tableTitle}>
               Never-visited &amp; overdue stores
               <AskInfiChatButton label="Never-visited & overdue stores" compact />
+              <ExcelDownloadButton label="Never-visited & overdue stores" compact />
             </div>
 
             <div

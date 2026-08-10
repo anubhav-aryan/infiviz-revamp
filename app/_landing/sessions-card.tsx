@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { Segmented } from "@/app/_charts/segmented";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { MONTHS, SESSIONS_CARD, WEEKS, type SessionsMode } from "./_data/landing";
 import styles from "./landing.module.css";
 
@@ -40,6 +41,7 @@ export function SessionsCard() {
             label="Sessions grouping"
           />
           <AskInfiChatButton label={card.title} compact />
+          <ExcelDownloadButton label={card.title} compact />
         </div>
       </div>
 

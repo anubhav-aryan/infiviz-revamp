@@ -46,7 +46,7 @@ export default async function StoreSessionPage(
     // Analytics stays highlighted: this surface has no nav entry of its own and
     // is only ever reached by drilling into an Analytics number.
     <AppShell active="analytics">
-      <SessionViewer session={sessionFor(visit)} />
+      <SessionViewer session={sessionFor(visit)} visit={visit} />
     </AppShell>
   );
 }

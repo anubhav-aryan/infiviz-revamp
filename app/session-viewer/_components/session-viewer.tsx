@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { Icon } from "@/app/_components/icon";
+import type { Visit } from "@/app/store-explorer/_data/store-explorer";
 import {
   CONTEXT,
   DEFAULT_SESSION,
@@ -10,18 +11,24 @@ import {
 } from "../_data/session-viewer";
 import { EvidencePanel } from "./evidence-panel";
 import { MetricsPanel } from "./metrics-panel";
+import { VisitContextCard } from "./visit-context-card";
 import styles from "./session-viewer.module.css";
 
 type SessionViewerProps = {
   /** Which store's session header to show; omit for the design's own session. */
   session?: SessionIdentity;
+  /** The `Visit` the session was resolved from — absent for the no-store
+   *  default session, which has no `Visit` to carry. Threaded down so the MSL
+   *  checklist and visit-context card can derive their per-store figures
+   *  without re-deriving it themselves. */
+  visit?: Visit;
 };
 
 /**
  * Mirrors the design doc's component state, which is a single flag: whether the
  * recognition overlay is drawn on the stitched shelf.
  */
-export function SessionViewer({ session = DEFAULT_SESSION }: SessionViewerProps) {
+export function SessionViewer({ session = DEFAULT_SESSION, visit }: SessionViewerProps) {
   const [boxes, setBoxes] = useState(true);
   const toggleBoxes = useCallback(() => setBoxes((on) => !on), []);
 
@@ -44,8 +51,11 @@ export function SessionViewer({ session = DEFAULT_SESSION }: SessionViewerProps)
       </div>
 
       <div className={styles.grid}>
-        <EvidencePanel boxes={boxes} onToggleBoxes={toggleBoxes} />
-        <MetricsPanel session={session} />
+        <div className={styles.column}>
+          <EvidencePanel boxes={boxes} onToggleBoxes={toggleBoxes} />
+          {visit ? <VisitContextCard visit={visit} /> : null}
+        </div>
+        <MetricsPanel session={session} visit={visit} />
       </div>
     </div>
   );

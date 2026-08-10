@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Fragment } from "react";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { Icon } from "@/app/_components/icon";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import {
   HEAT_COLS,
   REGIONAL_HERO_SUB,
@@ -80,6 +81,7 @@ export function RegionalBody({
           <span className={styles.panelTitle} data-gap="12">
             OSA by {dim.toLowerCase()}
             <AskInfiChatButton label={`OSA by ${dim.toLowerCase()}`} compact />
+            <ExcelDownloadButton label={`OSA by ${dim.toLowerCase()}`} compact />
           </span>
           <RankedList
             rows={view.ranked[dim]}
@@ -104,6 +106,7 @@ export function RegionalBody({
             <span className={styles.panelTitle} data-gap="14">
               OSA · city × retailer
               <AskInfiChatButton label="OSA · city × retailer" compact />
+              <ExcelDownloadButton label="OSA · city × retailer" compact />
             </span>
             <div className={styles.heatGrid}>
               <span />
@@ -134,6 +137,7 @@ export function RegionalBody({
             <span className={styles.panelTitle} data-gap="6">
               Audit coverage vs availability
               <AskInfiChatButton label="Audit coverage vs availability" compact />
+              <ExcelDownloadButton label="Audit coverage vs availability" compact />
             </span>
             <svg
               viewBox="0 0 300 200"

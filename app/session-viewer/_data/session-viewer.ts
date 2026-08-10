@@ -1,3 +1,4 @@
+import { hashStoreId } from "@/app/_format/num";
 import { VISITS, type Visit } from "@/app/store-explorer/_data/store-explorer";
 
 /**
@@ -124,6 +125,9 @@ export type RecognitionBox = {
   w: number;
   h: number;
   kind: BoxKind;
+  /** Model confidence for this box, 0–1. Lower for `unrecognised` boxes by
+   *  construction — that's the same signal that kept them unrecognised. */
+  confidence: number;
 };
 
 /**
@@ -132,21 +136,21 @@ export type RecognitionBox = {
  * Two shelf rows: eight facings on top, seven below.
  */
 export const RECOGNITION_BOXES: RecognitionBox[] = [
-  { x: 3, y: 4, w: 11, h: 15, kind: "own" },
-  { x: 15, y: 4, w: 10, h: 15, kind: "own" },
-  { x: 26, y: 5, w: 9, h: 14, kind: "competitor" },
-  { x: 36, y: 4, w: 11, h: 15, kind: "competitor" },
-  { x: 48, y: 5, w: 10, h: 14, kind: "competitor" },
-  { x: 59, y: 4, w: 9, h: 15, kind: "own" },
-  { x: 69, y: 5, w: 10, h: 14, kind: "competitor" },
-  { x: 80, y: 4, w: 11, h: 15, kind: "unrecognised" },
-  { x: 4, y: 22, w: 12, h: 16, kind: "competitor" },
-  { x: 17, y: 22, w: 11, h: 16, kind: "own" },
-  { x: 29, y: 23, w: 10, h: 15, kind: "competitor" },
-  { x: 40, y: 22, w: 12, h: 16, kind: "competitor" },
-  { x: 53, y: 22, w: 10, h: 16, kind: "competitor" },
-  { x: 64, y: 23, w: 11, h: 15, kind: "competitor" },
-  { x: 76, y: 22, w: 12, h: 16, kind: "unrecognised" },
+  { x: 3, y: 4, w: 11, h: 15, kind: "own", confidence: 0.97 },
+  { x: 15, y: 4, w: 10, h: 15, kind: "own", confidence: 0.95 },
+  { x: 26, y: 5, w: 9, h: 14, kind: "competitor", confidence: 0.91 },
+  { x: 36, y: 4, w: 11, h: 15, kind: "competitor", confidence: 0.93 },
+  { x: 48, y: 5, w: 10, h: 14, kind: "competitor", confidence: 0.88 },
+  { x: 59, y: 4, w: 9, h: 15, kind: "own", confidence: 0.96 },
+  { x: 69, y: 5, w: 10, h: 14, kind: "competitor", confidence: 0.9 },
+  { x: 80, y: 4, w: 11, h: 15, kind: "unrecognised", confidence: 0.42 },
+  { x: 4, y: 22, w: 12, h: 16, kind: "competitor", confidence: 0.89 },
+  { x: 17, y: 22, w: 11, h: 16, kind: "own", confidence: 0.94 },
+  { x: 29, y: 23, w: 10, h: 15, kind: "competitor", confidence: 0.87 },
+  { x: 40, y: 22, w: 12, h: 16, kind: "competitor", confidence: 0.92 },
+  { x: 53, y: 22, w: 10, h: 16, kind: "competitor", confidence: 0.85 },
+  { x: 64, y: 23, w: 11, h: 15, kind: "competitor", confidence: 0.9 },
+  { x: 76, y: 22, w: 12, h: 16, kind: "unrecognised", confidence: 0.38 },
 ];
 
 export const BOX_LEGEND: { kind: BoxKind; label: string }[] = [
@@ -239,6 +243,93 @@ export const MSL = MSL_RAW.map((sku) => ({
   statusLabel:
     sku.facings === undefined ? "Absent" : `Found · ${sku.facings}`,
 }));
+
+export type MslChecklistRow = MslRow & {
+  detected: boolean;
+  detail: string;
+};
+
+/**
+ * Per-store expected-vs-detected checklist. Membership — which 8 SKUs make up
+ * the must-stock list — stays the one shared authored fact; only *found vs
+ * absent* varies per store, and only by flipping one row, picked
+ * deterministically from the store id so it's stable across renders without
+ * inventing facings counts the fixture never captured. The no-`Visit` default
+ * session keeps the static `MSL` output above, unchanged.
+ */
+export function mslFor(visit: Visit): MslChecklistRow[] {
+  const flipIndex = hashStoreId(visit.storeId) % MSL_RAW.length;
+  return MSL_RAW.map((sku, i) => {
+    const baseDetected = sku.facings !== undefined;
+    const detected = i === flipIndex ? !baseDetected : baseDetected;
+    return {
+      ...sku,
+      detected,
+      detail: detected
+        ? sku.facings !== undefined
+          ? `Found · ${sku.facings} facings`
+          : "Found on shelf"
+        : "Not found on shelf",
+    };
+  });
+}
+
+/* ---- visit context: timeline + photo quality ---- */
+
+export type TimelineEvent = { time: string; label: string };
+
+function clockFromMinutes(minutes: number): string {
+  const h = Math.floor(minutes / 60) % 24;
+  const m = minutes % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+/**
+ * 4–6 events derived from the visit's own start time and photo count —
+ * arrival, spaced captures, departure — rather than hand-authoring eight full
+ * timelines with no capture-level data behind them. Capped at 4 capture
+ * events so a 9-photo visit doesn't produce an implausibly long timeline.
+ */
+export function visitTimeline(visit: Visit): TimelineEvent[] {
+  const [h, m] = visit.time.split(":").map(Number);
+  const start = h * 60 + m;
+  const captures = Math.min(visit.photos, 4);
+
+  const events: TimelineEvent[] = [
+    { time: clockFromMinutes(start), label: "Arrived at store" },
+  ];
+  for (let i = 0; i < captures; i += 1) {
+    events.push({
+      time: clockFromMinutes(start + 1 + i * 2),
+      label: `Capture ${i + 1} of ${visit.photos}`,
+    });
+  }
+  events.push({
+    time: clockFromMinutes(start + 2 + captures * 2),
+    label: "Left store",
+  });
+  return events;
+}
+
+export type PhotoQualityTier = "good" | "fair" | "poor";
+
+const PHOTO_QUALITY_LABEL: Record<PhotoQualityTier, string> = {
+  good: "Good",
+  fair: "Fair",
+  poor: "Poor",
+};
+
+/**
+ * Doesn't exist per-store today — `sessionFor()` deliberately drops "Capture
+ * quality" because it isn't in `Visit` data. This derives a coarse tier the
+ * same deterministic way as `mslFor`, rather than asserting "Good" for every
+ * store the way the removed field would have.
+ */
+export function photoQualityFor(visit: Visit): { tier: PhotoQualityTier; label: string } {
+  const bucket = hashStoreId(visit.storeId) % 10;
+  const tier: PhotoQualityTier = bucket < 6 ? "good" : bucket < 9 ? "fair" : "poor";
+  return { tier, label: PHOTO_QUALITY_LABEL[tier] };
+}
 
 /* ---- brand breakdown ---- */
 

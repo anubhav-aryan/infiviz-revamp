@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { ExportButton } from "@/app/_export/export-button";
 import type { CsvTable } from "@/app/_export/csv";
 import { Icon } from "@/app/_components/icon";
+import { DatePresetPicker } from "@/app/_time/date-preset-picker";
 import { type MonthKey, stepMonth } from "@/app/_time/periods";
 import {
   JOURNEY_PLANS,
@@ -65,6 +67,8 @@ export function JourneyPlansBoard({ month }: { month: MonthKey }) {
         </div>
 
         <div className={styles.headActions}>
+          <DatePresetPicker mode="link" period={month} basePath="/master-data/journey-plans" />
+
           <div className={styles.monthStepper}>
             {/* Inert at the ends of the authored Feb–Jul window rather than
                 linking to a month with no data behind it. */}
@@ -119,6 +123,7 @@ export function JourneyPlansBoard({ month }: { month: MonthKey }) {
               </span>
             </div>
             <AskInfiChatButton label="Planned vs completed visits" compact />
+            <ExcelDownloadButton label="Planned vs completed visits" compact />
           </span>
         </div>
 
@@ -178,6 +183,7 @@ export function JourneyPlansBoard({ month }: { month: MonthKey }) {
         <div className={styles.plansTitle}>
           Plans by merchandiser
           <AskInfiChatButton label="Plans by merchandiser" compact />
+          <ExcelDownloadButton label="Plans by merchandiser" compact />
         </div>
 
         <div className={`${styles.plansGrid} ${styles.columnHead}`}>

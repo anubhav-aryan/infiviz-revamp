@@ -36,6 +36,7 @@
 }
 
 .productImageHero {
+  position: relative;
   aspect-ratio: 16 / 10;
   border-radius: 12px;
   margin-bottom: 18px;
@@ -525,6 +526,14 @@
   background: var(--surface-hover);
 }
 
+/* Room for ownership/packshot/accuracy — swaps in Category and H/W for the
+   fields that matter more on this list, rather than growing to 12 columns. */
+.tableHeadWide,
+.tableRowWide {
+  grid-template-columns:
+    44px minmax(160px, 1fr) 120px 108px 118px 132px 108px 88px 84px;
+}
+
 .tableName {
   color: var(--text-heading);
   font-weight: 500;
@@ -553,6 +562,157 @@
 
 .alignRight {
   text-align: right;
+}
+
+/* ---------- ownership / packshot / accuracy indicators ---------- */
+
+.ownershipTag {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.ownershipTag[data-ownership="own"] {
+  color: var(--indigo-700);
+  background: var(--indigo-50);
+}
+
+.ownershipTag[data-ownership="competitor"] {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+.ownershipTag[data-ownership="private-label"] {
+  color: var(--text-secondary);
+  background: var(--surface-sunken);
+}
+
+/* Sits on the product-image placeholder — the one place a missing packshot is
+   actually about the image, everywhere else it's a text/icon flag. */
+.packshotMissingBadge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--warning) 16%, white);
+  color: var(--warning);
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.packshotMissingIcon {
+  color: var(--warning);
+  flex: none;
+}
+
+.accuracyPill {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+}
+
+.accuracyPill[data-tone="good"] {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+}
+
+.accuracyPill[data-tone="fair"] {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+}
+
+.accuracyPill[data-tone="low"] {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+/* Category card's own Pack-shots stat — a warning tone below threshold, set
+   from the JSX rather than a CSS breakpoint since the threshold is a product
+   decision (80%), not a layout one. */
+.statValue[data-low="true"] {
+  color: var(--danger);
+}
+
+/* ---------- accuracy subtab table ---------- */
+
+.accuracyTableHead,
+.accuracyTableRow {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) 110px 90px 110px 64px minmax(140px, 1fr);
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--hairline);
+  align-items: center;
+  gap: 8px;
+}
+
+.accuracyTableHead {
+  background: var(--surface-sunken);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-caption);
+}
+
+.accuracyTableRow {
+  width: 100%;
+  font-family: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  cursor: pointer;
+  transition: background var(--transition-snap);
+}
+
+.accuracyTableRow:last-child {
+  border-bottom: none;
+}
+
+.accuracyTableRow:hover {
+  background: var(--surface-hover);
+}
+
+.accuracyValue {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.accuracyValue[data-tone="good"] {
+  color: var(--success);
+}
+
+.accuracyValue[data-tone="fair"] {
+  color: var(--warning);
+}
+
+.accuracyValue[data-tone="low"] {
+  color: var(--danger);
+}
+
+.trainedYes {
+  color: var(--success);
+}
+
+.trainedNo {
+  color: var(--text-disabled);
 }
 
 /* ---------- sku slide-over ---------- */
@@ -617,6 +777,67 @@
   color: var(--text-heading);
   margin: 0;
   line-height: 1.25;
+}
+
+.accuracySection {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--surface-sunken);
+}
+
+.accuracySectionHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-caption);
+  margin-bottom: 10px;
+}
+
+.accuracyStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.accuracyBig {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.accuracyBig[data-tone="good"] {
+  color: var(--success);
+}
+
+.accuracyBig[data-tone="fair"] {
+  color: var(--warning);
+}
+
+.accuracyBig[data-tone="low"] {
+  color: var(--danger);
+}
+
+.accuracyBigLabel {
+  display: block;
+  font-size: 10.5px;
+  color: var(--text-caption);
+  margin-top: 2px;
+}
+
+.accuracyUntrained {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--warning);
 }
 
 .attributes {

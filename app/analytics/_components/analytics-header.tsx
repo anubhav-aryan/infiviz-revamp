@@ -14,8 +14,8 @@ import {
 } from "@/app/_filters/model";
 import { useFilterMenu } from "@/app/_filters/use-filter-menu";
 import { useSavedViews } from "@/app/_filters/use-saved-views";
+import { DatePresetPicker } from "@/app/_time/date-preset-picker";
 import {
-  MONTHS,
   MONTH_BY_KEY,
   isMonthKey,
   type MonthKey,
@@ -92,12 +92,6 @@ export function AnalyticsHeader({
 }: AnalyticsHeaderProps) {
   // Destructured on purpose: the linter treats the whole returned object as
   // ref-tainted while a plain field read is fine.
-  const {
-    open: monthOpen,
-    toggle: toggleMonth,
-    close: closeMonth,
-    rootRef: monthRef,
-  } = useFilterMenu(NO_DIMENSIONS);
   const {
     open: filterOpen,
     toggle: toggleFilterMenu,
@@ -182,40 +176,7 @@ export function AnalyticsHeader({
           row's controls keep their right-hand position via `.headRow2`. */}
       <div className={`${styles.headRow} ${styles.headRow2}`}>
         <div className={styles.headActions}>
-          <div className={styles.menuAnchor} ref={monthRef}>
-            <button
-              type="button"
-              className={styles.ghostButton}
-              aria-haspopup="menu"
-              aria-expanded={monthOpen}
-              onClick={toggleMonth}
-            >
-              <Icon name="calendar" />
-              {MONTH_BY_KEY[period].label}
-              <Icon name="chevron-down" />
-            </button>
-
-            {monthOpen ? (
-              <div className={styles.menu} role="menu" aria-label="Reporting month">
-                {MONTHS.map((month) => (
-                  <button
-                    key={month.key}
-                    type="button"
-                    role="menuitemradio"
-                    aria-checked={month.key === period}
-                    className={styles.menuItem}
-                    data-active={month.key === period}
-                    onClick={() => {
-                      onPeriodChange(month.key);
-                      closeMonth();
-                    }}
-                  >
-                    {month.label}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
+          <DatePresetPicker mode="callback" period={period} onChange={onPeriodChange} />
 
           <button
             type="button"

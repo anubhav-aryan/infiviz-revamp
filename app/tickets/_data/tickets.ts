@@ -71,6 +71,12 @@ export type Ticket = {
   figure?: string;
   /** Set when the ticket began life as a suggestion. */
   source?: SourceId;
+  /** Set when the ticket began life as a "Create ticket" button on another
+   *  screen — see `ticket-context.ts`. None of the fixture tickets carry
+   *  these; they only ever come from a live compose action. */
+  region?: string;
+  metric?: string;
+  period?: string;
   created: string;
   due: string;
   labels: string[];

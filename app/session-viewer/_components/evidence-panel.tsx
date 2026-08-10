@@ -1,6 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import {
   BOX_LEGEND,
   BOX_PAINT,
@@ -15,8 +19,17 @@ type EvidencePanelProps = {
   onToggleBoxes: () => void;
 };
 
+/** The canvas the box coordinates were authored against. */
+const CANVAS_H = 56;
+
+const kindLabel = (kind: (typeof RECOGNITION_BOXES)[number]["kind"]) =>
+  BOX_LEGEND.find((entry) => entry.kind === kind)?.label ?? kind;
+
 /** The left column: the stitched shelf and the raw frames it was built from. */
 export function EvidencePanel({ boxes, onToggleBoxes }: EvidencePanelProps) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const hoveredBox = hovered !== null ? RECOGNITION_BOXES[hovered] : null;
+
   return (
     <div className={styles.column}>
       <div className={`${styles.card} ${styles.evidenceCard}`}>
@@ -34,6 +47,7 @@ export function EvidencePanel({ boxes, onToggleBoxes }: EvidencePanelProps) {
               {boxes ? "Boxes on" : "Boxes off"}
             </button>
             <AskInfiChatButton label="Stitched shelf · recognition" compact />
+            <ExcelDownloadButton label="Stitched shelf · recognition" compact />
           </span>
         </div>
 
@@ -44,33 +58,72 @@ export function EvidencePanel({ boxes, onToggleBoxes }: EvidencePanelProps) {
             alt="Stitched shelf capture"
           />
           {boxes ? (
-            // `preserveAspectRatio="none"` is deliberate: the boxes were placed
-            // against the stitch, so they must stretch with it rather than
-            // stay square.
-            <svg
-              viewBox="0 0 100 56"
-              preserveAspectRatio="none"
-              className={styles.shelfOverlay}
-              aria-label="Recognition boxes over the stitched shelf"
-            >
-              {RECOGNITION_BOXES.map((box) => {
-                const paint = BOX_PAINT[box.kind];
-                return (
-                  <rect
+            <>
+              {/* `preserveAspectRatio="none"` is deliberate: the boxes were
+                  placed against the stitch, so they must stretch with it
+                  rather than stay square. */}
+              <svg
+                viewBox="0 0 100 56"
+                preserveAspectRatio="none"
+                className={styles.shelfOverlay}
+                aria-label="Recognition boxes over the stitched shelf"
+              >
+                {RECOGNITION_BOXES.map((box) => {
+                  const paint = BOX_PAINT[box.kind];
+                  return (
+                    <rect
+                      key={`${box.kind}-${box.x}-${box.y}`}
+                      x={box.x}
+                      y={box.y}
+                      width={box.w}
+                      height={box.h}
+                      rx="0.6"
+                      fill={paint.fill}
+                      stroke={paint.stroke}
+                      strokeWidth="0.6"
+                      strokeDasharray={paint.dash}
+                    />
+                  );
+                })}
+              </svg>
+
+              {/* HTML hit-targets in percentage coordinates over the same
+                  boxes — an SVG `<rect>` has no hover/focus affordance of its
+                  own worth relying on, so metrics are surfaced through a
+                  parallel layer instead of inside the SVG. */}
+              <div className={styles.shelfHitLayer}>
+                {RECOGNITION_BOXES.map((box, index) => (
+                  <button
                     key={`${box.kind}-${box.x}-${box.y}`}
-                    x={box.x}
-                    y={box.y}
-                    width={box.w}
-                    height={box.h}
-                    rx="0.6"
-                    fill={paint.fill}
-                    stroke={paint.stroke}
-                    strokeWidth="0.6"
-                    strokeDasharray={paint.dash}
+                    type="button"
+                    className={styles.shelfHitTarget}
+                    style={{
+                      left: `${box.x}%`,
+                      top: `${(box.y / CANVAS_H) * 100}%`,
+                      width: `${box.w}%`,
+                      height: `${(box.h / CANVAS_H) * 100}%`,
+                    }}
+                    onMouseEnter={() => setHovered(index)}
+                    onMouseLeave={() => setHovered((current) => (current === index ? null : current))}
+                    onFocus={() => setHovered(index)}
+                    onBlur={() => setHovered((current) => (current === index ? null : current))}
+                    aria-label={`${kindLabel(box.kind)} · ${Math.round(box.confidence * 100)}% confidence`}
                   />
-                );
-              })}
-            </svg>
+                ))}
+
+                {hoveredBox ? (
+                  <span
+                    className={styles.shelfHoverLabel}
+                    style={{
+                      left: `${hoveredBox.x}%`,
+                      top: `${(hoveredBox.y / CANVAS_H) * 100}%`,
+                    }}
+                  >
+                    {kindLabel(hoveredBox.kind)} · {Math.round(hoveredBox.confidence * 100)}%
+                  </span>
+                ) : null}
+              </div>
+            </>
           ) : null}
         </div>
 
@@ -94,6 +147,7 @@ export function EvidencePanel({ boxes, onToggleBoxes }: EvidencePanelProps) {
             Photos in this stitch · capture order
           </span>
           <AskInfiChatButton label="Photos in this stitch" compact />
+          <ExcelDownloadButton label="Photos in this stitch" compact />
         </span>
         <div className={styles.photoGrid}>
           {STITCH_PHOTOS.map((photo) => (

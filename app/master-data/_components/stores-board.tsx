@@ -1,5 +1,6 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { Icon } from "@/app/_components/icon";
 import {
   REGION_MINI,
@@ -89,6 +90,7 @@ export function StoresBoard() {
           <span className={chatStyles.askGroup}>
             <span className={styles.tableCount}>{STORES_TABLE.showing}</span>
             <AskInfiChatButton label={STORES_TABLE.count} compact />
+            <ExcelDownloadButton label={STORES_TABLE.count} compact />
           </span>
         </div>
 

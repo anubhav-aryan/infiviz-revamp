@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Icon } from "@/app/_components/icon";
 import type { CsvTable } from "@/app/_export/csv";
 import { ExportButton } from "@/app/_export/export-button";
+import { DatePresetPicker } from "@/app/_time/date-preset-picker";
 import { MONTH_BY_KEY, type MonthKey, stepMonth } from "@/app/_time/periods";
 import styles from "./reports.module.css";
 
@@ -66,6 +67,8 @@ export function ReportHeader({
         </div>
 
         <div className={styles.headerActions}>
+          <DatePresetPicker mode="link" period={month} basePath={basePath} />
+
           <div className={styles.monthStepper}>
             {/* Inert at the ends of the authored Feb–Jul window rather than
                 linking to a month with no data behind it. */}

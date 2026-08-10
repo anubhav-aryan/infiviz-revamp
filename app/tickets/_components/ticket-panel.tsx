@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { Avatar, PRIORITY_LABEL, Pill, STATUS_LABEL } from "./bits";
 import { SOURCES, nameFor, type Ticket } from "../_data/tickets";
 import { merchandiserByHandle, personById } from "../_data/people";
@@ -107,6 +108,7 @@ export function TicketPanel({
           <span className={chatStyles.askGroup}>
             <h2 className={styles.panelTitle}>{ticket.title}</h2>
             <AskInfiChatButton label={ticket.title} compact />
+            <ExcelDownloadButton label={ticket.title} compact />
           </span>
           <p className={styles.panelDetail}>{ticket.detail}</p>
 

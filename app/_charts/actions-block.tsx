@@ -1,4 +1,5 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import type { PieData } from "./chart-types";
 import { HBarList, type BarRow } from "./h-bar-list";
 import { MeasureTable } from "./measure-table";
@@ -52,6 +53,7 @@ export function ActionsBlock({ data }: { data: ActionsBlockData }) {
           <div className={styles.cardHead}>
             <div className={styles.cardTitle}>Open vs closed tasks</div>
             <AskInfiChatButton label="Open vs closed tasks" compact />
+            <ExcelDownloadButton label="Open vs closed tasks" compact />
           </div>
           <Pie data={data.openClosed} />
         </div>
@@ -60,6 +62,7 @@ export function ActionsBlock({ data }: { data: ActionsBlockData }) {
           <div className={styles.cardHead}>
             <div className={styles.cardTitle}>{data.reasons.title}</div>
             <AskInfiChatButton label={data.reasons.title} compact />
+            <ExcelDownloadButton label={data.reasons.title} compact />
           </div>
           <div className={styles.chartBody}>
             {/* Reason codes are sentences, not names — they need the room. */}
@@ -72,6 +75,7 @@ export function ActionsBlock({ data }: { data: ActionsBlockData }) {
           <div className={styles.cardHead}>
             <div className={styles.cardTitle}>{data.byCategory.title}</div>
             <AskInfiChatButton label={data.byCategory.title} compact />
+            <ExcelDownloadButton label={data.byCategory.title} compact />
           </div>
           <div className={styles.chartBody}>
             <HBarList rows={data.byCategory.rows} nameWidth="minmax(110px, 32%)" />
@@ -85,6 +89,7 @@ export function ActionsBlock({ data }: { data: ActionsBlockData }) {
           <div className={styles.tabbedHead}>
             <div className={styles.cardTitle}>{data.completion.title}</div>
             <AskInfiChatButton label={data.completion.title} compact />
+            <ExcelDownloadButton label={data.completion.title} compact />
           </div>
           <MeasureTable
             columns={data.completion.columns}
@@ -98,6 +103,7 @@ export function ActionsBlock({ data }: { data: ActionsBlockData }) {
           <div className={styles.tabbedHead}>
             <div className={styles.cardTitle}>{data.raw.title}</div>
             <AskInfiChatButton label={data.raw.title} compact />
+            <ExcelDownloadButton label={data.raw.title} compact />
           </div>
           <MeasureTable
             columns={data.raw.columns}

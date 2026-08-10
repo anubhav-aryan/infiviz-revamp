@@ -4,7 +4,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import { ActionsBlock } from "@/app/_charts/actions-block";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import { CreateTicketButton } from "@/app/_components/create-ticket-button";
+import { ReorderableGrid } from "@/app/_components/reorderable-grid";
 import { DetailTable } from "@/app/_charts/detail-table";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { GapCards } from "@/app/_charts/gap-cards";
 import { ChartLegend, GroupedColumns } from "@/app/_charts/grouped-columns";
 import { HBarList } from "@/app/_charts/h-bar-list";
@@ -17,6 +20,7 @@ import { TabbedTable } from "@/app/_charts/tabbed-table";
 import { MonthMatrix } from "@/app/_charts/month-matrix";
 import { TrendChart } from "@/app/_charts/trend-chart";
 import charts from "@/app/_charts/charts.module.css";
+import { DatePresetPicker } from "@/app/_time/date-preset-picker";
 import { CURRENT_MONTH, MONTHS, MONTH_KEYS, type MonthKey } from "@/app/_time/periods";
 import { METRIC_MODULES, metricViewFor } from "../_data/module-registry";
 import { merchandiserView } from "../_data/merchandiser";
@@ -55,8 +59,6 @@ import styles from "./module.module.css";
  */
 
 type Props = { persona: PersonaId; module: ModuleId; tab: TabId };
-
-const MONTH_OPTIONS = MONTH_KEYS.map((key, i) => ({ id: key, label: MONTHS[i].label }));
 
 export function ModuleScreen({ persona, module, tab }: Props) {
   const router = useRouter();
@@ -136,11 +138,10 @@ export function ModuleScreen({ persona, module, tab }: Props) {
                 <span className={styles.headlineDelta}>{headline.delta} MoM</span>
               ) : null}
             </span>
-            <Segmented
-              options={MONTH_OPTIONS}
-              value={period}
+            <DatePresetPicker
+              mode="callback"
+              period={period}
               onChange={(value) => setParam("month", value, value === CURRENT_MONTH)}
-              label="Month"
             />
           </div>
         </div>
@@ -172,7 +173,13 @@ export function ModuleScreen({ persona, module, tab }: Props) {
 
       <div className={styles.body}>
         {entry && view && measureId ? (
-          <TabBody tab={tab} view={view} />
+          <TabBody
+            module={module}
+            tab={tab}
+            view={view}
+            scopeLabel={scope.label}
+            monthLabel={monthLabel}
+          />
         ) : (
           <BespokeBody module={module} tab={tab} period={period} scope={scope} />
         )}
@@ -229,11 +236,31 @@ function BespokeBody({
   }
 }
 
-function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
+function TabBody({
+  module,
+  tab,
+  view,
+  scopeLabel,
+  monthLabel,
+}: {
+  module: ModuleId;
+  tab: TabId;
+  view: MetricModuleView;
+  scopeLabel: string;
+  monthLabel: string;
+}) {
+  const ticketContext = (metric: string) => ({ region: scopeLabel, metric, period: monthLabel });
+  const pageKey = (suffix: string) => `analytics:${module}:${suffix}`;
+
   switch (tab) {
     case "analytics":
       return (
-        <>
+        <ReorderableGrid
+          pageKey={pageKey("analytics")}
+          items={[
+            {
+              id: "brand-and-trend",
+              node: (
           <div className={styles.split}>
             <div className={`${charts.card} ${charts.tableCard}`}>
               <div className={charts.tabbedHead}>
@@ -241,6 +268,11 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
                   {view.measureLabel} — brand wise
                 </div>
                 <AskInfiChatButton label={`${view.measureLabel} — brand wise`} compact />
+                <ExcelDownloadButton label={`${view.measureLabel} — brand wise`} compact />
+                <CreateTicketButton
+                  context={ticketContext(`${view.measureLabel} — brand wise`)}
+                  compact
+                />
               </div>
               <SortableTable
                 columns={view.brandTable.columns}
@@ -257,11 +289,17 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
                   {view.measureLabel} trend — month wise
                 </div>
                 <AskInfiChatButton label={`${view.measureLabel} trend`} compact />
+                <ExcelDownloadButton label={`${view.measureLabel} trend`} compact />
+                <CreateTicketButton context={ticketContext(`${view.measureLabel} trend`)} compact />
               </div>
               <TrendChart data={view.trend} />
             </div>
           </div>
-
+              ),
+            },
+            {
+              id: "group-and-donut",
+              node: (
           <div className={styles.split}>
             <div className={`${charts.card} ${charts.cardPad}`}>
               <div className={charts.cardHead}>
@@ -270,6 +308,14 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
                 </div>
                 <AskInfiChatButton
                   label={`${view.measureLabel} — ${view.groupNoun} wise`}
+                  compact
+                />
+                <ExcelDownloadButton
+                  label={`${view.measureLabel} — ${view.groupNoun} wise`}
+                  compact
+                />
+                <CreateTicketButton
+                  context={ticketContext(`${view.measureLabel} — ${view.groupNoun} wise`)}
                   compact
                 />
               </div>
@@ -297,19 +343,37 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
                     label={`${view.measureLabel} — own vs competition`}
                     compact
                   />
+                  <ExcelDownloadButton
+                    label={`${view.measureLabel} — own vs competition`}
+                    compact
+                  />
+                  <CreateTicketButton
+                    context={ticketContext(`${view.measureLabel} — own vs competition`)}
+                    compact
+                  />
                 </div>
                 <Donut data={view.donut} />
               </div>
             ) : null}
           </div>
-
-          <TabbedTable views={view.detailViews} title="Outlet detail" />
-        </>
+              ),
+            },
+            {
+              id: "outlet-detail",
+              node: <TabbedTable views={view.detailViews} title="Outlet detail" />,
+            },
+          ]}
+        />
       );
 
     case "gap-analysis":
       return (
-        <>
+        <ReorderableGrid
+          pageKey={pageKey("gap-analysis")}
+          items={[
+            {
+              id: "gap-cards-and-target",
+              node: (
           <div className={styles.split}>
             <div>
               <div className={styles.sectionLabel}>
@@ -323,12 +387,21 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
                   {view.measureLabel} against target
                 </div>
                 <AskInfiChatButton label={`${view.measureLabel} against target`} compact />
+                <ExcelDownloadButton label={`${view.measureLabel} against target`} compact />
+                <CreateTicketButton
+                  context={ticketContext(`${view.measureLabel} against target`)}
+                  compact
+                />
               </div>
               <GroupedColumns data={view.gapColumns} />
               <ChartLegend items={view.gapColumns.legend} shape="swatch" />
             </div>
           </div>
-
+              ),
+            },
+            {
+              id: "gap-detail",
+              node: (
           <DetailTable
             title={`${view.measureLabel} — actual vs target`}
             caption="Rows with captured evidence link through to the session."
@@ -337,7 +410,10 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
             emptyLabel="No visits match this selection."
             seLink={false}
           />
-        </>
+              ),
+            },
+          ]}
+        />
       );
 
     case "actions":
@@ -345,7 +421,12 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
 
     case "merchandising-impact":
       return view.merchImpact ? (
-        <>
+        <ReorderableGrid
+          pageKey={pageKey("merchandising-impact")}
+          items={[
+            {
+              id: "before-after-charts",
+              node: (
           <div className={styles.split}>
             <div className={`${charts.card} ${charts.cardPad}`}>
               <div className={charts.cardHead}>
@@ -355,6 +436,14 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
                 </div>
                 <AskInfiChatButton
                   label={`${view.measureLabel} — before and after`}
+                  compact
+                />
+                <ExcelDownloadButton
+                  label={`${view.measureLabel} — before and after`}
+                  compact
+                />
+                <CreateTicketButton
+                  context={ticketContext(`${view.measureLabel} — before and after`)}
                   compact
                 />
               </div>
@@ -368,6 +457,8 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
                   {view.measureLabel} trend — before vs after
                 </div>
                 <AskInfiChatButton label={`${view.measureLabel} trend`} compact />
+                <ExcelDownloadButton label={`${view.measureLabel} trend`} compact />
+                <CreateTicketButton context={ticketContext(`${view.measureLabel} trend`)} compact />
               </div>
               <TrendChart data={view.merchImpact.beforeAfter} />
               <ChartLegend
@@ -378,7 +469,11 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
               />
             </div>
           </div>
-
+              ),
+            },
+            {
+              id: "before-after-table",
+              node: (
           <DetailTable
             title="Outlet-wise before vs after"
             columns={view.merchImpact.table.columns}
@@ -386,7 +481,10 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
             emptyLabel="No visits match this selection."
             seLink={false}
           />
-        </>
+              ),
+            },
+          ]}
+        />
       ) : null;
 
     case "oos":
@@ -416,6 +514,14 @@ function TabBody({ tab, view }: { tab: TabId; view: MetricModuleView }) {
             </div>
             <AskInfiChatButton
               label={`Month-wise ${view.measureLabel.toLowerCase()} trend`}
+              compact
+            />
+            <ExcelDownloadButton
+              label={`Month-wise ${view.measureLabel.toLowerCase()} trend`}
+              compact
+            />
+            <CreateTicketButton
+              context={ticketContext(`Month-wise ${view.measureLabel.toLowerCase()} trend`)}
               compact
             />
           </div>

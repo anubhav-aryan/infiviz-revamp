@@ -1,0 +1,51 @@
+/* Neutral-toned sibling to AskInfiChatButton's brand-colored pill — same
+   size/shape so the two sit evenly in a header's askGroup, different color
+   so "ask" and "export" don't read as the same action. */
+
+.excelButton {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--transition-snap);
+}
+
+.excelButton:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.excelButton:disabled {
+  cursor: default;
+}
+
+.excelButton[data-state="done"] {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.excelButton[data-compact="true"] {
+  padding: 5px;
+  border-radius: var(--radius-full);
+}
+
+.excelButton[data-state="preparing"] .icon {
+  animation: excel-spin 0.8s linear infinite;
+}
+
+@keyframes excel-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

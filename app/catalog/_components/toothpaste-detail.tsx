@@ -2,36 +2,43 @@ import { Icon } from "@/app/_components/icon";
 import { ExportButton } from "@/app/_export/export-button";
 import {
   BRAND_CHIPS,
+  OWNERSHIP_FILTERS,
   PACKSHOT_FILTERS,
   TOOTHPASTE,
   skuCsv,
   TRAINED_FILTERS,
+  type Ownership,
   type Sku,
   type TriState,
 } from "../_data/catalog";
+import { AccuracyTable } from "./accuracy-table";
 import { SkuGrid, SkuTable } from "./sku-views";
 import styles from "./catalog.module.css";
 
+type ViewMode = "grid" | "table" | "accuracy";
+
 type ToothpasteDetailProps = {
-  mode: "grid" | "table";
-  onModeChange: (mode: "grid" | "table") => void;
+  mode: ViewMode;
+  onModeChange: (mode: ViewMode) => void;
   packshot: TriState;
   onPackshotChange: (value: TriState) => void;
   trained: TriState;
   onTrainedChange: (value: TriState) => void;
+  ownership: "all" | Ownership;
+  onOwnershipChange: (value: "all" | Ownership) => void;
   skus: Sku[];
   onBack: () => void;
   onOpenSku: (index: number) => void;
 };
 
-type FilterGroupProps = {
+type FilterGroupProps<T extends string> = {
   label: string;
-  options: { label: string; value: TriState }[];
-  value: TriState;
-  onChange: (value: TriState) => void;
+  options: { label: string; value: T }[];
+  value: T;
+  onChange: (value: T) => void;
 };
 
-function FilterGroup({ label, options, value, onChange }: FilterGroupProps) {
+function FilterGroup<T extends string>({ label, options, value, onChange }: FilterGroupProps<T>) {
   return (
     <div className={styles.filterGroup}>
       <span className={styles.filterLabel}>{label}</span>
@@ -60,6 +67,8 @@ export function ToothpasteDetail({
   onPackshotChange,
   trained,
   onTrainedChange,
+  ownership,
+  onOwnershipChange,
   skus,
   onBack,
   onOpenSku,
@@ -130,6 +139,16 @@ export function ToothpasteDetail({
               <Icon name="list" />
               Table
             </button>
+            <button
+              type="button"
+              className={styles.modeButton}
+              data-active={mode === "accuracy"}
+              aria-pressed={mode === "accuracy"}
+              onClick={() => onModeChange("accuracy")}
+            >
+              <Icon name="target" />
+              Accuracy
+            </button>
           </div>
         </div>
       </div>
@@ -164,13 +183,21 @@ export function ToothpasteDetail({
           value={trained}
           onChange={onTrainedChange}
         />
+        <FilterGroup
+          label="Ownership"
+          options={OWNERSHIP_FILTERS}
+          value={ownership}
+          onChange={onOwnershipChange}
+        />
         <span className={styles.skuCount}>{skus.length} SKUs</span>
       </div>
 
       {mode === "grid" ? (
         <SkuGrid skus={skus} onOpen={onOpenSku} />
-      ) : (
+      ) : mode === "table" ? (
         <SkuTable skus={skus} onOpen={onOpenSku} />
+      ) : (
+        <AccuracyTable skus={skus} onOpen={onOpenSku} />
       )}
     </div>
   );

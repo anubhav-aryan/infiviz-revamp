@@ -1,5 +1,6 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { MERCH_ACTIVITY } from "@/app/merch-activity/_data/merch-activity";
 import { CURRENT_MONTH } from "@/app/_time/periods";
 import styles from "./landing.module.css";
@@ -17,6 +18,7 @@ export function RegionalCoverage() {
         <span className={chatStyles.askGroup}>
           <div className={styles.cardCaption}>% of estate audited</div>
           <AskInfiChatButton label="Coverage by region" compact />
+          <ExcelDownloadButton label="Coverage by region" compact />
         </span>
       </div>
       {REGIONS.map((region) => (

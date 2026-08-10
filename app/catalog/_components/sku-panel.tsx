@@ -2,9 +2,16 @@
 
 import { useEffect, useRef } from "react";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { Icon } from "@/app/_components/icon";
-import { RANGED_EXAMPLES, SKUS, skuAttributes } from "../_data/catalog";
+import { OWNERSHIP_LABEL, RANGED_EXAMPLES, SKUS, skuAttributes } from "../_data/catalog";
 import styles from "./catalog.module.css";
+
+function accuracyTone(accuracy: number): "good" | "fair" | "low" {
+  if (accuracy >= 90) return "good";
+  if (accuracy >= 75) return "fair";
+  return "low";
+}
 
 type SkuPanelProps = {
   index: number;
@@ -60,11 +67,51 @@ export function SkuPanel({ index, onClose }: SkuPanelProps) {
             aria-hidden="true"
           >
             <Icon name="package" size={48} />
+            {!sku.packshot ? (
+              <span className={styles.packshotMissingBadge}>
+                <Icon name="image-off" size={11} />
+                No packshot
+              </span>
+            ) : null}
           </div>
 
           <div className={styles.panelTitleRow}>
             <h2 className={styles.panelTitle}>{sku.name}</h2>
             <AskInfiChatButton label={sku.name} compact />
+            <ExcelDownloadButton label={sku.name} compact />
+          </div>
+
+          <span className={styles.ownershipTag} data-ownership={sku.ownership}>
+            {OWNERSHIP_LABEL[sku.ownership]}
+          </span>
+
+          <div className={styles.accuracySection}>
+            <div className={styles.accuracySectionHead}>
+              <Icon name="target" size={14} aria-hidden="true" />
+              Recognition accuracy
+            </div>
+            {sku.trained ? (
+              <div className={styles.accuracyStats}>
+                <div>
+                  <span
+                    className={styles.accuracyBig}
+                    data-tone={accuracyTone(sku.accuracy)}
+                  >
+                    {sku.accuracy}%
+                  </span>
+                  <span className={styles.accuracyBigLabel}>accuracy</span>
+                </div>
+                <div>
+                  <span className={styles.accuracyBig}>{sku.sampleCount}</span>
+                  <span className={styles.accuracyBigLabel}>sample count</span>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.accuracyUntrained}>
+                <Icon name="alert-triangle" size={14} aria-hidden="true" />
+                Untrained — {sku.untrainedReason ?? "no reason on file."}
+              </div>
+            )}
           </div>
 
           <div className={styles.attributes}>
@@ -95,6 +142,7 @@ export function SkuPanel({ index, onClose }: SkuPanelProps) {
               <Icon name="store" aria-hidden="true" />
               Ranged in {sku.ranged} stores
               <AskInfiChatButton label={`${sku.name} — ranged stores`} compact />
+              <ExcelDownloadButton label={`${sku.name} — ranged stores`} compact />
             </div>
             <div className={styles.rangedBody}>{RANGED_EXAMPLES}</div>
           </div>

@@ -29,3 +29,18 @@ export function clockFromMinutes(minutes: number): string {
   const m = minutes % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
+
+/**
+ * Deterministic string hash (FNV-1a), for deriving stable per-entity
+ * "variation" from an id — e.g. which of a fixed set of stores gets flagged
+ * — without `Math.random()`, which would differ between server and client
+ * and break hydration.
+ */
+export function hashStoreId(id: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < id.length; i += 1) {
+    hash ^= id.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}

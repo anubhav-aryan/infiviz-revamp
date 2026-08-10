@@ -1,21 +1,26 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { filterSkus, type TriState } from "../_data/catalog";
+import { filterSkus, type Ownership, type TriState } from "../_data/catalog";
 import { CatalogOverview } from "./catalog-overview";
 import { SkuPanel } from "./sku-panel";
 import { ToothpasteDetail } from "./toothpaste-detail";
 
 /**
  * Mirrors the design doc's component state: which of the two views is showing,
- * grid vs table, the open SKU index, and the two SKU filters.
+ * grid vs table, the open SKU index, and the SKU filters.
+ *
+ * Mode defaults to `"table"` — a list of every SKU with accuracy at a glance
+ * is the more useful landing state than a grid of product-image placeholders
+ * this app has no real photography for.
  */
 export function Catalog() {
   const [view, setView] = useState<"overview" | "detail">("overview");
-  const [mode, setMode] = useState<"grid" | "table">("grid");
+  const [mode, setMode] = useState<"grid" | "table" | "accuracy">("table");
   const [sku, setSku] = useState<number | null>(null);
   const [packshot, setPackshot] = useState<TriState>("all");
   const [trained, setTrained] = useState<TriState>("all");
+  const [ownership, setOwnership] = useState<"all" | Ownership>("all");
 
   const openToothpaste = useCallback(() => setView("detail"), []);
 
@@ -29,8 +34,8 @@ export function Catalog() {
   const closePanel = useCallback(() => setSku(null), []);
 
   const skus = useMemo(
-    () => filterSkus(packshot, trained),
-    [packshot, trained],
+    () => filterSkus(packshot, trained, ownership),
+    [packshot, trained, ownership],
   );
 
   return (
@@ -45,6 +50,8 @@ export function Catalog() {
           onPackshotChange={setPackshot}
           trained={trained}
           onTrainedChange={setTrained}
+          ownership={ownership}
+          onOwnershipChange={setOwnership}
           skus={skus}
           onBack={backToOverview}
           onOpenSku={setSku}

@@ -1,0 +1,57 @@
+/* Each `.cell` wraps one whole top-level block a screen already renders — a
+   lone card, a `.split` pair, a `.triple` row of stat cards — so wrapping
+   never reaches inside an existing grid/flex pairing, only reorders which
+   whole block comes first. These blocks are always direct children of a
+   vertically-stacked `flex-direction: column` body, so one extra wrapping div
+   per block is layout-neutral. */
+
+/* `gap` itself is set inline (see the component) — screens' existing spacing
+   between top-level blocks varies (a flex `gap`, or per-block `margin-bottom`
+   the wrapper shouldn't double up on), so the default below only applies when
+   a screen doesn't already handle its own spacing. */
+.grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.cell {
+  position: relative;
+  border-radius: var(--radius-lg);
+}
+
+.cell[data-dragging] {
+  opacity: 0.5;
+}
+
+.cell[data-drag-over] {
+  outline: 2px dashed var(--indigo-400);
+  outline-offset: 2px;
+}
+
+.handle {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  color: var(--text-caption);
+  cursor: grab;
+  opacity: 0;
+  transition: opacity var(--transition-snap);
+}
+
+.cell:hover .handle {
+  opacity: 1;
+}
+
+.cell[data-dragging] .handle {
+  cursor: grabbing;
+  opacity: 1;
+}

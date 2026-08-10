@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { RailShell } from "@/app/_components/app-shell";
 import { SECTION, SECTION_GROUPS } from "../_data/section-nav";
+import { MasterDataTabs } from "../_components/master-data-tabs";
 import { UsersSketch } from "../_components/users-sketch";
 
 export const metadata: Metadata = {
@@ -16,6 +17,7 @@ export default function UsersPage() {
       groups={SECTION_GROUPS}
       activeSection="users"
     >
+      <MasterDataTabs active="users" />
       <UsersSketch />
     </RailShell>
   );

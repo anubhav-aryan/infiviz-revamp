@@ -51,7 +51,9 @@ function CategoryCardBody({ category }: { category: Category }) {
           <span className={styles.statLabel}>Sub-categories</span>
         </span>
         <span>
-          <span className={styles.statValue}>{category.packshot}%</span>
+          <span className={styles.statValue} data-low={category.packshot < 80}>
+            {category.packshot}%
+          </span>
           <span className={styles.statLabel}>Pack-shots</span>
         </span>
       </span>

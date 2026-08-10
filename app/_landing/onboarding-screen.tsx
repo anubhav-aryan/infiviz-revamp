@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { ActivityFeed } from "./activity-feed";
 import { OnboardingStepper } from "./onboarding-stepper";
 import { SessionsCard } from "./sessions-card";
@@ -73,6 +74,7 @@ export function OnboardingScreen() {
                 <div className={styles.cardHead}>
                   <div className={styles.cardTitle}>{meter.title}</div>
                   <AskInfiChatButton label={meter.title} compact />
+                  <ExcelDownloadButton label={meter.title} compact />
                 </div>
                 <div className={styles.meterValueRow}>
                   <span className={styles.meterValue}>
@@ -106,6 +108,7 @@ export function OnboardingScreen() {
               <span className={chatStyles.askGroup}>
                 <div className={styles.cardCaption}>{RETAILERS_CARD.caption}</div>
                 <AskInfiChatButton label={RETAILERS_CARD.title} compact />
+                <ExcelDownloadButton label={RETAILERS_CARD.title} compact />
               </span>
             </div>
             {RETAILERS.map((retailer) => (

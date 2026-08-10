@@ -1,17 +1,21 @@
+import { CreateTicketButton } from "@/app/_components/create-ticket-button";
 import { Hint } from "@/app/_components/hint";
 import { Icon } from "@/app/_components/icon";
+import type { Visit } from "@/app/store-explorer/_data/store-explorer";
 import {
   AVAILABILITY,
   BRAND_ROWS,
   MSL,
   OWN_VS_COMPETITION,
   SHELF_METRICS,
+  mslFor,
   type SessionIdentity,
 } from "../_data/session-viewer";
 import styles from "./session-viewer.module.css";
 
 type MetricsPanelProps = {
   session: SessionIdentity;
+  visit?: Visit;
 };
 
 /**
@@ -20,7 +24,14 @@ type MetricsPanelProps = {
  * below it are one authored session's figures. Entirely static; nothing here
  * reacts to the box toggle.
  */
-export function MetricsPanel({ session }: MetricsPanelProps) {
+export function MetricsPanel({ session, visit }: MetricsPanelProps) {
+  const retailer = session.header.find((row) => row.key === "Retailer")?.value;
+  /* Per-store found/absent when a `Visit` is available; the no-store default
+     session keeps the static `MSL` fixture (see `mslFor`'s own doc comment). */
+  const checklist = visit
+    ? mslFor(visit)
+    : MSL.map((sku) => ({ ...sku, detected: sku.status === "found", detail: sku.statusLabel }));
+
   return (
     <div className={styles.column}>
       {/* session header */}
@@ -85,14 +96,32 @@ export function MetricsPanel({ session }: MetricsPanelProps) {
               <Icon name="info" size={13} />
             </Hint>
             <span className={styles.availabilityValue}>{AVAILABILITY.value}</span>
+            <CreateTicketButton
+              context={{ region: retailer, metric: AVAILABILITY.label }}
+              compact
+            />
           </div>
         </div>
 
         <div className={styles.mslNote}>{AVAILABILITY.note}</div>
 
+        {/* An explicit expected-vs-detected checklist, not just a stat plus a
+            list — "Expected" is every row by definition of being on the MSL;
+            "Detected" is its own icon column so the two concepts read as
+            distinct checks, not one status word. */}
+        <div className={styles.mslChecklistHead}>
+          <span />
+          <span>Expected</span>
+          <span>Detected</span>
+        </div>
+
         <div className={styles.mslList}>
-          {MSL.map((sku) => (
-            <div key={sku.name} className={styles.mslRow} data-status={sku.status}>
+          {checklist.map((sku) => (
+            <div
+              key={sku.name}
+              className={styles.mslRow}
+              data-status={sku.detected ? "found" : "absent"}
+            >
               <span className={styles.mslThumb} aria-hidden="true">
                 <Icon name="package" size={15} />
               </span>
@@ -106,8 +135,16 @@ export function MetricsPanel({ session }: MetricsPanelProps) {
                   Must-have
                 </span>
               ) : null}
-              <span className={styles.mslStatus} data-status={sku.status}>
-                {sku.statusLabel}
+              <span className={styles.mslExpected} aria-label="Expected on shelf">
+                <Icon name="check" size={13} />
+              </span>
+              <span
+                className={styles.mslDetected}
+                data-detected={sku.detected}
+                aria-label={sku.detected ? "Detected on shelf" : "Not detected"}
+              >
+                <Icon name={sku.detected ? "check" : "x"} size={13} />
+                {sku.detail}
               </span>
             </div>
           ))}

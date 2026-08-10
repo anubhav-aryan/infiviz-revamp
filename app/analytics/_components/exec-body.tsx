@@ -1,6 +1,8 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
+import { ReorderableGrid } from "@/app/_components/reorderable-grid";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { INSIGHTS, SCATTER_GUIDES, type AnalyticsView, type DimKey } from "../_data/analytics";
 import { RankedList, Sparkline, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
@@ -21,9 +23,15 @@ export function ExecBody({
 
   return (
     <div className={styles.body}>
-      <StatStrip items={view.bandA} />
-
-      {/* Band B — the two headline metrics */}
+      <ReorderableGrid
+        pageKey="analytics:exec"
+        gap={0}
+        items={[
+          { id: "stat-strip", node: <StatStrip items={view.bandA} /> },
+          {
+            id: "hero-grid",
+            node: (
+      /* Band B — the two headline metrics */
       <div className={styles.heroGrid}>
         {view.heroes.map((hero) => (
           <div key={hero.name} className={styles.heroCard}>
@@ -97,8 +105,12 @@ export function ExecBody({
           </div>
         ))}
       </div>
-
-      {/* Band C — the one dimension picker */}
+            ),
+          },
+          {
+            id: "band-c",
+            node: (
+      /* Band C — the one dimension picker */
       <div className={styles.band}>
         <div className={styles.bandHead}>
           <div>
@@ -122,6 +134,7 @@ export function ExecBody({
                   Target 85%
                 </span>
                 <AskInfiChatButton label={`OSA by ${dim.toLowerCase()}`} compact />
+                <ExcelDownloadButton label={`OSA by ${dim.toLowerCase()}`} compact />
               </span>
             </div>
             <RankedList
@@ -136,6 +149,7 @@ export function ExecBody({
             <span className={styles.panelTitle} data-gap="6">
               OSA vs Share of Shelf
               <AskInfiChatButton label="OSA vs Share of Shelf" compact />
+              <ExcelDownloadButton label="OSA vs Share of Shelf" compact />
             </span>
             <svg
               viewBox="0 0 300 210"
@@ -204,8 +218,12 @@ export function ExecBody({
           </div>
         </div>
       </div>
-
-      {/* Band D — movement */}
+            ),
+          },
+          {
+            id: "band-d",
+            node: (
+      /* Band D — movement */
       <div className={styles.band}>
         <h2 className={styles.bandTitle} data-gap="14">
           What moved
@@ -215,6 +233,7 @@ export function ExecBody({
             <span className={styles.panelTitle} data-gap="14">
               Biggest moves vs last month
               <AskInfiChatButton label="Biggest moves vs last month" compact />
+              <ExcelDownloadButton label="Biggest moves vs last month" compact />
             </span>
             {view.dumbbell.map((d) => (
               <div key={d.name} className={styles.dumbbellRow} data-tone={d.tone}>
@@ -259,6 +278,7 @@ export function ExecBody({
                   </span>
                 </div>
                 <AskInfiChatButton label="Six-month trend" compact />
+                <ExcelDownloadButton label="Six-month trend" compact />
               </span>
             </div>
 
@@ -356,8 +376,12 @@ export function ExecBody({
           </div>
         </div>
       </div>
-
-      {/* Band E — what to do about it */}
+            ),
+          },
+          {
+            id: "band-e",
+            node: (
+      /* Band E — what to do about it */
       <div className={styles.bandEnd}>
         <h2 className={styles.bandTitle} data-gap="14">
           Where to push
@@ -382,6 +406,10 @@ export function ExecBody({
           ))}
         </div>
       </div>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }

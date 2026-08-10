@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Icon } from "@/app/_components/icon";
 import { Segmented } from "@/app/_charts/segmented";
@@ -16,6 +17,7 @@ import {
   ticketsForPersona,
   type Suggestion,
 } from "../_data/tickets";
+import { ticketContextFromParams, type TicketContext } from "../_data/ticket-context";
 import { PERSONA_ACTOR } from "../_data/people";
 import styles from "./tickets.module.css";
 
@@ -57,12 +59,20 @@ export function Tickets() {
   /* Opens on the executive — the top of the hierarchy sees every ticket, so
      the board is populated on arrival. Switching down to a field supervisor
      then visibly narrows it, which is the point of the control. */
+  const params = useSearchParams();
   const [persona, setPersona] = useState<string>("exec");
   const [view, setView] = useState<"board" | "list">("board");
   const [openKey, setOpenKey] = useState<string | null>(null);
+  /* A "Create ticket" button on another screen (a chart's region/metric/
+     period) lands here via `?compose=1&region=...` — read once, on mount,
+     so the compose panel opens pre-filled instead of requiring a second
+     click on this screen. */
   const [composing, setComposing] = useState<
-    { open: false } | { open: true; from?: Suggestion }
-  >({ open: false });
+    { open: false } | { open: true; from?: Suggestion; context?: TicketContext }
+  >(() => {
+    const context = ticketContextFromParams(params);
+    return context ? { open: true, context } : { open: false };
+  });
 
   const tickets = useMemo(() => ticketsForPersona(persona), [persona]);
   const open = tickets.find((ticket) => ticket.key === openKey) ?? null;
@@ -164,6 +174,7 @@ export function Tickets() {
         <ComposePanel
           persona={persona}
           suggestion={composing.from}
+          context={composing.context}
           onClose={() => setComposing({ open: false })}
         />
       ) : null}

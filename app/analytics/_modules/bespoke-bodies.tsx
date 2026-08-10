@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import { ReorderableGrid } from "@/app/_components/reorderable-grid";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { ChartLegend, GroupedColumns } from "@/app/_charts/grouped-columns";
 import { Gauge } from "@/app/_charts/gauge";
 import { HBarList } from "@/app/_charts/h-bar-list";
@@ -51,6 +53,7 @@ function Card({
               {caption ? <div className={charts.cardCaption}>{caption}</div> : null}
             </div>
             <AskInfiChatButton label={title} compact />
+            <ExcelDownloadButton label={title} compact />
           </div>
         ) : (
           <div className={charts.tabbedHead}>
@@ -59,6 +62,7 @@ function Card({
               {caption ? <div className={charts.cardCaption}>{caption}</div> : null}
             </div>
             <AskInfiChatButton label={title} compact />
+            <ExcelDownloadButton label={title} compact />
           </div>
         )
       ) : null}
@@ -87,32 +91,44 @@ function GaugeRow({ gauges }: { gauges: { title: string; data: Parameters<typeof
 
 export function PerfectStoreBody({ view }: { view: PerfectStoreView }) {
   return (
-    <>
-      <Card
-        title="Perfect Store score"
-        caption="The unweighted mean of share of shelf, availability, pricing and planogram compliance — the same way the source dashboard computes it. The total row is the national figure, not the mean of the stores shown."
-        pad={false}
-      >
-        <SortableTable
-          columns={view.columns}
-          rows={view.rows}
-          emptyLabel="No stores match this selection."
-          defaultSort={{ index: 5, dir: "desc" }}
-          maxHeight={420}
-        />
-      </Card>
-
-      <Card title="Perfect Store score and its components">
-        <TrendChart data={view.trend} />
-        <ChartLegend
-          items={[
-            { label: "Perfect Store score", tone: "primary" },
-            { label: "On-shelf availability", tone: "secondary" },
-            { label: "Pricing compliance", tone: "tertiary" },
-          ]}
-        />
-      </Card>
-    </>
+    <ReorderableGrid
+      pageKey="analytics:perfect-store"
+      items={[
+        {
+          id: "score-table",
+          node: (
+            <Card
+              title="Perfect Store score"
+              caption="The unweighted mean of share of shelf, availability, pricing and planogram compliance — the same way the source dashboard computes it. The total row is the national figure, not the mean of the stores shown."
+              pad={false}
+            >
+              <SortableTable
+                columns={view.columns}
+                rows={view.rows}
+                emptyLabel="No stores match this selection."
+                defaultSort={{ index: 5, dir: "desc" }}
+                maxHeight={420}
+              />
+            </Card>
+          ),
+        },
+        {
+          id: "score-trend",
+          node: (
+            <Card title="Perfect Store score and its components">
+              <TrendChart data={view.trend} />
+              <ChartLegend
+                items={[
+                  { label: "Perfect Store score", tone: "primary" },
+                  { label: "On-shelf availability", tone: "secondary" },
+                  { label: "Pricing compliance", tone: "tertiary" },
+                ]}
+              />
+            </Card>
+          ),
+        },
+      ]}
+    />
   );
 }
 
@@ -120,78 +136,91 @@ export function PerfectStoreBody({ view }: { view: PerfectStoreView }) {
 
 export function RoiBody({ view }: { view: RoiView }) {
   return (
-    <>
-      <div className={styles.split}>
-        <div className={styles.stackCol}>
-          <StatCard
-            label="Total revenue impact"
-            value={view.total.value}
-            caption={view.total.caption}
-            delta={{
-              direction: view.total.delta.startsWith("+") ? "up" : "down",
-              tone: view.total.delta.startsWith("+") ? "success" : "danger",
-              label: view.total.delta.replace(/[+−]/, ""),
-            }}
-          />
-          <Card title="Where the impact comes from">
-            <Pie data={view.split} />
-          </Card>
-        </div>
-
-        <Card
-          title={view.byRegionTitle}
-          caption={view.byRegionCaption}
-        >
-          <div className={charts.chartBody}>
-            <HBarList rows={view.byRegion} nameWidth="minmax(140px, 40%)" />
-          </div>
-        </Card>
-      </div>
-
-      <div className={styles.triple}>
-        {view.cards.map((card) => (
-          <div key={card.title} className={`${charts.card} ${charts.statCard}`}>
-            <div className={charts.statLabel}>{card.title}</div>
-            <div className={charts.statValueRow}>
-              <span className={charts.statValue} data-size="sm">
-                {card.current}
-              </span>
-            </div>
-            <div className={charts.statFoot}>
-              <div>
-                <div className={charts.statCaption}>
-                  {card.previous} last month
-                </div>
-                <div className={styles.roiDelta} data-tone={card.tone}>
-                  {card.delta}
-                </div>
-              </div>
-              <svg viewBox="0 0 100 30" className={charts.statSpark} aria-hidden="true">
-                <polyline
-                  points={card.spark}
-                  fill="none"
-                  stroke="var(--indigo-400)"
-                  strokeWidth={2}
-                  strokeLinecap="round"
+    <ReorderableGrid
+      pageKey="analytics:roi"
+      items={[
+        {
+          id: "impact-split",
+          node: (
+            <div className={styles.split}>
+              <div className={styles.stackCol}>
+                <StatCard
+                  label="Total revenue impact"
+                  value={view.total.value}
+                  caption={view.total.caption}
+                  delta={{
+                    direction: view.total.delta.startsWith("+") ? "up" : "down",
+                    tone: view.total.delta.startsWith("+") ? "success" : "danger",
+                    label: view.total.delta.replace(/[+−]/, ""),
+                  }}
                 />
-              </svg>
-            </div>
-          </div>
-        ))}
-      </div>
+                <Card title="Where the impact comes from">
+                  <Pie data={view.split} />
+                </Card>
+              </div>
 
-      <div className={styles.split}>
-        {view.kpiTables.map((table) => (
-          <Card key={table.title} title={table.title} pad={false}>
-            <MeasureTable
-              columns={table.columns}
-              rows={table.rows}
-              emptyLabel="No KPIs for this month."
-            />
-          </Card>
-        ))}
-      </div>
-    </>
+              <Card title={view.byRegionTitle} caption={view.byRegionCaption}>
+                <div className={charts.chartBody}>
+                  <HBarList rows={view.byRegion} nameWidth="minmax(140px, 40%)" />
+                </div>
+              </Card>
+            </div>
+          ),
+        },
+        {
+          id: "impact-cards",
+          node: (
+            <div className={styles.triple}>
+              {view.cards.map((card) => (
+                <div key={card.title} className={`${charts.card} ${charts.statCard}`}>
+                  <div className={charts.statLabel}>{card.title}</div>
+                  <div className={charts.statValueRow}>
+                    <span className={charts.statValue} data-size="sm">
+                      {card.current}
+                    </span>
+                  </div>
+                  <div className={charts.statFoot}>
+                    <div>
+                      <div className={charts.statCaption}>
+                        {card.previous} last month
+                      </div>
+                      <div className={styles.roiDelta} data-tone={card.tone}>
+                        {card.delta}
+                      </div>
+                    </div>
+                    <svg viewBox="0 0 100 30" className={charts.statSpark} aria-hidden="true">
+                      <polyline
+                        points={card.spark}
+                        fill="none"
+                        stroke="var(--indigo-400)"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ),
+        },
+        {
+          id: "kpi-tables",
+          node: (
+            <div className={styles.split}>
+              {view.kpiTables.map((table) => (
+                <Card key={table.title} title={table.title} pad={false}>
+                  <MeasureTable
+                    columns={table.columns}
+                    rows={table.rows}
+                    emptyLabel="No KPIs for this month."
+                  />
+                </Card>
+              ))}
+            </div>
+          ),
+        },
+      ]}
+    />
   );
 }
 
@@ -218,35 +247,53 @@ export function ShelvingBody({ view }: { view: ShelvingView }) {
         ))}
       </div>
 
-      <Card title="Block compliance" caption="Target 80 on every dial.">
-        <div className={charts.chartBody}>
-          <GaugeRow gauges={active.gauges} />
-        </div>
-      </Card>
-
-      <div className={styles.split}>
-        <Card
-          title="Format block compliance trend"
-          caption="Top five formats plus Other."
-        >
-          <StackedArea data={active.formatTrend} />
-        </Card>
-        <Card
-          title="Flavour block compliance trend"
-          caption="Top five flavours plus Other — the design system has no sixteen-colour scale, so the tail is rolled up and the per-variant detail is in the table below."
-        >
-          <StackedArea data={active.flavourTrend} />
-        </Card>
-      </div>
-
-      <Card title={`Block compliance by store · ${category}`} pad={false}>
-        <SortableTable
-          columns={active.blockTable.columns}
-          rows={active.blockTable.rows}
-          emptyLabel="No stores match this selection."
-          defaultSort={{ index: 1, dir: "desc" }}
-        />
-      </Card>
+      <ReorderableGrid
+        pageKey="analytics:shelving"
+        items={[
+          {
+            id: "block-compliance",
+            node: (
+              <Card title="Block compliance" caption="Target 80 on every dial.">
+                <div className={charts.chartBody}>
+                  <GaugeRow gauges={active.gauges} />
+                </div>
+              </Card>
+            ),
+          },
+          {
+            id: "compliance-trends",
+            node: (
+              <div className={styles.split}>
+                <Card
+                  title="Format block compliance trend"
+                  caption="Top five formats plus Other."
+                >
+                  <StackedArea data={active.formatTrend} />
+                </Card>
+                <Card
+                  title="Flavour block compliance trend"
+                  caption="Top five flavours plus Other — the design system has no sixteen-colour scale, so the tail is rolled up and the per-variant detail is in the table below."
+                >
+                  <StackedArea data={active.flavourTrend} />
+                </Card>
+              </div>
+            ),
+          },
+          {
+            id: "compliance-by-store",
+            node: (
+              <Card title={`Block compliance by store · ${category}`} pad={false}>
+                <SortableTable
+                  columns={active.blockTable.columns}
+                  rows={active.blockTable.rows}
+                  emptyLabel="No stores match this selection."
+                  defaultSort={{ index: 1, dir: "desc" }}
+                />
+              </Card>
+            ),
+          },
+        ]}
+      />
     </>
   );
 }
@@ -263,41 +310,57 @@ export function MerchandiserBody({
   if (tab === "photo-quality") {
     const quality = view.photoQuality;
     return (
-      <>
-        <div className={styles.split}>
-          <StatCard
-            label="Overall photo quality"
-            value={quality.overall}
-            caption="of captures passed automated quality checks"
-            delta={{
-              direction: quality.delta.startsWith("+") ? "up" : "down",
-              tone: quality.delta.startsWith("+") ? "success" : "danger",
-              label: quality.delta.replace(/[+−]/, ""),
-            }}
-          />
-          <Card title="Photo quality trend — month wise">
-            <TrendChart data={quality.trend} />
-          </Card>
-        </div>
-
-        <Card
-          title="Capture outcomes"
-          caption="The nine defect classes sum to the rejected pool, so they reconcile with the pass rate rather than being independent counts."
-        >
-          <div className={charts.chartBody}>
-            <GaugeRow gauges={quality.gauges} />
-          </div>
-        </Card>
-
-        <Card title="Merchandiser-wise photo quality outliers" pad={false}>
-          <SortableTable
-            columns={quality.outliers.columns}
-            rows={quality.outliers.rows}
-            emptyLabel="No outliers this month."
-            defaultSort={{ index: 2, dir: "asc" }}
-          />
-        </Card>
-      </>
+      <ReorderableGrid
+        pageKey="analytics:merchandiser:photo-quality"
+        items={[
+          {
+            id: "overview",
+            node: (
+              <div className={styles.split}>
+                <StatCard
+                  label="Overall photo quality"
+                  value={quality.overall}
+                  caption="of captures passed automated quality checks"
+                  delta={{
+                    direction: quality.delta.startsWith("+") ? "up" : "down",
+                    tone: quality.delta.startsWith("+") ? "success" : "danger",
+                    label: quality.delta.replace(/[+−]/, ""),
+                  }}
+                />
+                <Card title="Photo quality trend — month wise">
+                  <TrendChart data={quality.trend} />
+                </Card>
+              </div>
+            ),
+          },
+          {
+            id: "outcomes",
+            node: (
+              <Card
+                title="Capture outcomes"
+                caption="The nine defect classes sum to the rejected pool, so they reconcile with the pass rate rather than being independent counts."
+              >
+                <div className={charts.chartBody}>
+                  <GaugeRow gauges={quality.gauges} />
+                </div>
+              </Card>
+            ),
+          },
+          {
+            id: "outliers",
+            node: (
+              <Card title="Merchandiser-wise photo quality outliers" pad={false}>
+                <SortableTable
+                  columns={quality.outliers.columns}
+                  rows={quality.outliers.rows}
+                  emptyLabel="No outliers this month."
+                  defaultSort={{ index: 2, dir: "asc" }}
+                />
+              </Card>
+            ),
+          },
+        ]}
+      />
     );
   }
 
@@ -315,54 +378,74 @@ export function MerchandiserBody({
   }
 
   return (
-    <>
-      <Card title="Merchandising compliance">
-        <div className={charts.chartBody}>
-          <GaugeRow gauges={view.gauges} />
-        </div>
-      </Card>
-
-      <div className={styles.split}>
-        <Card title="Average time in store" caption="Minutes per visit, by merchandiser.">
-          <div className={charts.chartBody}>
-            <HBarList rows={view.timeSpent} nameWidth="minmax(140px, 42%)" />
-          </div>
-        </Card>
-        <Card title="Merchandising trend">
-          <TrendChart data={view.trend} />
-          <ChartLegend
-            items={[
-              { label: "Store coverage", tone: "primary" },
-              { label: "PJP adherence", tone: "tertiary" },
-              { label: "Geo compliance", tone: "secondary" },
-            ]}
-          />
-        </Card>
-      </div>
-
-      <Card title="Actual vs planned visits" caption="By day of month.">
-        <GroupedColumns data={view.plannedVsActual} />
-        <ChartLegend items={view.plannedVsActual.legend} shape="swatch" />
-      </Card>
-
-      <div className={styles.split}>
-        <Card title="Time spent by merchandiser" pad={false}>
-          <SortableTable
-            columns={view.timeTable.columns}
-            rows={view.timeTable.rows}
-            emptyLabel="No merchandiser activity this month."
-            defaultSort={{ index: 3, dir: "desc" }}
-          />
-        </Card>
-        <Card title="Outlets not covered this month" pad={false}>
-          <MeasureTable
-            columns={view.notCovered.columns}
-            rows={view.notCovered.rows}
-            emptyLabel="Every outlet was covered."
-          />
-        </Card>
-      </div>
-    </>
+    <ReorderableGrid
+      pageKey="analytics:merchandiser:overview"
+      items={[
+        {
+          id: "compliance",
+          node: (
+            <Card title="Merchandising compliance">
+              <div className={charts.chartBody}>
+                <GaugeRow gauges={view.gauges} />
+              </div>
+            </Card>
+          ),
+        },
+        {
+          id: "time-and-trend",
+          node: (
+            <div className={styles.split}>
+              <Card title="Average time in store" caption="Minutes per visit, by merchandiser.">
+                <div className={charts.chartBody}>
+                  <HBarList rows={view.timeSpent} nameWidth="minmax(140px, 42%)" />
+                </div>
+              </Card>
+              <Card title="Merchandising trend">
+                <TrendChart data={view.trend} />
+                <ChartLegend
+                  items={[
+                    { label: "Store coverage", tone: "primary" },
+                    { label: "PJP adherence", tone: "tertiary" },
+                    { label: "Geo compliance", tone: "secondary" },
+                  ]}
+                />
+              </Card>
+            </div>
+          ),
+        },
+        {
+          id: "planned-vs-actual",
+          node: (
+            <Card title="Actual vs planned visits" caption="By day of month.">
+              <GroupedColumns data={view.plannedVsActual} />
+              <ChartLegend items={view.plannedVsActual.legend} shape="swatch" />
+            </Card>
+          ),
+        },
+        {
+          id: "time-and-coverage-tables",
+          node: (
+            <div className={styles.split}>
+              <Card title="Time spent by merchandiser" pad={false}>
+                <SortableTable
+                  columns={view.timeTable.columns}
+                  rows={view.timeTable.rows}
+                  emptyLabel="No merchandiser activity this month."
+                  defaultSort={{ index: 3, dir: "desc" }}
+                />
+              </Card>
+              <Card title="Outlets not covered this month" pad={false}>
+                <MeasureTable
+                  columns={view.notCovered.columns}
+                  rows={view.notCovered.rows}
+                  emptyLabel="Every outlet was covered."
+                />
+              </Card>
+            </div>
+          ),
+        },
+      ]}
+    />
   );
 }
 
@@ -394,48 +477,62 @@ export function StoreManagementBody({
 
   if (tab === "store-standardisation") {
     return (
-      <>
-        <div className={styles.split}>
-          <Card title="Store coverage — category wise" pad={false}>
-            <SortableTable
-              columns={view.standardisation.columns}
-              rows={view.standardisation.rows}
-              emptyLabel="No categories match."
-              defaultSort={{ index: 1, dir: "desc" }}
-            />
-          </Card>
-          <Card title="Store standardisation compliance trend">
-            <TrendChart data={view.standardTrend} />
-          </Card>
-        </div>
-      </>
+      <div className={styles.split}>
+        <Card title="Store coverage — category wise" pad={false}>
+          <SortableTable
+            columns={view.standardisation.columns}
+            rows={view.standardisation.rows}
+            emptyLabel="No categories match."
+            defaultSort={{ index: 1, dir: "desc" }}
+          />
+        </Card>
+        <Card title="Store standardisation compliance trend">
+          <TrendChart data={view.standardTrend} />
+        </Card>
+      </div>
     );
   }
 
   return (
-    <>
-      <Card title="Store coverage">
-        <div className={charts.chartBody}>
-          <GaugeRow gauges={view.gauges} />
-        </div>
-      </Card>
-
-      <Card
-        title="Store coverage trend"
-        caption="Stores covered against the whole estate."
-      >
-        <GroupedColumns data={view.coverageTrend} />
-        <ChartLegend items={view.coverageTrend.legend} shape="swatch" />
-      </Card>
-
-      <Card title="Store coverage — raw data" pad={false}>
-        <SortableTable
-          columns={view.coverageRaw.columns}
-          rows={view.coverageRaw.rows}
-          emptyLabel="No visits this month."
-          defaultSort={{ index: 4, dir: "desc" }}
-        />
-      </Card>
-    </>
+    <ReorderableGrid
+      pageKey="analytics:store-management:overview"
+      items={[
+        {
+          id: "coverage",
+          node: (
+            <Card title="Store coverage">
+              <div className={charts.chartBody}>
+                <GaugeRow gauges={view.gauges} />
+              </div>
+            </Card>
+          ),
+        },
+        {
+          id: "coverage-trend",
+          node: (
+            <Card
+              title="Store coverage trend"
+              caption="Stores covered against the whole estate."
+            >
+              <GroupedColumns data={view.coverageTrend} />
+              <ChartLegend items={view.coverageTrend.legend} shape="swatch" />
+            </Card>
+          ),
+        },
+        {
+          id: "coverage-raw",
+          node: (
+            <Card title="Store coverage — raw data" pad={false}>
+              <SortableTable
+                columns={view.coverageRaw.columns}
+                rows={view.coverageRaw.rows}
+                emptyLabel="No visits this month."
+                defaultSort={{ index: 4, dir: "desc" }}
+              />
+            </Card>
+          ),
+        },
+      ]}
+    />
   );
 }

@@ -2,6 +2,7 @@ import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import type { CsvTable } from "@/app/_export/csv";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { Bar, DeltaChip, TargetHero, TargetRule } from "@/app/_reports/marks";
 import { ReportHeader } from "@/app/_reports/report-header";
 import type { MonthKey } from "@/app/_time/periods";
@@ -77,6 +78,7 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
             <div className={shared.cardHead}>
               <div className={shared.cardTitle}>Why captures were rejected</div>
               <AskInfiChatButton label="Why captures were rejected" compact />
+              <ExcelDownloadButton label="Why captures were rejected" compact />
             </div>
             <div className={styles.reasonsCaption}>{view.reasonsCaption}</div>
 
@@ -103,6 +105,7 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
                   Target ≤5%
                 </span>
                 <AskInfiChatButton label="Rejection rate by region" compact />
+                <ExcelDownloadButton label="Rejection rate by region" compact />
               </span>
             </div>
 
@@ -136,6 +139,7 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
                 Low-sample merchandisers excluded
               </span>
               <AskInfiChatButton label="Merchandisers by rejection rate" compact />
+              <ExcelDownloadButton label="Merchandisers by rejection rate" compact />
             </span>
           </div>
 

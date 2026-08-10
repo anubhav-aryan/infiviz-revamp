@@ -79,6 +79,15 @@ export const TRAINED_FILTERS: { label: string; value: TriState }[] = [
   { label: "Untrained", value: "no" },
 ];
 
+export type Ownership = "own" | "competitor" | "private-label";
+
+export const OWNERSHIP_FILTERS: { label: string; value: "all" | Ownership }[] = [
+  { label: "All", value: "all" },
+  { label: "Own", value: "own" },
+  { label: "Competitor", value: "competitor" },
+  { label: "Private label", value: "private-label" },
+];
+
 type RawSku = {
   name: string;
   code: string;
@@ -258,11 +267,106 @@ const RAW_SKUS: RawSku[] = [
     desc: "Value cavity protection.",
     ranged: "1,180",
   },
+  /* Competitor and private-label rows — without these every SKU in the
+     catalog would implicitly be "own", making an ownership flag a no-op.
+     Brand names reused from Session Viewer's own `BRAND_FACINGS` so the same
+     competitors are named consistently across the app. */
+  {
+    name: "P/S Expert Protection 190G",
+    code: "70001101",
+    ean: "8850008100101",
+    brand: "P/S",
+    subCategory: "Cavity protection",
+    variant: "Expert Protection",
+    height: 175,
+    width: 50,
+    tags: ["P/S", "Expert", "Cavity protection"],
+    desc: "Competitor cavity-protection toothpaste.",
+    ranged: "1,050",
+  },
+  {
+    name: "Closeup Ever Fresh 150G",
+    code: "70002105",
+    ean: "8850008100207",
+    brand: "Closeup",
+    subCategory: "Fresh breath",
+    variant: "Ever Fresh",
+    height: 160,
+    width: 48,
+    tags: ["Closeup", "Fresh breath", "Gel"],
+    desc: "Competitor fresh-breath gel toothpaste.",
+    ranged: "890",
+  },
+  {
+    name: "Sensodyne Rapid Relief 100G",
+    code: "70003110",
+    ean: "8850008100304",
+    brand: "Sensodyne",
+    subCategory: "Sensitivity",
+    variant: "Rapid Relief",
+    height: 130,
+    width: 44,
+    tags: ["Sensodyne", "Sensitivity", "Rapid relief"],
+    desc: "Competitor sensitivity-relief toothpaste.",
+    ranged: "610",
+  },
+  {
+    name: "Oral-B 3D White 120G",
+    code: "70004120",
+    ean: "8850008100411",
+    brand: "Oral-B",
+    subCategory: "Whitening",
+    variant: "3D White",
+    height: 140,
+    width: 46,
+    tags: ["Oral-B", "Whitening", "3D White"],
+    desc: "Competitor whitening toothpaste.",
+    ranged: "540",
+  },
+  {
+    name: "Winmart Choice Fresh Mint 180G",
+    code: "70005130",
+    ean: "8850008100510",
+    brand: "Winmart Choice",
+    subCategory: "Fresh breath",
+    variant: "Fresh Mint",
+    height: 170,
+    width: 50,
+    tags: ["Private label", "Fresh mint"],
+    desc: "Retailer private-label toothpaste.",
+    ranged: "310",
+  },
 ];
 
-/** The two flags are held as index lists in the design, not per-SKU fields. */
-const WITHOUT_PACKSHOT = [4, 7, 10];
-const WITHOUT_TRAINING = [6, 9, 11];
+/** The flags are held as index lists in the design, not per-SKU fields. */
+const WITHOUT_PACKSHOT = [4, 7, 10, 14];
+const WITHOUT_TRAINING = [6, 9, 11, 16];
+
+const COMPETITOR_BRANDS = new Set(["P/S", "Closeup", "Sensodyne", "Oral-B"]);
+const PRIVATE_LABEL_BRANDS = new Set(["Winmart Choice"]);
+
+function ownershipFor(brand: string): Ownership {
+  if (COMPETITOR_BRANDS.has(brand)) return "competitor";
+  if (PRIVATE_LABEL_BRANDS.has(brand)) return "private-label";
+  return "own";
+}
+
+const UNTRAINED_REASON: Partial<Record<number, string>> = {
+  6: "New SKU — awaiting first training batch",
+  9: "Low shelf presence — insufficient capture volume so far",
+  11: "Packshot missing — cannot train without a reference image",
+  16: "New SKU — awaiting first training batch",
+};
+
+/** Deterministic, index-seeded spread rather than authoring 17 numbers by
+ *  hand or calling `Math.random()` (banned at render/module scope here). */
+function accuracyFor(index: number): number {
+  return 86 + ((index * 7) % 13);
+}
+
+function sampleCountFor(index: number): number {
+  return 60 + ((index * 23) % 260);
+}
 
 export type Sku = RawSku & {
   /** Position in `SKUS` — the slide-over addresses SKUs by index, so filtered
@@ -273,22 +377,40 @@ export type Sku = RawSku & {
   hw: string;
   packshot: boolean;
   trained: boolean;
+  ownership: Ownership;
+  /** `0` when untrained — there is no accuracy score to report yet. */
+  accuracy: number;
+  sampleCount: number;
+  /** Set only when `trained` is false. */
+  untrainedReason?: string;
 };
 
-export const SKUS: Sku[] = RAW_SKUS.map((sku, index) => ({
-  ...sku,
-  index,
-  category: "Toothpaste",
-  hw: `${sku.height}×${sku.width} mm`,
-  packshot: !WITHOUT_PACKSHOT.includes(index),
-  trained: !WITHOUT_TRAINING.includes(index),
-}));
+export const SKUS: Sku[] = RAW_SKUS.map((sku, index) => {
+  const trained = !WITHOUT_TRAINING.includes(index);
+  return {
+    ...sku,
+    index,
+    category: "Toothpaste",
+    hw: `${sku.height}×${sku.width} mm`,
+    packshot: !WITHOUT_PACKSHOT.includes(index),
+    trained,
+    ownership: ownershipFor(sku.brand),
+    accuracy: trained ? accuracyFor(index) : 0,
+    sampleCount: trained ? sampleCountFor(index) : 0,
+    untrainedReason: trained ? undefined : UNTRAINED_REASON[index],
+  };
+});
 
-export function filterSkus(packshot: TriState, trained: TriState): Sku[] {
+export function filterSkus(
+  packshot: TriState,
+  trained: TriState,
+  ownership: "all" | Ownership = "all",
+): Sku[] {
   return SKUS.filter(
     (sku) =>
       (packshot === "all" || (packshot === "yes") === sku.packshot) &&
-      (trained === "all" || (trained === "yes") === sku.trained),
+      (trained === "all" || (trained === "yes") === sku.trained) &&
+      (ownership === "all" || ownership === sku.ownership),
   );
 }
 
@@ -299,11 +421,18 @@ export type SkuAttribute = {
   kind: "text" | "mono" | "desc";
 };
 
+export const OWNERSHIP_LABEL: Record<Ownership, string> = {
+  own: "Own",
+  competitor: "Competitor",
+  "private-label": "Private label",
+};
+
 export function skuAttributes(sku: Sku): SkuAttribute[] {
   return [
     { key: "Category", value: sku.category, kind: "text" },
     { key: "Sub-category", value: sku.subCategory, kind: "text" },
     { key: "Brand", value: sku.brand, kind: "text" },
+    { key: "Ownership", value: OWNERSHIP_LABEL[sku.ownership], kind: "text" },
     { key: "Variant", value: sku.variant, kind: "text" },
     { key: "SKU code", value: sku.code, kind: "mono" },
     { key: "EAN", value: sku.ean, kind: "mono" },
@@ -339,6 +468,7 @@ export function skuCsv(rows: Sku[]): CsvTable {
       "Category",
       "Sub-category",
       "Brand",
+      "Ownership",
       "Variant",
       "SKU code",
       "EAN",
@@ -347,12 +477,15 @@ export function skuCsv(rows: Sku[]): CsvTable {
       "Ranged stores",
       "Packshot",
       "Trained",
+      "Accuracy %",
+      "Sample count",
     ],
     rows: rows.map((sku) => [
       sku.name,
       sku.category,
       sku.subCategory,
       sku.brand,
+      OWNERSHIP_LABEL[sku.ownership],
       sku.variant,
       sku.code,
       sku.ean,
@@ -361,6 +494,8 @@ export function skuCsv(rows: Sku[]): CsvTable {
       sku.ranged,
       sku.packshot ? "Yes" : "No",
       sku.trained ? "Yes" : "No",
+      sku.trained ? sku.accuracy : "—",
+      sku.trained ? sku.sampleCount : "—",
     ]),
   };
 }

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
+import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { ActivityFeed } from "./activity-feed";
 import { OverdueStoresCard, QualityAlertsCard } from "./alert-strips";
 import { HIGH_PRIORITY_COUNT, NeedsAttention, OPEN_TICKET_COUNT } from "./needs-attention";
@@ -42,6 +43,7 @@ function HeroTile({ tile, footer }: { tile: HeroTileData; footer: ReactNode }) {
             />
           </svg>
           <AskInfiChatButton label={tile.title} compact />
+          <ExcelDownloadButton label={tile.title} compact />
         </span>
       </div>
 
