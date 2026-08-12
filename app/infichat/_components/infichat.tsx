@@ -2,7 +2,6 @@
 
 import { useCallback, useRef, useState } from "react";
 import { Icon } from "@/app/_components/icon";
-import { NAV_BY_ID } from "@/app/_components/nav";
 import { ChatThread, type ChatThreadHandle } from "@/app/_components/chat/chat-thread";
 import {
   HUB_DEFAULT_HINT,
@@ -15,31 +14,42 @@ import styles from "@/app/_components/chat/chat.module.css";
  * The dedicated assistant screen — the same `ChatThread` the floating panel
  * uses, docked full-width with room for a history rail alongside it.
  *
- * History is genuine, not fabricated: it starts empty (which is also just
- * what a real chatbot looks like the first time you use it) and fills in for
- * real as you chat, in this session — the same "nothing persists" honesty the
- * rest of the mockup already keeps, so it needs no separate disclaimer.
- * Clicking a past entry replays the question it opened with — this mockup's
- * replies are deterministic, so that reproduces the same conversation it
- * showed the first time.
+ * History isn't empty on load: it opens seeded with the same five grounded
+ * chart examples the empty state offers as suggestion cards, so the chart
+ * capability is discoverable without the user having to already know what to
+ * ask — the same five conversations either entry point replays. Real questions
+ * still fill in above them exactly as before, keyed to the full question text
+ * rather than the seeded entries' short titles.
  */
 
 type HistoryEntry = { id: string; title: string; question: string; hint: ChatHint };
 
-const HUB_PROMPTS = HUB_SUGGESTIONS.map(({ id, prompt, hint }) => ({
+const HUB_PROMPTS = HUB_SUGGESTIONS.map(({ prompt, icon, hint }) => ({
   ...prompt,
-  icon: NAV_BY_ID[id].icon,
+  icon,
+  hint,
+}));
+
+const SEED_HISTORY: HistoryEntry[] = HUB_SUGGESTIONS.map(({ prompt, hint }, i) => ({
+  id: `seed-${i}`,
+  title: prompt.title,
+  question: prompt.question,
   hint,
 }));
 
 export function InfiChat() {
   const threadRef = useRef<ChatThreadHandle>(null);
   const idRef = useRef(0);
+  /** Suppresses `onFirstMessage` while `openHistory` replays a past entry —
+      `newChat()` empties the thread first, so the replay looks exactly like a
+      fresh send and would otherwise re-add the entry it's replaying. */
+  const replayingRef = useRef(false);
 
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [history, setHistory] = useState<HistoryEntry[]>(SEED_HISTORY);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const handleFirstMessage = useCallback((question: string, hint: ChatHint) => {
+    if (replayingRef.current) return;
     const id = `h${idRef.current++}`;
     setHistory((prev) => [{ id, title: question, question, hint }, ...prev]);
     setActiveId(id);
@@ -51,8 +61,10 @@ export function InfiChat() {
   }, []);
 
   const openHistory = useCallback((entry: HistoryEntry) => {
+    replayingRef.current = true;
     threadRef.current?.newChat();
     threadRef.current?.send(entry.question, entry.hint);
+    replayingRef.current = false;
     setActiveId(entry.id);
   }, []);
 

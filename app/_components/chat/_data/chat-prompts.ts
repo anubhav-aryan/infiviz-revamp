@@ -1,5 +1,16 @@
+import type { IconName } from "@/app/_components/icon";
 import type { NavId } from "@/app/_components/nav";
-import { INSIGHTS } from "@/app/analytics/_data/analytics";
+import { CURRENT_MSL_GAP, INSIGHTS } from "@/app/analytics/_data/analytics";
+import { DIM_SOURCE, ESTATE } from "@/app/analytics/_data/spine";
+import type { BarRow } from "@/app/_charts/h-bar-list";
+import { group } from "@/app/_format/num";
+import { CURRENT_MONTH, MONTH_BY_KEY } from "@/app/_time/periods";
+import { PHOTO_QUALITY, REASONS_NOTE } from "@/app/photo-quality/_data/photo-quality";
+import {
+  BRAND_ROWS,
+  SESSION_HEADER,
+  SESSION_TITLE,
+} from "@/app/session-viewer/_data/session-viewer";
 import { SOURCES, SUGGESTIONS, type SourceId } from "@/app/tickets/_data/tickets";
 
 /**
@@ -20,7 +31,15 @@ import { SOURCES, SUGGESTIONS, type SourceId } from "@/app/tickets/_data/tickets
  * line under it) instead of a flat pill of raw question text.
  */
 export type ChatPrompt = { title: string; question: string };
-export type ChatHint = { text: string; label: string; href: string };
+export type ChatHint = {
+  text: string;
+  label: string;
+  href: string;
+  /** Optional grounded chart the hub renders under the reply — hub variant only. */
+  chart?: { rows: BarRow[]; caption: string };
+  /** Decorative follow-up labels; never wired to a real drill-down. */
+  pills?: string[];
+};
 export type ChatContext = { prompts: ChatPrompt[]; hint: ChatHint };
 
 function hintFromSource(source: SourceId): ChatHint {
@@ -121,14 +140,146 @@ export const CHAT_CONTEXT: Partial<Record<NavId, ChatContext>> = {
   },
 };
 
+/* ------------------------------------------------------------------ */
+/* chart-bearing hub suggestions                                      */
+/* ------------------------------------------------------------------ */
+
+const ESTATE_CAPTION = `Read from ${group(ESTATE.sessions)} sessions across ${group(ESTATE.stores)} stores · ${MONTH_BY_KEY[CURRENT_MONTH].label}`;
+
+const REGION_SOS_ROWS: BarRow[] = (() => {
+  const rows = DIM_SOURCE.Region.map(([name, , , , sos]) => ({ name, sos }));
+  const max = Math.max(...rows.map((r) => r.sos));
+  return rows.map((r) => ({
+    label: r.name,
+    value: `${r.sos}%`,
+    pct: +((r.sos / max) * 100).toFixed(1),
+  }));
+})();
+
+const RETAILER_OSA_ROWS: BarRow[] = (() => {
+  const rows = DIM_SOURCE.Retailer.map(([name, osa]) => ({ name, osa }));
+  const max = Math.max(...rows.map((r) => r.osa));
+  return rows.map((r) => ({
+    label: r.name,
+    value: `${r.osa.toFixed(1)}%`,
+    pct: +((r.osa / max) * 100).toFixed(1),
+  }));
+})();
+
+/** `width` is already normalised to the leading reason — reused, not recomputed. */
+const REJECTION_ROWS: BarRow[] = PHOTO_QUALITY[CURRENT_MONTH].reasons.map((r) => ({
+  label: r.name,
+  value: `${r.pct}%`,
+  pct: r.width,
+  tone: r.delta.tone === "danger" ? ("danger" as const) : undefined,
+}));
+
+/** `width` is already normalised to the largest brand — reused, not recomputed. */
+const BRAND_SHARE_ROWS: BarRow[] = BRAND_ROWS.map((b) => ({
+  label: b.name,
+  value: `${b.share}%`,
+  pct: b.width,
+}));
+
+const SESSION_VISIT = SESSION_HEADER.find((row) => row.key === "Visit")?.value ?? "";
+
+const SKU_GAP_MAX = Math.max(...CURRENT_MSL_GAP.map((g) => g.stores));
+const SKU_GAP_ROWS: BarRow[] = [...CURRENT_MSL_GAP]
+  .sort((a, b) => b.stores - a.stores)
+  .map((gap) => ({
+    label: gap.name,
+    value: `${gap.stores} stores`,
+    pct: +((gap.stores / SKU_GAP_MAX) * 100).toFixed(1),
+  }));
+
 /**
- * The hub's own starter set, for `/infichat` — the four screens already
- * backed by real `INSIGHTS`/`SUGGESTIONS` data, not all eight. A fresh chat's
- * empty state shows a handful of good examples, not every screen in the app.
+ * The hub's own starter set, for `/infichat` — five examples that each pair
+ * a real answer with a chart drawn straight from the fixture the source
+ * screen already renders, so the numbers can never drift from what that
+ * screen shows. `pct` in every `BarRow[]` above is normalised to that row
+ * set's own widest value, per `HBarList`'s contract.
  */
-export const HUB_SUGGESTIONS: { id: NavId; prompt: ChatPrompt; hint: ChatHint }[] = (
-  ["analytics", "photo-quality", "merch-activity", "tickets"] as const
-).map((id) => ({ id, prompt: CHAT_CONTEXT[id]!.prompts[0], hint: CHAT_CONTEXT[id]!.hint }));
+export const HUB_SUGGESTIONS: { prompt: ChatPrompt; icon: IconName; hint: ChatHint }[] = [
+  {
+    prompt: {
+      title: "Share of shelf by region",
+      question: "How does share of shelf compare across regions?",
+    },
+    icon: "bar-chart-3",
+    hint: {
+      text: "Share of shelf runs from 42% in Ho Chi Minh City down to 31% in the North Highlands — the widest spread of any region split.",
+      label: "Analytics",
+      href: SOURCES.availability.href,
+      chart: { rows: REGION_SOS_ROWS, caption: ESTATE_CAPTION },
+      pills: ["Split by retailer", "Compare to June", "Show the stores"],
+    },
+  },
+  {
+    prompt: {
+      title: "OSA by retailer",
+      question: "Which retailer has the best on-shelf availability?",
+    },
+    icon: "bar-chart-3",
+    hint: {
+      text: "On-shelf availability tops out at 68.1% with Bach Hoa Xanh and falls to 51.0% at MM Mega Market.",
+      label: "Analytics",
+      href: SOURCES.availability.href,
+      chart: { rows: RETAILER_OSA_ROWS, caption: ESTATE_CAPTION },
+      pills: ["Split by region", "Compare to June", "Show the worst stores"],
+    },
+  },
+  {
+    prompt: {
+      title: "Why captures get rejected",
+      question: "What's the most common reason captures get rejected?",
+    },
+    icon: "camera",
+    hint: {
+      text: REASONS_NOTE,
+      label: "Photo quality",
+      href: SOURCES["photo-quality"].href,
+      chart: {
+        rows: REJECTION_ROWS,
+        caption: PHOTO_QUALITY[CURRENT_MONTH].reasonsCaption,
+      },
+      pills: ["Split by merchandiser", "Compare to June", "Show the stores"],
+    },
+  },
+  {
+    prompt: {
+      title: "Brands winning shelf space",
+      question: "Which brands are winning shelf space in this session?",
+    },
+    icon: "map",
+    hint: {
+      text: "P/S leads this session's shelf with 23.5% share; our best-placed own brand, CDC, holds 11.2%.",
+      label: "Session Viewer",
+      href: "/session-viewer",
+      chart: {
+        rows: BRAND_SHARE_ROWS,
+        caption: `Read from session ${SESSION_TITLE} · ${SESSION_VISIT}`,
+      },
+      pills: ["Split by category", "Compare to last visit", "Show competitor SKUs"],
+    },
+  },
+  {
+    prompt: {
+      title: "SKUs missing the most stores",
+      question: "Which SKUs are missing from the most stores?",
+    },
+    icon: "bar-chart-3",
+    hint: {
+      text: "COL Optic White Plus Shine 100G is missing from 576 stores — more than three times the next-worst gap.",
+      label: "Analytics",
+      href: SOURCES["must-stock"].href,
+      chart: {
+        rows: SKU_GAP_ROWS,
+        caption: `Missing across ${group(ESTATE.estate)} stores in the configured network.`,
+      },
+      pills: ["Split by retailer", "Compare to June", "Show the stores"],
+    },
+  },
+];
 
 /** What the hub replies with when you type instead of picking a suggestion. */
 export const HUB_DEFAULT_HINT: ChatHint = {

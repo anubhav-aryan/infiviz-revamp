@@ -1090,7 +1090,7 @@ const MISSING_ACCESSORS: Accessors<MissingRow> = {
 
 export type MslGap = { name: string; brand: string; stores: number };
 
-const CURRENT_MSL_GAP: MslGap[] = [
+export const CURRENT_MSL_GAP: MslGap[] = [
   { name: "COL Optic White Plus Shine 100G", brand: "Optic White", stores: 576 },
   { name: "COL Max Fresh Blue Gel 140G", brand: "Max Fresh", stores: 184 },
   { name: "COL Vitamin C Fresh 120G", brand: "Vitamin C", stores: 135 },

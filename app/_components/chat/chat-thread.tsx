@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import { Icon, type IconName } from "@/app/_components/icon";
+import { HBarList, type BarRow } from "@/app/_charts/h-bar-list";
 import type { ChatHint, ChatPrompt } from "./_data/chat-prompts";
 import styles from "./chat.module.css";
 
@@ -35,6 +36,8 @@ type Message = {
   text: string;
   href?: string;
   linkLabel?: string;
+  chart?: { rows: BarRow[]; caption: string };
+  pills?: string[];
 };
 
 /**
@@ -104,6 +107,8 @@ export const ChatThread = forwardRef<
             text: reply.text,
             href: reply.href,
             linkLabel: reply.label,
+            chart: reply.chart,
+            pills: reply.pills,
           },
         ]);
         setPending(false);
@@ -157,24 +162,60 @@ export const ChatThread = forwardRef<
         </div>
       ) : (
         <div className={styles.messages}>
-          {messages.map((message) => (
-            <div key={message.id} className={styles.bubbleRow} data-role={message.role}>
-              {message.role === "assistant" ? (
-                <span className={styles.avatar} aria-hidden="true">
-                  <Icon name="sparkles" size={13} />
-                </span>
-              ) : null}
-              <div className={styles.bubble} data-role={message.role}>
-                <p className={styles.bubbleText}>{message.text}</p>
-                {message.href ? (
-                  <Link href={message.href} className={styles.bubbleLink}>
-                    Open {message.linkLabel}
-                    <Icon name="arrow-right" size={13} />
-                  </Link>
+          {messages.map((message) => {
+            const showChart = variant === "hub" && message.chart;
+            const showPills = variant === "hub" && message.pills && message.pills.length > 0;
+            return (
+              <div
+                key={message.id}
+                className={styles.bubbleRow}
+                data-role={message.role}
+                data-chart={showChart ? "true" : undefined}
+              >
+                {message.role === "assistant" ? (
+                  <span className={styles.avatar} aria-hidden="true">
+                    <Icon name="sparkles" size={13} />
+                  </span>
                 ) : null}
+                <div
+                  className={styles.bubble}
+                  data-role={message.role}
+                  data-chart={showChart ? "true" : undefined}
+                >
+                  <p className={styles.bubbleText}>{message.text}</p>
+
+                  {showChart && message.chart ? (
+                    <div className={styles.bubbleChart}>
+                      <HBarList rows={message.chart.rows} nameWidth="190px" />
+                      <p className={styles.bubbleChartCaption}>{message.chart.caption}</p>
+                    </div>
+                  ) : null}
+
+                  {showPills && message.pills ? (
+                    <div className={styles.bubblePills}>
+                      {message.pills.map((pill) => (
+                        <span
+                          key={pill}
+                          className={styles.bubblePill}
+                          data-inert="true"
+                          title="Preview only — not wired to a real drill-down"
+                        >
+                          {pill}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {message.href ? (
+                    <Link href={message.href} className={styles.bubbleLink}>
+                      Open {message.linkLabel}
+                      <Icon name="arrow-right" size={13} />
+                    </Link>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {pending ? (
             <div className={styles.bubbleRow} data-role="assistant">

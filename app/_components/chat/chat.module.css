@@ -238,6 +238,55 @@
   white-space: pre-wrap;
 }
 
+/* Chart-bearing assistant replies — hub only. HBarList needs real horizontal
+   room for its name + track + value grid, room the floating panel's 380px
+   shell doesn't have; chat-thread.tsx only ever sets data-chart when
+   variant === "hub", so this rule is a belt-and-braces scope, not the only
+   guard. */
+.thread[data-variant="hub"] .bubbleRow[data-chart="true"] {
+  max-width: 640px;
+}
+
+.bubble[data-chart="true"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.bubbleChart {
+  margin-top: 10px;
+}
+
+.bubbleChartCaption {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+/* Decorative follow-up pills — the `data-inert` convention `ViewImages`
+   (photo-quality/_components/recent-rejected.tsx) already uses for "looks
+   like a button, isn't one". */
+.bubblePills {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bubblePill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--text-caption);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: default;
+}
+
 .bubbleLink {
   margin-top: 6px;
   display: inline-flex;
