@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Icon } from "@/app/_components/icon";
+import { ChatIdentity } from "./chat-identity";
 import { ChatThread, type ChatThreadHandle } from "./chat-thread";
 import type { ChatHint, ChatPrompt } from "./_data/chat-prompts";
 import styles from "./chat.module.css";
@@ -52,16 +53,7 @@ export function ChatPanel({
   return (
     <div className={styles.panel} role="dialog" aria-modal="false" aria-label="InfiChat">
       <header className={styles.panelHead}>
-        <span className={styles.panelHeadAvatar} aria-hidden="true">
-          <Icon name="sparkles" size={16} />
-        </span>
-        <div className={styles.panelHeadBody}>
-          <div className={styles.panelHeadTitleRow}>
-            <span className={styles.panelHeadTitle}>InfiChat</span>
-            <span className={styles.panelBadge}>Preview</span>
-          </div>
-          <div className={styles.panelHeadCaption}>Ask about {label}</div>
-        </div>
+        <ChatIdentity caption={`Ask about ${label}`} />
         <button
           type="button"
           className={styles.panelIconButton}

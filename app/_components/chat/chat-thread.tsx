@@ -84,6 +84,73 @@ export const ChatThread = forwardRef<
     endRef.current?.scrollIntoView({ block: "end" });
   }, [messages, pending]);
 
+  const isEmpty = messages.length === 0 && !pending;
+
+  // Cycles the composer's placeholder through the page's own suggested
+  // questions — typed out, held, backspaced, then the next one — for as long
+  // as the thread is empty. A single recursive timeout, the same pattern the
+  // reply delay above uses; it's a post-hydration client interaction, not
+  // render-time nondeterminism.
+  const [placeholder, setPlaceholder] = useState("Ask a question…");
+
+  useEffect(() => {
+    if (!isEmpty) return;
+
+    const strings = prompts.length > 0 ? prompts.map((p) => p.question) : ["Ask a question…"];
+    const TYPE_MS = 28;
+    const DELETE_MS = 18;
+    const HOLD_MS = 1600;
+    const GAP_MS = 400;
+
+    let stringIndex = 0;
+    let timeoutId: number;
+
+    const typeOut = (text: string, onDone: () => void) => {
+      let i = 0;
+      const tick = () => {
+        setPlaceholder(text.slice(0, i));
+        if (i >= text.length) {
+          onDone();
+          return;
+        }
+        i += 1;
+        timeoutId = window.setTimeout(tick, TYPE_MS);
+      };
+      tick();
+    };
+
+    const backspace = (text: string, onDone: () => void) => {
+      let i = text.length;
+      const tick = () => {
+        setPlaceholder(text.slice(0, i));
+        if (i <= 0) {
+          onDone();
+          return;
+        }
+        i -= 1;
+        timeoutId = window.setTimeout(tick, DELETE_MS);
+      };
+      tick();
+    };
+
+    const runNext = () => {
+      const text = strings[stringIndex];
+      typeOut(text, () => {
+        timeoutId = window.setTimeout(() => {
+          backspace(text, () => {
+            stringIndex = (stringIndex + 1) % strings.length;
+            timeoutId = window.setTimeout(runNext, GAP_MS);
+          });
+        }, HOLD_MS);
+      });
+    };
+
+    setPlaceholder("");
+    timeoutId = window.setTimeout(runNext, GAP_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isEmpty, prompts]);
+
   const send = useCallback(
     (question: string, hintOverride?: ChatHint) => {
       const trimmed = question.trim();
@@ -124,8 +191,6 @@ export const ChatThread = forwardRef<
   }, []);
 
   useImperativeHandle(ref, () => ({ send, newChat }), [send, newChat]);
-
-  const isEmpty = messages.length === 0 && !pending;
 
   return (
     <div className={styles.thread} data-variant={variant}>
@@ -244,7 +309,7 @@ export const ChatThread = forwardRef<
           className={styles.composerInput}
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="Ask a question…"
+          placeholder={placeholder}
           aria-label="Ask InfiChat"
         />
         <button

@@ -42,6 +42,9 @@ export function ChatLauncher({ active }: { active: NavId }) {
         aria-label={state.open ? "Close InfiChat" : "Open InfiChat"}
       >
         <Icon name={state.open ? "x" : "message-circle"} size={22} />
+        {!state.open ? (
+          <span className={styles.launcherStatusDot} aria-hidden="true" />
+        ) : null}
       </button>
     </>
   );

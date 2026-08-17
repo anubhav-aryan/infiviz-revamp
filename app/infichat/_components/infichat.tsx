@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { Icon } from "@/app/_components/icon";
+import { ChatIdentity } from "@/app/_components/chat/chat-identity";
 import { ChatThread, type ChatThreadHandle } from "@/app/_components/chat/chat-thread";
 import {
   HUB_DEFAULT_HINT,
@@ -99,6 +100,10 @@ export function InfiChat() {
       </aside>
 
       <div className={styles.hubMain}>
+        <header className={styles.hubHead}>
+          <ChatIdentity caption="Answers grounded in this platform's own data" />
+        </header>
+
         <ChatThread
           ref={threadRef}
           title="InfiChat"
