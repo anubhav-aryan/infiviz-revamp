@@ -1,7 +1,6 @@
 "use client";
 
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Hint } from "@/app/_components/hint";
 import { Icon } from "@/app/_components/icon";
 import { useGlobalFilters } from "@/app/_filters/global-filter-context";
@@ -18,6 +17,7 @@ import {
 } from "../_data/category-metrics";
 import type { MonthKey } from "@/app/_time/periods";
 import styles from "./analytics.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /**
  * A metric, one panel per category — never a blended average.
@@ -112,9 +112,9 @@ export function CategoryPanels({
               : `${panels.length} categories · shown separately, never averaged`}
           </div>
         </div>
-        <span className={chatStyles.askGroup}>
+        <CardActions>
           <AskInfiChatButton label={spec.title} compact />
-        </span>
+        </CardActions>
       </div>
 
       <div className={styles.sosGrid} data-count={Math.min(panels.length, 5)}>

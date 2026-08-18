@@ -1,5 +1,4 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { Icon } from "@/app/_components/icon";
 import {
@@ -14,6 +13,7 @@ import {
 import { BreakdownTile } from "./breakdown-tile";
 import { GridRow, ResizableGrid } from "./resizable-grid";
 import styles from "./master-data.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 export function StoresBoard() {
   return (
@@ -60,11 +60,11 @@ export function StoresBoard() {
       <div className={styles.tableCard}>
         <div className={styles.tableHead}>
           <span className={styles.tableTitle}>{STORES_TABLE.count}</span>
-          <span className={chatStyles.askGroup}>
+          <CardActions>
             <span className={styles.tableCount}>{STORES_TABLE.showing}</span>
             <AskInfiChatButton label={STORES_TABLE.count} compact />
             <ExcelDownloadButton label={STORES_TABLE.count} compact />
-          </span>
+          </CardActions>
         </div>
 
         <ResizableGrid tableKey="stores" columns={STORE_COLUMNS}>

@@ -10,7 +10,9 @@ export const metadata: Metadata = {
 
 export default function StoreExplorerPage() {
   return (
-    <AppShell active="store-explorer">
+    /* No bar is drawn — the screen has its own chip row — but the provider is
+       mounted, so its filters are the same set the dashboards read. */
+    <AppShell active="store-explorer" filterScope="store-explorer">
       <StoreExplorer />
     </AppShell>
   );

@@ -126,6 +126,10 @@ const TODAY_DAY = 12;
 /** What a ticket closed through the UI is stamped with. */
 export const TODAY_LABEL = dayLabel(TODAY_DAY);
 
+/** The due date a ticket raised through the UI gets, `n` days out from today.
+ *  Clamped to the authored month by `dayLabel`, for the same reason. */
+export const dueLabel = (days: number) => dayLabel(TODAY_DAY + days);
+
 /**
  * When each already-closed ticket was closed. A lookup rather than another
  * slot in `TICKET_FACTS`, so the nine tickets that are still open do not each
@@ -462,15 +466,20 @@ export const TICKETS: Ticket[] = TICKET_FACTS.map(
  * merchandisers. Scoping by *who the assignee reports to* rather than by an
  * authored field means adding a ticket never means updating a second list.
  */
-export function ticketsForPersona(persona: string): Ticket[] {
-  if (persona === "exec") return TICKETS;
+export function ticketsForPersona(
+  persona: string,
+  /** The pool to scope. Defaults to the authored fixtures; the screen passes
+   *  those plus anything raised through the UI. */
+  pool: Ticket[] = TICKETS,
+): Ticket[] {
+  if (persona === "exec") return pool;
 
   if (persona === "field") {
     const supervisor = SUPERVISORS[0];
     const team = MERCHANDISERS.filter((m) => m.region === supervisor.region).map(
       (m) => m.id,
     );
-    return TICKETS.filter(
+    return pool.filter(
       (ticket) =>
         team.includes(ticket.assigneeId) || ticket.reporterId === supervisor.id,
     );
@@ -478,7 +487,7 @@ export function ticketsForPersona(persona: string): Ticket[] {
 
   /* Leads see anything not already delegated down to a single merchandiser,
      plus everything they raised themselves. */
-  return TICKETS.filter((ticket) => {
+  return pool.filter((ticket) => {
     const assignee = merchandiserByHandle(ticket.assigneeId);
     if (!assignee) return true;
     return assignee.rank !== "merchandiser" || ticket.reporterId.startsWith("lead");

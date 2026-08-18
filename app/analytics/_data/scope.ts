@@ -5,6 +5,7 @@ import { SESSION_STORES } from "@/app/session-viewer/_data/session-viewer";
 import { lcg } from "@/app/_time/variants";
 import { group } from "@/app/_format/num";
 import { AVAIL_SERIES, DIM_SOURCE, ESTATE, LAST, VIS_SERIES } from "./spine";
+import type { ActiveFilter } from "@/app/_filters/model";
 import type { PersonaId } from "./module-matrix";
 
 /**
@@ -266,6 +267,75 @@ export function scopeFor(persona: PersonaId, param: string | null | undefined): 
     return SCOPES[param as ScopeId];
   }
   return SCOPES[config.defaultScope];
+}
+
+/* ---------------------------------------------------------------- */
+/* the global filter bar is the scope                                */
+/* ---------------------------------------------------------------- */
+
+/**
+ * A scope and a global Region/Category filter are the same statement.
+ *
+ * The two grew up separately — the rail's picker wrote `?scope=`, the bar wrote
+ * `?f=` — and could disagree on one screen, which is exactly the thing a
+ * dashboard must not do. They were always compatible: scope ids are the slugs
+ * of the registry's own labels (`mekong-delta`, `kids-oral-care`), and the
+ * analytics seed filter is already `category~toothpaste`, the same value as the
+ * category persona's default scope. So the bar is now the writer and the picker
+ * is a view of it.
+ */
+
+const SCOPE_DIM: Record<Exclude<ScopeKind, "national">, "region" | "category"> = {
+  region: "region",
+  category: "category",
+};
+
+/** Which scope a filter set is asking for, or `null` for "no opinion". */
+export function scopeFromFilters(
+  filters: readonly ActiveFilter[],
+): ScopeId | null {
+  for (const filter of filters) {
+    if (filter.dim !== "region" && filter.dim !== "category") continue;
+    const scope = SCOPES[filter.value as ScopeId];
+    if (scope && scope.kind !== "national" && SCOPE_DIM[scope.kind] === filter.dim) {
+      return scope.id;
+    }
+  }
+  return null;
+}
+
+/**
+ * The filter set that says "look at this scope" — one region *or* one category,
+ * never both, because a scope is a single statement about what you are reading.
+ * `national` is the absence of either.
+ */
+export function filtersWithScope(
+  filters: readonly ActiveFilter[],
+  id: ScopeId,
+): ActiveFilter[] {
+  const rest = filters.filter(
+    (filter) => filter.dim !== "region" && filter.dim !== "category",
+  );
+  const scope = SCOPES[id];
+  if (!scope || scope.kind === "national") return rest;
+  return [{ dim: SCOPE_DIM[scope.kind], value: scope.id }, ...rest];
+}
+
+/**
+ * The scope a screen should read at: whatever the bar says, else the persona's
+ * default.
+ *
+ * Deliberately not narrowed to `PERSONA_SCOPES[persona].options` the way
+ * `scopeFor` narrows `?scope=`. If someone sets a Region in the bar while
+ * reading as an executive, the numbers should follow the bar — the persona
+ * decides what the picker *offers*, not what the screen is allowed to show.
+ */
+export function scopeForFilters(
+  persona: PersonaId,
+  filters: readonly ActiveFilter[],
+): Scope {
+  const fromFilters = scopeFromFilters(filters);
+  return fromFilters ? SCOPES[fromFilters] : SCOPES[PERSONA_SCOPES[persona].defaultScope];
 }
 
 /** The label a picker shows for one option — supervisors for the field lead. */

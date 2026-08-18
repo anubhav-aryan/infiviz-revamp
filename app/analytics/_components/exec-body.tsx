@@ -1,5 +1,4 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { ReorderableGrid } from "@/app/_components/reorderable-grid";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
@@ -9,6 +8,7 @@ import { movementMatrix } from "../_data/movement-matrix";
 import { CategoryPanels } from "./category-panels";
 import { RankedList, Sparkline, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 export function ExecBody({
   view,
@@ -146,14 +146,14 @@ export function ExecBody({
               <span className={styles.panelTitle}>
                 OSA by {dim.toLowerCase()}
               </span>
-              <span className={chatStyles.askGroup}>
+              <CardActions>
                 <span className={styles.targetLegend}>
                   <span className={styles.targetLegendMark} aria-hidden="true" />
                   Target 85%
                 </span>
                 <AskInfiChatButton label={`OSA by ${dim.toLowerCase()}`} compact />
                 <ExcelDownloadButton label={`OSA by ${dim.toLowerCase()}`} compact />
-              </span>
+              </CardActions>
             </div>
             <RankedList
               rows={view.ranked[dim]}
@@ -184,10 +184,10 @@ export function ExecBody({
               movement, not the biggest number
             </div>
           </div>
-          <span className={chatStyles.askGroup}>
+          <CardActions>
             <AskInfiChatButton label="Share of shelf by store and brand" compact />
             <ExcelDownloadButton label="Share of shelf by store and brand" compact />
-          </span>
+          </CardActions>
         </div>
 
         <div className={styles.panel}>
@@ -227,8 +227,10 @@ export function ExecBody({
           <div className={styles.panel}>
             <span className={styles.panelTitle} data-gap="14">
               Biggest moves vs last month
-              <AskInfiChatButton label="Biggest moves vs last month" compact />
-              <ExcelDownloadButton label="Biggest moves vs last month" compact />
+              <CardActions>
+                <AskInfiChatButton label="Biggest moves vs last month" compact />
+                <ExcelDownloadButton label="Biggest moves vs last month" compact />
+              </CardActions>
             </span>
             {view.dumbbell.map((d) => (
               <div key={d.name} className={styles.dumbbellRow} data-tone={d.tone}>
@@ -255,7 +257,7 @@ export function ExecBody({
           <div className={styles.panel}>
             <div className={styles.lineHead}>
               <span className={styles.panelTitle}>Six-month trend</span>
-              <span className={chatStyles.askGroup}>
+              <CardActions>
                 <div className={styles.legendRow}>
                   <span className={styles.legendItem}>
                     <span
@@ -274,7 +276,7 @@ export function ExecBody({
                 </div>
                 <AskInfiChatButton label="Six-month trend" compact />
                 <ExcelDownloadButton label="Six-month trend" compact />
-              </span>
+              </CardActions>
             </div>
 
             <svg

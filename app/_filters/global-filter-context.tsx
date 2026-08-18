@@ -51,6 +51,14 @@ export type GlobalFilterApi = {
   catalogue: FilterDimension[];
   add: (filter: ActiveFilter) => void;
   remove: (filter: ActiveFilter) => void;
+  /**
+   * Replaces the whole set in one write. `add`/`remove` each call `write`,
+   * which closes over the current `params`, so a loop of them in one tick keeps
+   * only the last — any caller changing more than one filter at a time (a
+   * multi-select, a saved view, Analytics' scope picker swapping region for
+   * category) has to come through here.
+   */
+  setFilters: (filters: ActiveFilter[]) => void;
   clear: () => void;
   setDate: (token: DateToken) => void;
   /** True where the date lives in the path, so the bar links instead of writing `?d=`. */
@@ -226,6 +234,11 @@ export function GlobalFilterProvider({
     [filters, date, write],
   );
 
+  const setFilters = useCallback(
+    (next: ActiveFilter[]) => write(next.slice(0, MAX_FILTERS), date),
+    [date, write],
+  );
+
   const clear = useCallback(() => write([], DEFAULT_DATE), [write]);
 
   const setDate = useCallback(
@@ -234,8 +247,18 @@ export function GlobalFilterProvider({
   );
 
   const value = useMemo(
-    () => ({ filters, date, catalogue, add, remove, clear, setDate, dateInPath }),
-    [filters, date, catalogue, add, remove, clear, setDate, dateInPath],
+    () => ({
+      filters,
+      date,
+      catalogue,
+      add,
+      remove,
+      setFilters,
+      clear,
+      setDate,
+      dateInPath,
+    }),
+    [filters, date, catalogue, add, remove, setFilters, clear, setDate, dateInPath],
   );
 
   return (

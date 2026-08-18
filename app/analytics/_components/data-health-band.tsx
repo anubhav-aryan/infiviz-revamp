@@ -1,11 +1,11 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Hint } from "@/app/_components/hint";
 import { Icon } from "@/app/_components/icon";
 import { linePoints } from "@/app/_charts/geom";
 import type { MonthKey } from "@/app/_time/periods";
 import { DATA_HEALTH, dataHealthTiles } from "../_data/data-health";
 import styles from "./analytics.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /**
  * Top-of-funnel data health, directly under the filter bar and above every
@@ -67,9 +67,9 @@ export function DataHealthBand({ month }: { month: MonthKey }) {
       <div className={styles.healthTile}>
         <div className={styles.healthLabel}>
           {tiles.trend.label}
-          <span className={chatStyles.askGroup}>
+          <CardActions>
             <AskInfiChatButton label="Auditable share" compact />
-          </span>
+          </CardActions>
         </div>
         <div className={styles.healthPair}>
           <span className={styles.healthValue}>{tiles.trend.value}</span>

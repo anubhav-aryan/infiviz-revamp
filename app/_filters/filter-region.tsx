@@ -2,6 +2,7 @@
 
 import { Suspense, type ReactNode } from "react";
 import {
+  BARLESS_SCOPES,
   DATE_IN_PATH,
   FILTER_SCOPES,
   SCOPE_SEEDS,
@@ -21,7 +22,15 @@ import styles from "./global-filter-bar.module.css";
  * be right for the unfiltered case and would flash on every filtered arrival.
  * The content below it is unaffected either way.
  */
-export function FilterRegion({
+/**
+ * The provider alone, no bar.
+ *
+ * Split out because the two-rail shell needs the filter state to reach its
+ * *rail* — Analytics' scope picker is a filter control that lives beside the
+ * content rather than above it — while the bar still belongs inside `<main>`.
+ * A provider that wrapped only the content could not serve both.
+ */
+export function FilterProvider({
   scope,
   children,
 }: {
@@ -35,13 +44,47 @@ export function FilterRegion({
         dateInPath={DATE_IN_PATH.has(scope)}
         seed={SCOPE_SEEDS[scope]}
       >
-        {/* `display: contents` — this element exists only to publish the bar's
-            height to the screens below it, not to add a box. */}
-        <div className={styles.region}>
-          <GlobalFilterBar />
-          {children}
-        </div>
+        {children}
       </GlobalFilterProvider>
     </Suspense>
+  );
+}
+
+/**
+ * The bar itself, for a screen already inside a `FilterProvider`. Scopes in
+ * `BARLESS_SCOPES` render their content and no bar — Store Explorer has its own
+ * chip row, and a bar above it would be a second copy of the same control.
+ */
+export function FilterBar({
+  scope,
+  children,
+}: {
+  scope: FilterScopeId;
+  children: ReactNode;
+}) {
+  if (BARLESS_SCOPES.has(scope)) return <>{children}</>;
+
+  return (
+    /* `display: contents` — this element exists only to publish the bar's
+       height to the screens below it, not to add a box. */
+    <div className={styles.region}>
+      <GlobalFilterBar />
+      {children}
+    </div>
+  );
+}
+
+/** Provider and bar together, for the single-column shell. */
+export function FilterRegion({
+  scope,
+  children,
+}: {
+  scope: FilterScopeId;
+  children: ReactNode;
+}) {
+  return (
+    <FilterProvider scope={scope}>
+      <FilterBar scope={scope}>{children}</FilterBar>
+    </FilterProvider>
   );
 }

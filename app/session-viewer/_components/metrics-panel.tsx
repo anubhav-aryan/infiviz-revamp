@@ -12,6 +12,7 @@ import {
   type SessionIdentity,
 } from "../_data/session-viewer";
 import styles from "./session-viewer.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 type MetricsPanelProps = {
   session: SessionIdentity;
@@ -85,11 +86,15 @@ export function MetricsPanel({ session, visit }: MetricsPanelProps) {
               <Icon name="info" size={13} />
             </Hint>
             <span className={styles.availabilityValue}>{AVAILABILITY.value}</span>
+          </div>
+          {/* A sibling of the metric rather than part of it — the button acts on
+              the card, and nested in that row it hugged the figure. */}
+          <CardActions>
             <CreateTicketButton
               context={{ region: retailer, metric: AVAILABILITY.label }}
               compact
             />
-          </div>
+          </CardActions>
         </div>
 
         <div className={styles.mslNote}>{AVAILABILITY.note}</div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/app/_components/icon";
+import actions from "@/app/_components/card-actions.module.css";
 import styles from "./excel-download-button.module.css";
 
 type State = "idle" | "preparing" | "done";
@@ -42,18 +43,18 @@ export function ExcelDownloadButton({
 
   const text =
     state === "preparing" ? "Preparing…" : state === "done" ? "Ready" : "Excel";
-  const icon = state === "preparing" ? "refresh-cw" : state === "done" ? "check" : "file-spreadsheet";
+  const icon = state === "preparing" ? "refresh-cw" : state === "done" ? "check" : "file-down";
 
   return (
     <button
       type="button"
-      className={styles.excelButton}
+      className={`${styles.excelButton} ${actions.tip}`}
       data-compact={compact}
       data-state={state}
       onClick={start}
       disabled={state !== "idle"}
       aria-label={`Download ${label} as Excel`}
-      title={`Download ${label} as Excel`}
+      data-tip="Download as Excel"
     >
       <Icon name={icon} size={12} className={styles.icon} />
       {compact ? null : text}

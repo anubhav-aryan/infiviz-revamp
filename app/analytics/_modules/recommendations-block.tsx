@@ -1,11 +1,12 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { CreateTicketButton } from "@/app/_components/create-ticket-button";
 import { Hint } from "@/app/_components/hint";
 import { Icon } from "@/app/_components/icon";
 import type { MonthKey } from "@/app/_time/periods";
+import type { PersonaId } from "../_data/module-matrix";
 import { recommendationsFor, type Recommendation } from "../_data/recommendations";
 import styles from "./module.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /**
  * Store-level recommendations, each showing the reasoning it came from.
@@ -26,10 +27,13 @@ import styles from "./module.module.css";
  * the assignee picker already runs down to merchandiser level.
  */
 export function RecommendationsBlock({
+  persona,
   month,
   monthLabel,
   scopeLabel,
 }: {
+  /** Who is reading, and therefore who is raising — it decides the assignee list. */
+  persona: PersonaId;
   month: MonthKey;
   monthLabel: string;
   scopeLabel: string;
@@ -63,6 +67,7 @@ export function RecommendationsBlock({
         {recommendations.map((rec) => (
           <RecommendationCard
             key={rec.id}
+            persona={persona}
             rec={rec}
             monthLabel={monthLabel}
             scopeLabel={scopeLabel}
@@ -74,10 +79,12 @@ export function RecommendationsBlock({
 }
 
 function RecommendationCard({
+  persona,
   rec,
   monthLabel,
   scopeLabel,
 }: {
+  persona: PersonaId;
   rec: Recommendation;
   monthLabel: string;
   scopeLabel: string;
@@ -92,9 +99,10 @@ function RecommendationCard({
             <span className={styles.recRetailer}>{rec.retailer}</span>
           </span>
         </div>
-        <span className={chatStyles.askGroup}>
+        <CardActions>
           <AskInfiChatButton label={`Recommendation — ${rec.storeName}`} compact />
           <CreateTicketButton
+            persona={persona}
             context={{
               region: scopeLabel,
               metric: `Recommendation — ${rec.action}`,
@@ -102,7 +110,7 @@ function RecommendationCard({
             }}
             compact
           />
-        </span>
+        </CardActions>
       </div>
 
       {/* The reasoning comes first, deliberately. */}

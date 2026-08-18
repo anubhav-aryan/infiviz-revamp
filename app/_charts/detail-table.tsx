@@ -1,9 +1,9 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import type { Column, Row } from "./table";
 import { MeasureTable } from "./measure-table";
 import styles from "./charts.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /**
  * The "actual vs target" detail tables that sit at the bottom of every Gap
@@ -52,11 +52,11 @@ export function DetailTable({
           <div className={styles.cardTitle}>{title}</div>
           {caption ? <div className={styles.cardCaption}>{caption}</div> : null}
         </div>
-        <span className={chatStyles.askGroup}>
+        <CardActions>
           {action}
           <AskInfiChatButton label={title} compact />
           <ExcelDownloadButton label={title} compact />
-        </span>
+        </CardActions>
       </div>
 
       <MeasureTable

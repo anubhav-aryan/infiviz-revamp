@@ -1,0 +1,60 @@
+/* The trailing action group in a card header, and the tooltip its buttons wear.
+
+   Both live here rather than in each button's own module because the three
+   buttons come from three different files and have to look like one control
+   set — the geometry is the contract between them. */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Pins the group right whatever else the header holds — see CardActions. */
+  margin-left: auto;
+  flex: none;
+}
+
+/* ---------- the hover explanation ----------
+   Applied by the three buttons themselves rather than by a wrapper. `Hint`
+   would have been the reuse, but it renders its own `tabIndex={0}` span: that
+   is a second tab stop per button, its reveal is `:focus-visible` on the
+   wrapper (so tabbing to the button inside shows nothing), and its screen
+   reader copy would double the `aria-label` these buttons already carry.
+
+   As a pseudo-element this is invisible to assistive tech by construction, and
+   the button's own `aria-label` stays the accessible name. */
+
+.tip {
+  position: relative;
+}
+
+.tip::after {
+  content: attr(data-tip);
+  display: none;
+  position: absolute;
+  /* Below, not above: these sit in a header at the top of a card, and
+     `.tableCard` clips its overflow — a bubble above would be cut off. */
+  top: calc(100% + 8px);
+  /* Anchored right because the group now sits at the card's right edge; a
+     centred bubble would hang over it. */
+  right: 0;
+  z-index: 20;
+  width: max-content;
+  max-width: 240px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--neutral-900);
+  color: var(--neutral-50);
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: left;
+  white-space: normal;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+}
+
+.tip:hover::after,
+.tip:focus-visible::after {
+  display: block;
+}

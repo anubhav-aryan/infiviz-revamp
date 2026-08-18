@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { Avatar, PRIORITY_LABEL, Pill, STATUS_LABEL } from "./bits";
@@ -12,6 +11,7 @@ import { originHref } from "../_data/ticket-context";
 import { markerByKey } from "../_data/issue-instances";
 import { merchandiserByHandle, personById } from "../_data/people";
 import styles from "./tickets.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /**
  * Ticket detail, as a right-hand slide-over.
@@ -116,23 +116,37 @@ export function TicketPanel({
         </header>
 
         <div className={styles.panelBody}>
-          <span className={chatStyles.askGroup}>
+          {/* The title is the header here, not a member of the action group —
+              inside it the buttons hugged the heading instead of sitting at
+              the panel's edge. */}
+          <div className={styles.panelTitleRow}>
             <h2 className={styles.panelTitle}>{ticket.title}</h2>
-            <AskInfiChatButton label={ticket.title} compact />
-            <ExcelDownloadButton label={ticket.title} compact />
-          </span>
+            <CardActions>
+              <AskInfiChatButton label={ticket.title} compact />
+              <ExcelDownloadButton label={ticket.title} compact />
+            </CardActions>
+          </div>
           <p className={styles.panelDetail}>{ticket.detail}</p>
 
           {/* Replays the filter scope the ticket was raised under, so this
               lands on the numbers it is actually about rather than a default
-              dashboard showing different ones. */}
-          {ticket.source ? (
+              dashboard showing different ones.
+
+              Gated on either half: the authored fixtures carry a `source` and
+              no origin, while anything raised through the UI carries an origin
+              and no source. Gating on `source` alone — as this did — made the
+              round-trip unreachable for exactly the tickets that had a real
+              one to offer. */}
+          {ticket.origin?.from || ticket.source ? (
             <Link
-              href={originHref(ticket.origin ?? {}, SOURCES[ticket.source].href)}
+              href={originHref(
+                ticket.origin ?? {},
+                ticket.source ? SOURCES[ticket.source].href : "/tickets",
+              )}
               className={styles.sourceLink}
             >
               <Icon name="star" size={13} />
-              Raised from {SOURCES[ticket.source].label}
+              Raised from {ticket.source ? SOURCES[ticket.source].label : "this view"}
               <Icon name="arrow-up-right" size={13} />
             </Link>
           ) : null}

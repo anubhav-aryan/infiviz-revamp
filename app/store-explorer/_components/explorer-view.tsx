@@ -1,5 +1,4 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { DimensionMenu } from "@/app/_filters/dimension-menu";
@@ -19,6 +18,7 @@ import { TimeControl } from "./time-control";
 import { VietnamMap } from "./vietnam-map";
 import { VisitGallery, VisitList } from "./visit-list";
 import styles from "./store-explorer.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 type ExplorerViewProps = {
   view: View;
@@ -218,7 +218,7 @@ export function ExplorerView({
               <span className={styles.panelTitle}>
                 Visited stores · {view.periodLabel}
               </span>
-              <span className={chatStyles.askGroup}>
+              <CardActions>
                 <div className={styles.legend}>
                   <span className={styles.legendItem}>
                     <span
@@ -244,7 +244,7 @@ export function ExplorerView({
                 </div>
                 <AskInfiChatButton label="Visited stores" compact />
                 <ExcelDownloadButton label="Visited stores" compact />
-              </span>
+              </CardActions>
             </div>
             <VietnamMap pins={view.pins} />
           </div>
@@ -253,11 +253,11 @@ export function ExplorerView({
         <div className={`${styles.card} ${styles.listPanel}`}>
           <div className={styles.listHead}>
             <span className={styles.panelTitle}>{view.visitsLabel}</span>
-            <span className={chatStyles.askGroup}>
+            <CardActions>
               <span className={styles.listHint}>Tap a row to open App Images</span>
               <AskInfiChatButton label={view.visitsLabel} compact />
               <ExcelDownloadButton label={view.visitsLabel} compact />
-            </span>
+            </CardActions>
           </div>
 
           {listView === "list" ? (

@@ -1,13 +1,13 @@
 "use client";
 
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { COVERAGE_REGION_ACCESSORS } from "@/app/merch-activity/_data/accessors";
 import { MERCH_ACTIVITY } from "@/app/merch-activity/_data/merch-activity";
 import { useNarrowed } from "@/app/_filters/use-narrowed";
 import { CURRENT_MONTH } from "@/app/_time/periods";
 import styles from "./landing.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /** Same bar-list treatment as the onboarding screen's "Visits by retailer". */
 
@@ -22,11 +22,11 @@ export function RegionalCoverage() {
     <div className={`${styles.card} ${styles.retailerCard}`}>
       <div className={`${styles.cardHead} ${styles.retailerHead}`}>
         <div className={styles.cardTitle}>Coverage by region</div>
-        <span className={chatStyles.askGroup}>
+        <CardActions>
           <div className={styles.cardCaption}>% of estate audited</div>
           <AskInfiChatButton label="Coverage by region" compact />
           <ExcelDownloadButton label="Coverage by region" compact />
-        </span>
+        </CardActions>
       </div>
       {regions.map((region) => (
         <div key={region.name} className={styles.retailerRow}>

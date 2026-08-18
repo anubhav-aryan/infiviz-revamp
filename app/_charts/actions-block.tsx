@@ -7,6 +7,7 @@ import { Pie } from "./radial";
 import { StatCard, type StatCardProps } from "./stat-card";
 import type { Column, Row } from "./table";
 import styles from "./charts.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /**
  * The Actions tab, whole. Category Management, Availability, Revenue and Space
@@ -52,8 +53,10 @@ export function ActionsBlock({ data }: { data: ActionsBlockData }) {
         <div className={`${styles.card} ${styles.cardPad}`}>
           <div className={styles.cardHead}>
             <div className={styles.cardTitle}>Open vs closed tasks</div>
-            <AskInfiChatButton label="Open vs closed tasks" compact />
-            <ExcelDownloadButton label="Open vs closed tasks" compact />
+            <CardActions>
+              <AskInfiChatButton label="Open vs closed tasks" compact />
+              <ExcelDownloadButton label="Open vs closed tasks" compact />
+            </CardActions>
           </div>
           <Pie data={data.openClosed} />
         </div>
@@ -61,8 +64,10 @@ export function ActionsBlock({ data }: { data: ActionsBlockData }) {
         <div className={`${styles.card} ${styles.cardPad}`}>
           <div className={styles.cardHead}>
             <div className={styles.cardTitle}>{data.reasons.title}</div>
-            <AskInfiChatButton label={data.reasons.title} compact />
-            <ExcelDownloadButton label={data.reasons.title} compact />
+            <CardActions>
+              <AskInfiChatButton label={data.reasons.title} compact />
+              <ExcelDownloadButton label={data.reasons.title} compact />
+            </CardActions>
           </div>
           <div className={styles.chartBody}>
             {/* Reason codes are sentences, not names — they need the room. */}
@@ -74,8 +79,10 @@ export function ActionsBlock({ data }: { data: ActionsBlockData }) {
         <div className={`${styles.card} ${styles.cardPad}`}>
           <div className={styles.cardHead}>
             <div className={styles.cardTitle}>{data.byCategory.title}</div>
-            <AskInfiChatButton label={data.byCategory.title} compact />
-            <ExcelDownloadButton label={data.byCategory.title} compact />
+            <CardActions>
+              <AskInfiChatButton label={data.byCategory.title} compact />
+              <ExcelDownloadButton label={data.byCategory.title} compact />
+            </CardActions>
           </div>
           <div className={styles.chartBody}>
             <HBarList rows={data.byCategory.rows} nameWidth="minmax(110px, 32%)" />
@@ -88,8 +95,10 @@ export function ActionsBlock({ data }: { data: ActionsBlockData }) {
         <div className={`${styles.card} ${styles.tableCard}`}>
           <div className={styles.tabbedHead}>
             <div className={styles.cardTitle}>{data.completion.title}</div>
-            <AskInfiChatButton label={data.completion.title} compact />
-            <ExcelDownloadButton label={data.completion.title} compact />
+            <CardActions>
+              <AskInfiChatButton label={data.completion.title} compact />
+              <ExcelDownloadButton label={data.completion.title} compact />
+            </CardActions>
           </div>
           <MeasureTable
             columns={data.completion.columns}
@@ -102,8 +111,10 @@ export function ActionsBlock({ data }: { data: ActionsBlockData }) {
         <div className={`${styles.card} ${styles.tableCard}`}>
           <div className={styles.tabbedHead}>
             <div className={styles.cardTitle}>{data.raw.title}</div>
-            <AskInfiChatButton label={data.raw.title} compact />
-            <ExcelDownloadButton label={data.raw.title} compact />
+            <CardActions>
+              <AskInfiChatButton label={data.raw.title} compact />
+              <ExcelDownloadButton label={data.raw.title} compact />
+            </CardActions>
           </div>
           <MeasureTable
             columns={data.raw.columns}

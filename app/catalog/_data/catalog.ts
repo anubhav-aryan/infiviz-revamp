@@ -46,7 +46,7 @@ export const CATEGORIES: Category[] = [
     packshot: 79,
     openable: false,
   },
-  /* The remaining three carry the names `analytics/_data/category-sos.ts`
+  /* The remaining three carry the names `analytics/_data/category-metrics.ts`
      publishes, so the catalogue and the dashboards agree on how many
      categories this account has. Only Toothpaste has a SKU list behind it, so
      the rest stay inert like Toothbrush. */

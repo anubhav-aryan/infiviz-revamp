@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { ExportButton } from "@/app/_export/export-button";
 import type { CsvTable } from "@/app/_export/csv";
@@ -17,6 +16,7 @@ import {
 } from "../_data/journey-plans";
 import { GridRow, ResizableGrid } from "./resizable-grid";
 import styles from "./master-data.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /** Serialized here, from the same rows the table renders below. */
 function planCsv(rows: PlanRow[]): CsvTable {
@@ -113,7 +113,7 @@ export function JourneyPlansBoard({ month }: { month: MonthKey }) {
       <div className={styles.calendarCard}>
         <div className={styles.calendarHead}>
           <span className={styles.tableTitle}>Planned vs completed visits</span>
-          <span className={chatStyles.askGroup}>
+          <CardActions>
             <div className={styles.legend}>
               <span className={styles.legendItem}>
                 <span className={styles.legendSwatch} data-tone="completed" />
@@ -126,7 +126,7 @@ export function JourneyPlansBoard({ month }: { month: MonthKey }) {
             </div>
             <AskInfiChatButton label="Planned vs completed visits" compact />
             <ExcelDownloadButton label="Planned vs completed visits" compact />
-          </span>
+          </CardActions>
         </div>
 
         <div className={styles.weekRow}>
@@ -184,8 +184,10 @@ export function JourneyPlansBoard({ month }: { month: MonthKey }) {
       <div className={styles.tableCard}>
         <div className={styles.plansTitle}>
           Plans by merchandiser
-          <AskInfiChatButton label="Plans by merchandiser" compact />
-          <ExcelDownloadButton label="Plans by merchandiser" compact />
+          <CardActions>
+            <AskInfiChatButton label="Plans by merchandiser" compact />
+            <ExcelDownloadButton label="Plans by merchandiser" compact />
+          </CardActions>
         </div>
 
         <ResizableGrid tableKey="plans" columns={PLAN_COLUMNS}>

@@ -2,15 +2,10 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import {
-  parseFilters,
-  serializeFilters,
-  type ActiveFilter,
-} from "@/app/_filters/model";
-import { useFilters } from "@/app/_filters/use-filters";
+import { useGlobalFilters } from "@/app/_filters/global-filter-context";
+import type { ActiveFilter } from "@/app/_filters/model";
 import { parsePeriod, serializePeriod, type Period } from "../_data/period";
 import {
-  CATALOGUE,
   build,
   factsFor,
   photosFor,
@@ -23,15 +18,19 @@ import { PhotoLightbox } from "./photo-lightbox";
 import styles from "./store-explorer.module.css";
 
 /**
- * Store Explorer owns its own filters again.
+ * Store Explorer keeps its own filter row and shares the state behind it.
  *
- * The global bar covers the two dashboards, where the question is "what slice
- * of the business am I looking at". This screen is asking a different one —
- * which stores were visited, over what period — so it carries its own row
- * rather than borrowing a bar scoped to somebody else's question.
+ * The row stays because this screen asks a different question — which stores
+ * were visited, over what period — and a bar scoped to a dashboard's question
+ * sitting above it would be a second copy of the same control. But the *set* is
+ * now the global one: the catalogue was always the canonical registry and the
+ * serialization was always the bar's own `?f=`, so the two were the same data
+ * behind two providers, free to disagree the moment you navigated between them.
+ * A slice chosen here is the slice the dashboards open on, and the reverse.
  *
- * The catalogue is still the canonical one from `_filters/registry.ts`, so a
- * filter set means the same thing here as it does on a dashboard.
+ * The period does not join it. This screen's is day-grained (`DayRef`) and the
+ * global date resolves to a month; folding one into the other would throw the
+ * day away.
  */
 export function StoreExplorer() {
   return (
@@ -43,6 +42,9 @@ export function StoreExplorer() {
 
 const PATH = "/store-explorer";
 
+/** Stable identity for the no-provider case, so the memos below don't churn. */
+const EMPTY_FILTERS: ActiveFilter[] = [];
+
 function StoreExplorerInner() {
   const router = useRouter();
   const params = useSearchParams();
@@ -50,8 +52,11 @@ function StoreExplorerInner() {
   const [period, setPeriod] = useState<Period>(() =>
     parsePeriod(params.get("period")),
   );
-  const [initialFilters] = useState(() => parseFilters(params.get("f"), CATALOGUE));
-  const { filters, add, remove, clear, replace } = useFilters(initialFilters);
+  /* `?f=` is read and written by the provider now, not here. Outside one there
+     is nothing to filter with, which is the same contract every other consumer
+     of this hook follows. */
+  const api = useGlobalFilters();
+  const filters = api?.filters ?? EMPTY_FILTERS;
 
   // Carries the visit the "images" screen is drilled into, so Open shows the
   // row that was actually clicked instead of a fixed fixture regardless of
@@ -66,21 +71,19 @@ function StoreExplorerInner() {
 
   const current = params.toString();
 
-  /* State is upstream of the URL here, which is the right way round for a
-     screen that owns its own filters: the row is the source of truth and the
-     query string is how it is shared. */
+  /* Only the period is written here — the provider owns `?f=`. Merging rather
+     than rebuilding the query, so this does not clobber the filters it writes. */
   useEffect(() => {
-    const query = new URLSearchParams();
+    const query = new URLSearchParams(current);
     const encodedPeriod = serializePeriod(period);
     if (encodedPeriod) query.set("period", encodedPeriod);
-    const encodedFilters = serializeFilters(filters);
-    if (encodedFilters) query.set("f", encodedFilters);
+    else query.delete("period");
 
     const next = query.toString();
     if (next === current) return;
-    // `replace`, not `push`: removing a chip is not a place to go back to.
+    // `replace`, not `push`: changing the period is not a place to go back to.
     router.replace(next ? `${PATH}?${next}` : PATH, { scroll: false });
-  }, [period, filters, current, router]);
+  }, [period, current, router]);
 
   const facts = useMemo(() => factsFor(period), [period]);
 
@@ -94,9 +97,9 @@ function StoreExplorerInner() {
   const applySavedView = useCallback(
     (savedPeriod: Period, savedFilters: ActiveFilter[]) => {
       setPeriod(savedPeriod);
-      replace(savedFilters);
+      api?.setFilters(savedFilters);
     },
-    [replace],
+    [api],
   );
 
   const openImages = useCallback((visit: Visit) => {
@@ -130,9 +133,9 @@ function StoreExplorerInner() {
           period={period}
           onPeriodChange={setPeriod}
           filters={filters}
-          onAddFilter={add}
-          onRemoveFilter={remove}
-          onClearFilters={clear}
+          onAddFilter={(filter) => api?.add(filter)}
+          onRemoveFilter={(filter) => api?.remove(filter)}
+          onClearFilters={() => api?.clear()}
           onApplySavedView={applySavedView}
           mapOpen={mapOpen}
           onToggleMap={() => setMapOpen((open) => !open)}

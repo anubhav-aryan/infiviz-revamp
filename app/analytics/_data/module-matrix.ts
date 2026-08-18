@@ -195,46 +195,29 @@ export const MODULES: Record<ModuleId, ModuleDef> = {
 };
 
 /**
- * Which modules each persona sees, in rail order.
+ * Which modules each persona sees.
  *
- * Assignment rule: a module belongs to the persona whose decision it changes.
- * Overlap is intentional and listed explicitly rather than derived, so a change
- * here is a visible change to someone's job rather than a side effect.
+ * Every persona sees every module. This was a hand-authored allow-list per
+ * persona, on the rule that a module belongs to whoever it changes a decision
+ * for — which reads well until you are an executive who wants to look at the
+ * shelving blocks, or a field supervisor asked about a category's revenue, and
+ * the rail simply does not offer it. Worse, switching persona while reading a
+ * module the next persona did not "own" bounced you to their landing screen
+ * without saying why.
+ *
+ * Nothing in the data layer was ever persona-aware, so this cost nothing to
+ * open: `ModuleScreen` resolves persona to a *scope* and every module builds
+ * from that, so the modules a persona could not reach were always able to
+ * render for them. What the persona still decides is the scope — national, a
+ * region, or a category — which is the difference that was doing the real work
+ * all along.
+ *
+ * Derived from `MODULES` rather than listed four times, so a new module appears
+ * for everyone and cannot be forgotten in one of the four lists.
  */
-export const PERSONA_MODULES: Record<PersonaId, ModuleId[]> = {
-  /* Owns the national P&L, so pricing compliance is theirs as much as
-     availability is. */
-  exec: [
-    "perfect-store",
-    "roi",
-    "category-management",
-    "availability",
-    "revenue",
-    "store-management",
-  ],
-  /* Owns the programme's return inside one region, which is why ROI is here
-     and not only at the top. */
-  regional: [
-    "perfect-store",
-    "availability",
-    "revenue",
-    "space",
-    "roi",
-    "merchandiser",
-    "store-management",
-  ],
-  category: [
-    "category-management",
-    "availability",
-    "revenue",
-    "space",
-    "shelving",
-    "store-management",
-  ],
-  /* Category Management is gone: which brands to range is a category lead's
-     decision, and a supervisor cannot act on it tomorrow. */
-  field: ["perfect-store", "availability", "merchandiser", "store-management"],
-};
+export const PERSONA_MODULES: Record<PersonaId, ModuleId[]> = Object.fromEntries(
+  PERSONAS.map((persona) => [persona.id, Object.keys(MODULES) as ModuleId[]]),
+) as Record<PersonaId, ModuleId[]>;
 
 /**
  * The order rail groups appear in, for every persona.

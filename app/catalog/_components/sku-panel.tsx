@@ -5,6 +5,7 @@ import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { Icon } from "@/app/_components/icon";
 import { OWNERSHIP_LABEL, RANGED_EXAMPLES, SKUS, skuAttributes } from "../_data/catalog";
 import styles from "./catalog.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 function accuracyTone(accuracy: number): "good" | "fair" | "low" {
   if (accuracy >= 90) return "good";
@@ -76,7 +77,9 @@ export function SkuPanel({ index, onClose }: SkuPanelProps) {
 
           <div className={styles.panelTitleRow}>
             <h2 className={styles.panelTitle}>{sku.name}</h2>
-            <ExcelDownloadButton label={sku.name} compact />
+            <CardActions>
+              <ExcelDownloadButton label={sku.name} compact />
+            </CardActions>
           </div>
 
           <span className={styles.ownershipTag} data-ownership={sku.ownership}>
@@ -139,7 +142,9 @@ export function SkuPanel({ index, onClose }: SkuPanelProps) {
             <div className={styles.rangedTitle}>
               <Icon name="store" aria-hidden="true" />
               Ranged in {sku.ranged} stores
-              <ExcelDownloadButton label={`${sku.name} — ranged stores`} compact />
+              <CardActions>
+                <ExcelDownloadButton label={`${sku.name} — ranged stores`} compact />
+              </CardActions>
             </div>
             <div className={styles.rangedBody}>{RANGED_EXAMPLES}</div>
           </div>

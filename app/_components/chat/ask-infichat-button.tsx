@@ -2,6 +2,7 @@
 
 import { Icon } from "@/app/_components/icon";
 import { useChatPane } from "./chat-pane-context";
+import actions from "@/app/_components/card-actions.module.css";
 import styles from "./chat.module.css";
 
 /**
@@ -28,7 +29,7 @@ export function AskInfiChatButton({
   return (
     <button
       type="button"
-      className={styles.askButton}
+      className={`${styles.askButton} ${actions.tip}`}
       data-compact={compact}
       // Card headers sometimes sit inside a larger clickable row (an
       // expandable table row, a card that links out) — this button's click
@@ -38,9 +39,11 @@ export function AskInfiChatButton({
         openChat({ label });
       }}
       aria-label={`Ask InfiChat about ${label}`}
-      title={`Ask InfiChat about ${label}`}
+      /* The bubble stays generic; the accessible name keeps the card's own
+         name, which is the part a screen reader needs to tell two apart. */
+      data-tip="Ask InfiChat about this"
     >
-      <Icon name="sparkles" size={12} />
+      <Icon name="message-circle-question-mark" size={12} />
       {compact ? null : "Ask InfiChat"}
     </button>
   );

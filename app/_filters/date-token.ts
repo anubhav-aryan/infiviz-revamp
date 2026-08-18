@@ -1,3 +1,4 @@
+import { CURRENT_MONTH, MONTHS, type MonthKey } from "@/app/_time/periods";
 import {
   CUSTOM_RANGE_MAX,
   CUSTOM_RANGE_MIN,
@@ -59,6 +60,15 @@ export function parseDate(raw: string | null | undefined): DateToken {
 
 export function dateLabel(token: DateToken): string {
   if (token.preset === "custom" && token.custom) {
+    /* A range that is exactly one authored month reads as that month. This is
+       the shape `monthToDate` produces, so a month picked on a module screen
+       shows up in the bar as "June 2026" rather than as its two end dates. */
+    const whole = MONTHS.find(
+      (month) =>
+        token.custom?.start === `${month.key}-01` &&
+        token.custom?.end === `${month.key}-${String(month.days).padStart(2, "0")}`,
+    );
+    if (whole) return whole.label;
     return `${token.custom.start} → ${token.custom.end}`;
   }
   return DATE_PRESETS.find((p) => p.id === token.preset)?.label ?? "Today";
@@ -67,4 +77,29 @@ export function dateLabel(token: DateToken): string {
 /** True when the token is the default, so the bar can omit it from the URL. */
 export function isDefaultDate(token: DateToken): boolean {
   return token.preset === DEFAULT_DATE.preset && !token.custom;
+}
+
+/**
+ * The token that means "this authored month" — the inverse of `presetToMonth`.
+ *
+ * A month has no preset of its own (`today`/`mtd` all collapse to the current
+ * one), so it is expressed as the custom range covering it; `presetToMonth`
+ * resolves a custom range by the month containing its `end`, which makes the
+ * round-trip exact. This is what lets a month picker write to the global date
+ * instead of keeping a `?month=` of its own beside it.
+ *
+ * It lives here rather than next to `presetToMonth` because `_time/presets`
+ * knows nothing about `DateToken` — the dependency runs this way, and reversing
+ * it would be a cycle.
+ */
+export function monthToDate(month: MonthKey): DateToken {
+  const entry = MONTHS.find((candidate) => candidate.key === month);
+  if (!entry || month === CURRENT_MONTH) return DEFAULT_DATE;
+  return {
+    preset: "custom",
+    custom: {
+      start: `${month}-01`,
+      end: `${month}-${String(entry.days).padStart(2, "0")}`,
+    },
+  };
 }

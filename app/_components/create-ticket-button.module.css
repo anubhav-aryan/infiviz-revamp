@@ -15,6 +15,9 @@
   font-weight: 700;
   white-space: nowrap;
   text-decoration: none;
+  /* A <button> now, not a link — it opens the compose panel in place rather
+     than navigating to Tickets to do it. */
+  font-family: inherit;
   cursor: pointer;
   transition: background var(--transition-snap);
 }

@@ -1,5 +1,4 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { ExportButton } from "@/app/_export/export-button";
 import type { CsvTable } from "@/app/_export/csv";
@@ -16,6 +15,7 @@ import {
 import { BreakdownTile } from "./breakdown-tile";
 import { GridRow, ResizableGrid } from "./resizable-grid";
 import styles from "./master-data.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /** Serialized here, from the same rows the table renders below. */
 function taskCsv(rows: TaskRow[]): CsvTable {
@@ -76,11 +76,11 @@ export function TasksBoard() {
       <div className={styles.tableCard}>
         <div className={styles.tableHead}>
           <span className={styles.tableTitle}>{TASKS_TABLE.count}</span>
-          <span className={chatStyles.askGroup}>
+          <CardActions>
             <span className={styles.tableCount}>{TASKS_TABLE.showing}</span>
             <AskInfiChatButton label={TASKS_TABLE.count} compact />
             <ExcelDownloadButton label={TASKS_TABLE.count} compact />
-          </span>
+          </CardActions>
         </div>
 
         <ResizableGrid tableKey="tasks" columns={TASK_COLUMNS}>

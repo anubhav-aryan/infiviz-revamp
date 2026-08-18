@@ -11,6 +11,7 @@ import { TicketFilters, type TicketFilterState, EMPTY_FILTERS } from "./ticket-f
 import { TicketList } from "./ticket-list";
 import { TicketPanel } from "./ticket-panel";
 import {
+  TICKETS,
   TODAY_LABEL,
   nameFor,
   ticketsForPersona,
@@ -19,6 +20,7 @@ import {
   type TicketStatus,
 } from "../_data/tickets";
 import { ticketContextFromParams, type TicketContext } from "../_data/ticket-context";
+import { useCreatedTickets } from "../_data/use-created-tickets";
 import { PERSONA_ACTOR } from "../_data/people";
 import styles from "./tickets.module.css";
 
@@ -35,8 +37,9 @@ import styles from "./tickets.module.css";
  * person can also close by hand, which is what a ticket resolved out of band,
  * or raised in error, needs.
  *
- * All state is local and nothing persists — this is a mockup of the workflow,
- * not a ticket store.
+ * Status changes and deletions are local to the session — this is a mockup of
+ * the workflow. Tickets raised through the UI are the exception: they persist,
+ * because the toast that confirms one promises a ticket to go and look at.
  */
 
 const VIEWS = [
@@ -58,7 +61,10 @@ export function Tickets() {
      visibly narrows it, which is the point of the control. */
   const [persona, setPersona] = useState<string>("exec");
   const [view, setView] = useState<"list" | "board">("list");
-  const [openKey, setOpenKey] = useState<string | null>(null);
+  /* `?ticket=TIC-118` opens straight onto one — how the toast raised by a
+     "Create ticket" button elsewhere hands the new ticket over, and what the
+     chart's ticket-raised marker links to. */
+  const [openKey, setOpenKey] = useState<string | null>(() => params.get("ticket"));
   /** Status changed by hand this session, over the authored fixture. */
   const [moved, setMoved] = useState<
     Record<string, { status: TicketStatus; closedOn?: string }>
@@ -76,7 +82,14 @@ export function Tickets() {
     return context ? { open: true, context } : { open: false };
   });
 
-  const forPersona = useMemo(() => ticketsForPersona(persona), [persona]);
+  /* Raised through the UI, newest first, ahead of the authored fixtures — then
+     scoped by the same reporting-hierarchy rule, so a created ticket needs no
+     special case to land in front of the right personas. */
+  const created = useCreatedTickets();
+  const forPersona = useMemo(
+    () => ticketsForPersona(persona, [...created, ...TICKETS]),
+    [persona, created],
+  );
 
   const visible = useMemo(
     () =>

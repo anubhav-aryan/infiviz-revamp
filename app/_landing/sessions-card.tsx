@@ -6,6 +6,7 @@ import { Segmented } from "@/app/_charts/segmented";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { MONTHS, SESSIONS_CARD, WEEKS, type SessionsMode } from "./_data/landing";
 import styles from "./landing.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /**
  * Sessions by month or by week.
@@ -40,8 +41,10 @@ export function SessionsCard() {
             onChange={setMode}
             label="Sessions grouping"
           />
-          <AskInfiChatButton label={card.title} compact />
-          <ExcelDownloadButton label={card.title} compact />
+          <CardActions>
+            <AskInfiChatButton label={card.title} compact />
+            <ExcelDownloadButton label={card.title} compact />
+          </CardActions>
         </div>
       </div>
 

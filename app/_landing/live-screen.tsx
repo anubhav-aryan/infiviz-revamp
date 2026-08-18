@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { ActivityFeed } from "./activity-feed";
@@ -21,6 +20,7 @@ import {
   type HeroTile as HeroTileData,
 } from "./_data/landing";
 import styles from "./landing.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /**
  * The two hero tiles are identical down to the target track; only the block
@@ -31,7 +31,7 @@ function HeroTile({ tile, footer }: { tile: HeroTileData; footer: ReactNode }) {
     <div className={styles.heroTile}>
       <div className={styles.cardHead}>
         <span className={styles.cardTitle}>{tile.title}</span>
-        <span className={chatStyles.askGroup}>
+        <CardActions>
           <svg viewBox="0 0 100 30" className={styles.spark} aria-hidden="true">
             <polyline
               points={tile.spark}
@@ -44,7 +44,7 @@ function HeroTile({ tile, footer }: { tile: HeroTileData; footer: ReactNode }) {
           </svg>
           <AskInfiChatButton label={tile.title} compact />
           <ExcelDownloadButton label={tile.title} compact />
-        </span>
+        </CardActions>
       </div>
 
       <div className={styles.heroValueRow}>

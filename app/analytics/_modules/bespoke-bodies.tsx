@@ -22,6 +22,7 @@ import type { RoiView } from "../_data/roi";
 import type { ShelvingView } from "../_data/shelving";
 import type { StoreManagementView } from "../_data/store-management";
 import styles from "./module.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /**
  * The five modules the metric factory does not drive. Each has a genuinely
@@ -52,8 +53,10 @@ function Card({
               <div className={charts.cardTitle}>{title}</div>
               {caption ? <div className={charts.cardCaption}>{caption}</div> : null}
             </div>
-            <AskInfiChatButton label={title} compact />
-            <ExcelDownloadButton label={title} compact />
+            <CardActions>
+              <AskInfiChatButton label={title} compact />
+              <ExcelDownloadButton label={title} compact />
+            </CardActions>
           </div>
         ) : (
           <div className={charts.tabbedHead}>
@@ -61,8 +64,10 @@ function Card({
               <div className={charts.cardTitle}>{title}</div>
               {caption ? <div className={charts.cardCaption}>{caption}</div> : null}
             </div>
-            <AskInfiChatButton label={title} compact />
-            <ExcelDownloadButton label={title} compact />
+            <CardActions>
+              <AskInfiChatButton label={title} compact />
+              <ExcelDownloadButton label={title} compact />
+            </CardActions>
           </div>
         )
       ) : null}

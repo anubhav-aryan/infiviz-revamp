@@ -1,5 +1,4 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import type { CsvTable } from "@/app/_export/csv";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { ExportButton } from "@/app/_export/export-button";
@@ -7,6 +6,7 @@ import { MeasureTable } from "./measure-table";
 import { group } from "@/app/_format/num";
 import type { Column, Row } from "./table";
 import styles from "./charts.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /**
  * The Raw Data tab on every module.
@@ -46,7 +46,7 @@ export function RawTable({
     <div className={`${styles.card} ${styles.tableCard}`}>
       <div className={styles.tabbedHead}>
         <div className={styles.cardTitle}>{title}</div>
-        <span className={chatStyles.askGroup}>
+        <CardActions>
           <ExportButton
             table={csv}
             filename={filename}
@@ -55,7 +55,7 @@ export function RawTable({
           />
           <AskInfiChatButton label={title} compact />
           <ExcelDownloadButton label={title} compact />
-        </span>
+        </CardActions>
       </div>
 
       <MeasureTable

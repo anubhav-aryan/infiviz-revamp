@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { RailGroups, type SectionGroup } from "@/app/_components/app-shell";
+import { useGlobalFilters } from "@/app/_filters/global-filter-context";
 import {
   PERSONA_SCOPES,
   SCOPES,
-  scopeFor,
+  filtersWithScope,
+  scopeForFilters,
   scopeOptionLabel,
   type ScopeId,
 } from "../_data/scope";
@@ -30,8 +32,10 @@ import styles from "./persona.module.css";
 
 /** Query keys that survive navigation inside a persona's rail. */
 /* `f` and `d` ride along so rail navigation does not silently drop the global
-   filter set — the bar writes them, every in-section link must preserve them. */
-const KEPT = ["scope", "month", "measure", "f", "d"] as const;
+   filter set — the bar writes them, every in-section link must preserve them.
+   `scope` and `month` used to be here too; both are now expressed as `f`/`d`,
+   so carrying them would be carrying the same statement twice. */
+const KEPT = ["measure", "f", "d"] as const;
 
 function withQuery(href: string, params: URLSearchParams, keys: readonly string[]) {
   const next = new URLSearchParams();
@@ -151,24 +155,19 @@ export function PersonaSwitcher({
  * rail's shape the same for every persona.
  */
 export function ScopePicker({ persona }: { persona: PersonaId }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const params = useSearchParams();
+  const api = useGlobalFilters();
 
   const config = PERSONA_SCOPES[persona];
-  const scope = scopeFor(persona, params.get("scope"));
+  /* The bar is the writer: a scope *is* a Region or Category filter, and this
+     picker is the rail's view of one. Outside a provider there is nothing to
+     read, so it falls back to the persona's default. */
+  const scope = scopeForFilters(persona, api?.filters ?? []);
 
   const onChange = useCallback(
     (value: string) => {
-      const next = new URLSearchParams(params.toString());
-      /* Defaults are dropped from the URL, so the opening state of any persona
-         is a bare path — the same rule month and measure follow. */
-      if (value === config.defaultScope) next.delete("scope");
-      else next.set("scope", value);
-      const query = next.toString();
-      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+      api?.setFilters(filtersWithScope(api.filters, value as ScopeId));
     },
-    [config.defaultScope, params, pathname, router],
+    [api],
   );
 
   if (config.picker === "none") {

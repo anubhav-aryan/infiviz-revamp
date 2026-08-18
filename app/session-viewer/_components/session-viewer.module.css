@@ -670,6 +670,9 @@ button.toolButton:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* Three children now that the ticket button sits at the edge rather than
+     against the figure, so the first two need their own separation. */
+  gap: 12px;
   margin-bottom: 14px;
 }
 

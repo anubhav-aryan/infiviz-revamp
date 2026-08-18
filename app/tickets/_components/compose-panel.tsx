@@ -5,6 +5,7 @@ import { Icon } from "@/app/_components/icon";
 import { Avatar } from "./bits";
 import { SOURCES, type Suggestion } from "../_data/tickets";
 import type { TicketContext } from "../_data/ticket-context";
+import type { TicketDraft } from "../_data/use-created-tickets";
 import { assignableTo, PERSONA_ACTOR, RANK_LABEL, RANK_ORDER } from "../_data/people";
 import styles from "./tickets.module.css";
 
@@ -20,8 +21,10 @@ import styles from "./tickets.module.css";
  * sees merchandisers. That constraint is the point of the screen, so the form
  * enforces it rather than offering everyone.
  *
- * Submitting does nothing but close: this is a mockup, and the note under the
- * buttons says so rather than pretending the ticket was filed.
+ * Submitting files the ticket through `createTicket` and closes. The panel
+ * itself does not know where it is mounted — the Tickets screen opens it, and
+ * so does a "Create ticket" button on a chart, which is why the caller hands in
+ * `onCreate` rather than this reaching for the store directly.
  */
 
 function titleFromContext(context: TicketContext): string {
@@ -34,14 +37,18 @@ function detailFromContext(context: TicketContext): string {
 }
 
 export function ComposePanel({
-  persona,
+  persona = "exec",
   suggestion,
   context,
+  onCreate,
   onClose,
 }: {
-  persona: string;
+  /** Decides who can be assigned. Defaults to the persona the Tickets screen
+   *  itself opens on, for the callers that have no persona of their own. */
+  persona?: string;
   suggestion?: Suggestion;
   context?: TicketContext;
+  onCreate?: (draft: TicketDraft) => void;
   onClose: () => void;
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -226,13 +233,20 @@ export function ComposePanel({
             <button type="button" className={styles.ghostButton} onClick={onClose}>
               Cancel
             </button>
-            <button type="button" className={styles.primaryButton} onClick={onClose}>
+            <button
+              type="button"
+              className={styles.primaryButton}
+              onClick={() => {
+                onCreate?.({ title, detail, assigneeId: assignee, priority, persona, context });
+                onClose();
+              }}
+            >
               {suggestion ? "Create ticket" : "Create"}
             </button>
           </div>
 
           <p className={styles.mockNote}>
-            Mockup — nothing is saved, and the board resets on reload.
+            Saved in this browser — the authored board is the demo&apos;s fixture.
           </p>
         </div>
       </div>

@@ -1,11 +1,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { FilterRegion } from "@/app/_filters/filter-region";
+import { FilterBar, FilterProvider, FilterRegion } from "@/app/_filters/filter-region";
 import type { FilterScopeId } from "@/app/_filters/filter-scopes";
 import { ChatLauncher } from "./chat/chat-launcher";
 import { ChatPaneProvider } from "./chat/chat-pane-context";
 import { Icon } from "./icon";
 import { Sidebar } from "./sidebar";
+import { ToastProvider } from "./toast/toast-context";
+import { ToastHost } from "./toast/toast-host";
 import { fullNav, type NavEntry, type NavId } from "./nav";
 import styles from "./app-shell.module.css";
 
@@ -23,6 +25,10 @@ type AppShellProps = {
   children: ReactNode;
 };
 
+/** `.sectionRail`'s width in `app-shell.module.css`, which the toast has to
+ *  clear on the two-rail routes. */
+const SECTION_RAIL_W = 210;
+
 export function AppShell({ active, nav, filterScope, children }: AppShellProps) {
   const entries = nav ?? fullNav(active);
 
@@ -30,22 +36,29 @@ export function AppShell({ active, nav, filterScope, children }: AppShellProps) 
     <div className={styles.shell}>
       <Sidebar entries={entries} />
 
-      <ChatPaneProvider active={active}>
-        <main className={styles.main}>
-          {/* The bar sits outside `.mainInner` because every page supplies its
-              own padding; inside it, the bar would inherit that inset and stop
-              spanning the screen. */}
-          {filterScope ? (
-            <FilterRegion scope={filterScope}>
+      {/* Paired with the shell rather than the root layout, which is a server
+          component with no providers — the same reason `ChatPaneProvider` is
+          mounted here and again in `RailShell` below. */}
+      <ToastProvider>
+        <ChatPaneProvider active={active}>
+          <main className={styles.main}>
+            {/* The bar sits outside `.mainInner` because every page supplies its
+                own padding; inside it, the bar would inherit that inset and stop
+                spanning the screen. */}
+            {filterScope ? (
+              <FilterRegion scope={filterScope}>
+                <div className={styles.mainInner}>{children}</div>
+              </FilterRegion>
+            ) : (
               <div className={styles.mainInner}>{children}</div>
-            </FilterRegion>
-          ) : (
-            <div className={styles.mainInner}>{children}</div>
-          )}
-        </main>
+            )}
+          </main>
 
-        <ChatLauncher active={active} />
-      </ChatPaneProvider>
+          <ChatLauncher active={active} />
+        </ChatPaneProvider>
+
+        <ToastHost />
+      </ToastProvider>
     </div>
   );
 }
@@ -66,8 +79,14 @@ export type SectionGroup = {
 
 type RailShellProps = {
   active: NavId;
-  /** Section-rail heading and caption. */
-  section: { title: string; caption: string };
+  /**
+   * Section-rail heading and caption. Optional: Analytics carries a persona
+   * switcher and a scope picker above its module list and needs no prose on top
+   * of them, so it omits this and supplies `railLabel` instead.
+   */
+  section?: { title: string; caption: string };
+  /** The rail's accessible name where there is no `section.title` to use. */
+  railLabel?: string;
   groups: SectionGroup[];
   /** `id` of the section item to highlight. */
   activeSection: string;
@@ -107,8 +126,14 @@ export function RailGroups({
   return (
     <>
       {groups.map((group) => (
-        <div key={group.label}>
-          <div className={styles.sectionGroup}>{group.label}</div>
+        // Keyed by the first item where the label is empty — unlabelled groups
+        // would otherwise all share the key "".
+        <div key={group.label || group.items[0]?.id}>
+          {/* Empty label means the grouping is for ordering and spacing only —
+              Analytics groups its nine modules but names none of them. */}
+          {group.label ? (
+            <div className={styles.sectionGroup}>{group.label}</div>
+          ) : null}
           {group.items.map((item) =>
             item.href ? (
               <Link
@@ -160,6 +185,7 @@ export function RailGroups({
 export function RailShell({
   active,
   section,
+  railLabel,
   groups,
   activeSection,
   railHeader,
@@ -167,33 +193,56 @@ export function RailShell({
   filterScope,
   children,
 }: RailShellProps) {
-  return (
+  const shell = (
     <div className={styles.railShell}>
       <Sidebar entries={fullNav(active)} defaultCollapsed />
 
-      <nav className={styles.sectionRail} aria-label={section.title}>
+      <nav className={styles.sectionRail} aria-label={railLabel ?? section?.title}>
         {railHeader ? (
           <div className={styles.railHeader}>{railHeader}</div>
         ) : null}
-        <div className={styles.sectionTitle}>{section.title}</div>
-        <div className={styles.sectionCaption}>{section.caption}</div>
+        {/* Omitted entirely rather than rendered empty — two blank divs still
+            take their margins, and Analytics has nothing to put here. */}
+        {section ? (
+          <>
+            <div className={styles.sectionTitle}>{section.title}</div>
+            <div className={styles.sectionCaption}>{section.caption}</div>
+          </>
+        ) : null}
 
         {railItems ?? <RailGroups groups={groups} activeSection={activeSection} />}
       </nav>
 
-      <ChatPaneProvider active={active}>
-        <main className={styles.main}>
-          {filterScope ? (
-            <FilterRegion scope={filterScope}>
+      <ToastProvider>
+        <ChatPaneProvider active={active}>
+          <main className={styles.main}>
+            {filterScope ? (
+              <FilterBar scope={filterScope}>
+                <div className={styles.mainInner}>{children}</div>
+              </FilterBar>
+            ) : (
               <div className={styles.mainInner}>{children}</div>
-            </FilterRegion>
-          ) : (
-            <div className={styles.mainInner}>{children}</div>
-          )}
-        </main>
+            )}
+          </main>
 
-        <ChatLauncher active={active} />
-      </ChatPaneProvider>
+          <ChatLauncher active={active} />
+        </ChatPaneProvider>
+
+        {/* Same default the sidebar above gets, or the toast would sit 176px
+            adrift of a rail that opened collapsed — plus the section rail's own
+            width, which only this shell has. */}
+        <ToastHost defaultCollapsed inset={SECTION_RAIL_W} />
+      </ToastProvider>
     </div>
+  );
+
+  /* The provider wraps the whole shell, not just `<main>`: this rail carries
+     filter controls of its own — Analytics' scope picker is a Region/Category
+     filter — and they sit beside the content, not under the bar. The bar still
+     renders inside `<main>`, where it belongs. */
+  return filterScope ? (
+    <FilterProvider scope={filterScope}>{shell}</FilterProvider>
+  ) : (
+    shell
   );
 }

@@ -38,7 +38,10 @@ export function TicketRaisedMarker({
         return (
           <Link
             key={marker.ticketKey}
-            href="/tickets"
+            // The ticket this names, not the unfiltered list — a marker for
+            // TIC-104 that dropped you on the whole board could not answer the
+            // question it raised.
+            href={`/tickets?ticket=${marker.ticketKey}`}
             className={styles.marker}
             data-state={
               marker.resolved ? "resolved" : measured ? "measured" : "raised"

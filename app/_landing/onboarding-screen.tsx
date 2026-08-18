@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { ActivityFeed } from "./activity-feed";
@@ -16,6 +15,7 @@ import {
   RETAILERS_CARD,
 } from "./_data/landing";
 import styles from "./landing.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /**
  * Onboarding — master data configured and captures arriving, analytics not yet.
@@ -73,8 +73,10 @@ export function OnboardingScreen() {
               >
                 <div className={styles.cardHead}>
                   <div className={styles.cardTitle}>{meter.title}</div>
-                  <AskInfiChatButton label={meter.title} compact />
-                  <ExcelDownloadButton label={meter.title} compact />
+                  <CardActions>
+                    <AskInfiChatButton label={meter.title} compact />
+                    <ExcelDownloadButton label={meter.title} compact />
+                  </CardActions>
                 </div>
                 <div className={styles.meterValueRow}>
                   <span className={styles.meterValue}>
@@ -105,11 +107,11 @@ export function OnboardingScreen() {
           <div className={`${styles.card} ${styles.retailerCard}`}>
             <div className={`${styles.cardHead} ${styles.retailerHead}`}>
               <div className={styles.cardTitle}>{RETAILERS_CARD.title}</div>
-              <span className={chatStyles.askGroup}>
+              <CardActions>
                 <div className={styles.cardCaption}>{RETAILERS_CARD.caption}</div>
                 <AskInfiChatButton label={RETAILERS_CARD.title} compact />
                 <ExcelDownloadButton label={RETAILERS_CARD.title} compact />
-              </span>
+              </CardActions>
             </div>
             {RETAILERS.map((retailer) => (
               <div key={retailer.name} className={styles.retailerRow}>

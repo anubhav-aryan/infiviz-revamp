@@ -39,18 +39,31 @@
   color: var(--text-heading);
 }
 
+/* A title row, not a line of text: these variants carry the card's action
+   group beside the heading, and `display: block` left the buttons flowing
+   mid-sentence. `space-between` puts them where every other header has them.
+   A variant with no buttons is a single flex child and reads the same. */
 .panelTitle[data-gap="6"] {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 6px;
 }
 
 .panelTitle[data-gap="12"] {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
 .panelTitle[data-gap="14"] {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 14px;
 }
 

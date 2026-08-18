@@ -1,10 +1,10 @@
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { storeById } from "@/app/_data/stores-geo";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { photosFor, visitTiming, type Visit } from "../_data/store-explorer";
 import styles from "./store-explorer.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 type AppImagesViewProps = {
   visit: Visit;
@@ -67,13 +67,13 @@ export function AppImagesView({ visit, onBack, onOpenPhoto }: AppImagesViewProps
       <div className={`${styles.card} ${styles.timelineCard}`}>
         <div className={styles.timelineHead}>
           <span className={styles.panelTitle}>Visit timeline</span>
-          <span className={chatStyles.askGroup}>
+          <CardActions>
             <span className={styles.timelineTotal}>
               Total time in store <b>{totalTimeLabel}</b>
             </span>
             <AskInfiChatButton label="Visit timeline" compact />
             <ExcelDownloadButton label="Visit timeline" compact />
-          </span>
+          </CardActions>
         </div>
 
         <div className={styles.timeline}>

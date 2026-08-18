@@ -4,6 +4,7 @@ import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import type { AnalyticsView } from "../_data/analytics";
 import { EmptyState, Ribbon, RibbonLegend, Sparkline, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 export function CategoryBody({
   view,
@@ -100,8 +101,10 @@ export function CategoryBody({
         <div className={styles.ribbonCard}>
           <span className={styles.panelTitle} data-gap="14">
             All toothpaste facings · 100% share
-            <AskInfiChatButton label="All toothpaste facings" compact />
-            <ExcelDownloadButton label="All toothpaste facings" compact />
+            <CardActions>
+              <AskInfiChatButton label="All toothpaste facings" compact />
+              <ExcelDownloadButton label="All toothpaste facings" compact />
+            </CardActions>
           </span>
           <Ribbon segments={segments} variant="brands" />
           <RibbonLegend segments={segments} showShare />
@@ -117,8 +120,10 @@ export function CategoryBody({
           <div className={styles.panel}>
             <span className={styles.panelTitle} data-gap="14">
               Who has the shelf
-              <AskInfiChatButton label="Who has the shelf" compact />
-              <ExcelDownloadButton label="Who has the shelf" compact />
+              <CardActions>
+                <AskInfiChatButton label="Who has the shelf" compact />
+                <ExcelDownloadButton label="Who has the shelf" compact />
+              </CardActions>
             </span>
             {view.whoShelf.map((brand) => (
               <div key={brand.name} className={styles.whoRow}>

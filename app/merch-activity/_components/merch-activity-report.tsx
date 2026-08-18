@@ -3,7 +3,6 @@
 import { CoverageMap } from "@/app/_components/coverage-map";
 import Link from "next/link";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import type { CsvTable } from "@/app/_export/csv";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
@@ -24,6 +23,7 @@ import {
 } from "../_data/merch-activity";
 import shared from "@/app/_reports/reports.module.css";
 import styles from "./merch-activity.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 const MAP_LEGEND = [
   { status: "covered", label: "Covered" },
@@ -142,8 +142,10 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
         <div className={`${shared.card} ${shared.tableCard}`}>
           <div className={shared.tableTitle}>
             Merchandiser activity
-            <AskInfiChatButton label="Merchandiser activity" compact />
-            <ExcelDownloadButton label="Merchandiser activity" compact />
+            <CardActions>
+              <AskInfiChatButton label="Merchandiser activity" compact />
+              <ExcelDownloadButton label="Merchandiser activity" compact />
+            </CardActions>
           </div>
 
           <div
@@ -229,14 +231,14 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
           <div className={`${shared.card} ${shared.cardPad}`}>
             <div className={styles.coverageHead}>
               <div className={shared.cardTitle}>Coverage by region</div>
-              <span className={chatStyles.askGroup}>
+              <CardActions>
                 <span className={shared.legendNote}>
                   <span className={shared.dashSwatch} />
                   {view.coverageHero.targetLabel}
                 </span>
                 <AskInfiChatButton label="Coverage by region" compact />
                 <ExcelDownloadButton label="Coverage by region" compact />
-              </span>
+              </CardActions>
             </div>
 
             <div className={shared.barListStack}>
@@ -283,8 +285,10 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
           <div className={`${shared.card} ${shared.tableCard}`}>
             <div className={shared.tableTitle}>
               Never-visited &amp; overdue stores
-              <AskInfiChatButton label="Never-visited & overdue stores" compact />
-              <ExcelDownloadButton label="Never-visited & overdue stores" compact />
+              <CardActions>
+                <AskInfiChatButton label="Never-visited & overdue stores" compact />
+                <ExcelDownloadButton label="Never-visited & overdue stores" compact />
+              </CardActions>
             </div>
 
             <div

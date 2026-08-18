@@ -24,13 +24,16 @@ import { TrendChart } from "@/app/_charts/trend-chart";
 import charts from "@/app/_charts/charts.module.css";
 import { DatePresetPicker } from "@/app/_time/date-preset-picker";
 import { CURRENT_MONTH, MONTHS, MONTH_KEYS, type MonthKey } from "@/app/_time/periods";
+import { presetToMonth } from "@/app/_time/presets";
+import { monthToDate } from "@/app/_filters/date-token";
+import { useGlobalFilters } from "@/app/_filters/global-filter-context";
 import { METRIC_MODULES, metricViewFor } from "../_data/module-registry";
 import { merchandiserView } from "../_data/merchandiser";
 import { perfectStoreView } from "../_data/perfect-store";
 import { roiView } from "../_data/roi";
 import { shelvingView } from "../_data/shelving";
 import { storeManagementView } from "../_data/store-management";
-import { scopeFor, type Scope } from "../_data/scope";
+import { scopeForFilters, type Scope } from "../_data/scope";
 import {
   MerchandiserBody,
   PerfectStoreBody,
@@ -48,6 +51,7 @@ import {
   type TabId,
 } from "../_data/module-matrix";
 import styles from "./module.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /**
  * The screen inside the rail: header, tab strip, measure toggles, then the tab
@@ -70,9 +74,13 @@ export function ModuleScreen({ persona, module, tab }: Props) {
   const def = MODULES[module];
   const entry = METRIC_MODULES[module];
 
-  const monthParam = params.get("month");
-  const period: MonthKey = MONTH_KEYS.includes(monthParam as MonthKey)
-    ? (monthParam as MonthKey)
+  /* Month and scope both come from the global bar now. They used to be `?month=`
+     and `?scope=` written here, beside a bar writing `?d=` and `?f=` for the
+     same two things — two writers per concept on one screen, and this side
+     ignored the bar's. The overview screen already read its month this way. */
+  const api = useGlobalFilters();
+  const period: MonthKey = api
+    ? presetToMonth(api.date.preset, api.date.custom)
     : CURRENT_MONTH;
 
   const measureParam = params.get("measure");
@@ -81,10 +89,7 @@ export function ModuleScreen({ persona, module, tab }: Props) {
   const measureId =
     measures.find((measure) => measure.id === measureParam)?.id ?? defaultMeasure;
 
-  /* Resolution is the persona's, not the URL's: a scope outside this persona's
-     vocabulary falls back to their default rather than rendering a category
-     lead's numbers under a regional lead's rail. */
-  const scope = scopeFor(persona, params.get("scope"));
+  const scope = scopeForFilters(persona, api?.filters ?? []);
 
   const view = measureId ? metricViewFor(module, scope, measureId, period) : undefined;
 
@@ -153,7 +158,7 @@ export function ModuleScreen({ persona, module, tab }: Props) {
             <DatePresetPicker
               mode="callback"
               period={period}
-              onChange={(value) => setParam("month", value, value === CURRENT_MONTH)}
+              onChange={(value) => api?.setDate(monthToDate(value))}
             />
           </div>
         </div>
@@ -186,6 +191,7 @@ export function ModuleScreen({ persona, module, tab }: Props) {
       <div className={styles.body}>
         {entry && view && measureId ? (
           <TabBody
+            persona={persona}
             module={module}
             tab={tab}
             view={view}
@@ -249,25 +255,34 @@ function BespokeBody({
 }
 
 function TabBody({
+  persona,
   module,
   tab,
   view,
   scopeLabel,
   monthLabel,
 }: {
+  persona: PersonaId;
   module: ModuleId;
   tab: TabId;
   view: MetricModuleView;
   scopeLabel: string;
   monthLabel: string;
 }) {
-  const ticketContext = (metric: string) => ({ region: scopeLabel, metric, period: monthLabel });
+  /* The whole prop set, not just the context: whoever is reading this persona's
+     analytics is the one raising the ticket, and that decides who it can be
+     assigned to. The two ids are the same union, so it passes straight through. */
+  const ticketProps = (metric: string) => ({
+    persona,
+    context: { region: scopeLabel, metric, period: monthLabel },
+  });
   const pageKey = (suffix: string) => `analytics:${module}:${suffix}`;
 
   switch (tab) {
     case "recommendations":
       return (
         <RecommendationsBlock
+          persona={persona}
           month={view.period}
           monthLabel={monthLabel}
           scopeLabel={scopeLabel}
@@ -288,12 +303,14 @@ function TabBody({
                 <div className={charts.cardTitle}>
                   {view.measureLabel} — brand wise
                 </div>
-                <AskInfiChatButton label={`${view.measureLabel} — brand wise`} compact />
-                <ExcelDownloadButton label={`${view.measureLabel} — brand wise`} compact />
-                <CreateTicketButton
-                  context={ticketContext(`${view.measureLabel} — brand wise`)}
-                  compact
-                />
+                <CardActions>
+                  <AskInfiChatButton label={`${view.measureLabel} — brand wise`} compact />
+                  <ExcelDownloadButton label={`${view.measureLabel} — brand wise`} compact />
+                  <CreateTicketButton
+                    {...ticketProps(`${view.measureLabel} — brand wise`)}
+                    compact
+                  />
+                </CardActions>
               </div>
               <SortableTable
                 columns={view.brandTable.columns}
@@ -309,9 +326,11 @@ function TabBody({
                 <div className={charts.cardTitle}>
                   {view.measureLabel} trend — month wise
                 </div>
-                <AskInfiChatButton label={`${view.measureLabel} trend`} compact />
-                <ExcelDownloadButton label={`${view.measureLabel} trend`} compact />
-                <CreateTicketButton context={ticketContext(`${view.measureLabel} trend`)} compact />
+                <CardActions>
+                  <AskInfiChatButton label={`${view.measureLabel} trend`} compact />
+                  <ExcelDownloadButton label={`${view.measureLabel} trend`} compact />
+                  <CreateTicketButton {...ticketProps(`${view.measureLabel} trend`)} compact />
+                </CardActions>
               </div>
               <TrendChart data={view.trend} />
             </div>
@@ -327,18 +346,20 @@ function TabBody({
                 <div className={charts.cardTitle}>
                   {view.measureLabel} — {view.groupNoun} wise
                 </div>
-                <AskInfiChatButton
-                  label={`${view.measureLabel} — ${view.groupNoun} wise`}
-                  compact
-                />
-                <ExcelDownloadButton
-                  label={`${view.measureLabel} — ${view.groupNoun} wise`}
-                  compact
-                />
-                <CreateTicketButton
-                  context={ticketContext(`${view.measureLabel} — ${view.groupNoun} wise`)}
-                  compact
-                />
+                <CardActions>
+                  <AskInfiChatButton
+                    label={`${view.measureLabel} — ${view.groupNoun} wise`}
+                    compact
+                  />
+                  <ExcelDownloadButton
+                    label={`${view.measureLabel} — ${view.groupNoun} wise`}
+                    compact
+                  />
+                  <CreateTicketButton
+                    {...ticketProps(`${view.measureLabel} — ${view.groupNoun} wise`)}
+                    compact
+                  />
+                </CardActions>
               </div>
               <div className={styles.cardGrid}>
                 {view.groupCards.map((card) => (
@@ -360,18 +381,20 @@ function TabBody({
                   <div className={charts.cardTitle}>
                     {view.measureLabel} — own vs competition
                   </div>
-                  <AskInfiChatButton
-                    label={`${view.measureLabel} — own vs competition`}
-                    compact
-                  />
-                  <ExcelDownloadButton
-                    label={`${view.measureLabel} — own vs competition`}
-                    compact
-                  />
-                  <CreateTicketButton
-                    context={ticketContext(`${view.measureLabel} — own vs competition`)}
-                    compact
-                  />
+                  <CardActions>
+                    <AskInfiChatButton
+                      label={`${view.measureLabel} — own vs competition`}
+                      compact
+                    />
+                    <ExcelDownloadButton
+                      label={`${view.measureLabel} — own vs competition`}
+                      compact
+                    />
+                    <CreateTicketButton
+                      {...ticketProps(`${view.measureLabel} — own vs competition`)}
+                      compact
+                    />
+                  </CardActions>
                 </div>
                 <Donut data={view.donut} />
               </div>
@@ -407,12 +430,14 @@ function TabBody({
                 <div className={charts.cardTitle}>
                   {view.measureLabel} against target
                 </div>
-                <AskInfiChatButton label={`${view.measureLabel} against target`} compact />
-                <ExcelDownloadButton label={`${view.measureLabel} against target`} compact />
-                <CreateTicketButton
-                  context={ticketContext(`${view.measureLabel} against target`)}
-                  compact
-                />
+                <CardActions>
+                  <AskInfiChatButton label={`${view.measureLabel} against target`} compact />
+                  <ExcelDownloadButton label={`${view.measureLabel} against target`} compact />
+                  <CreateTicketButton
+                    {...ticketProps(`${view.measureLabel} against target`)}
+                    compact
+                  />
+                </CardActions>
               </div>
               <GroupedColumns data={view.gapColumns} />
               <ChartLegend items={view.gapColumns.legend} shape="swatch" />
@@ -455,18 +480,20 @@ function TabBody({
                   {view.groupNoun === "segment" ? "Segment-wise" : "Category-wise"}{" "}
                   {view.measureLabel.toLowerCase()} — before and after
                 </div>
-                <AskInfiChatButton
-                  label={`${view.measureLabel} — before and after`}
-                  compact
-                />
-                <ExcelDownloadButton
-                  label={`${view.measureLabel} — before and after`}
-                  compact
-                />
-                <CreateTicketButton
-                  context={ticketContext(`${view.measureLabel} — before and after`)}
-                  compact
-                />
+                <CardActions>
+                  <AskInfiChatButton
+                    label={`${view.measureLabel} — before and after`}
+                    compact
+                  />
+                  <ExcelDownloadButton
+                    label={`${view.measureLabel} — before and after`}
+                    compact
+                  />
+                  <CreateTicketButton
+                    {...ticketProps(`${view.measureLabel} — before and after`)}
+                    compact
+                  />
+                </CardActions>
               </div>
               <div className={charts.chartBody}>
                 <HBarList rows={view.merchImpact.bars} nameWidth="minmax(140px, 38%)" />
@@ -477,9 +504,11 @@ function TabBody({
                 <div className={charts.cardTitle}>
                   {view.measureLabel} trend — before vs after
                 </div>
-                <AskInfiChatButton label={`${view.measureLabel} trend`} compact />
-                <ExcelDownloadButton label={`${view.measureLabel} trend`} compact />
-                <CreateTicketButton context={ticketContext(`${view.measureLabel} trend`)} compact />
+                <CardActions>
+                  <AskInfiChatButton label={`${view.measureLabel} trend`} compact />
+                  <ExcelDownloadButton label={`${view.measureLabel} trend`} compact />
+                  <CreateTicketButton {...ticketProps(`${view.measureLabel} trend`)} compact />
+                </CardActions>
               </div>
               <TrendChart data={view.merchImpact.beforeAfter} />
               <ChartLegend
@@ -533,18 +562,20 @@ function TabBody({
                 visit, not a zero.
               </div>
             </div>
-            <AskInfiChatButton
-              label={`Month-wise ${view.measureLabel.toLowerCase()} trend`}
-              compact
-            />
-            <ExcelDownloadButton
-              label={`Month-wise ${view.measureLabel.toLowerCase()} trend`}
-              compact
-            />
-            <CreateTicketButton
-              context={ticketContext(`Month-wise ${view.measureLabel.toLowerCase()} trend`)}
-              compact
-            />
+            <CardActions>
+              <AskInfiChatButton
+                label={`Month-wise ${view.measureLabel.toLowerCase()} trend`}
+                compact
+              />
+              <ExcelDownloadButton
+                label={`Month-wise ${view.measureLabel.toLowerCase()} trend`}
+                compact
+              />
+              <CreateTicketButton
+                {...ticketProps(`Month-wise ${view.measureLabel.toLowerCase()} trend`)}
+                compact
+              />
+            </CardActions>
           </div>
           <MonthMatrix
             columns={view.matrix.columns}

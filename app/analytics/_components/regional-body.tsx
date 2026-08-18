@@ -12,6 +12,7 @@ import {
 } from "../_data/analytics";
 import { EmptyState, RankedList, Sparkline, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 export function RegionalBody({
   view,
@@ -81,8 +82,10 @@ export function RegionalBody({
         <div className={styles.panel}>
           <span className={styles.panelTitle} data-gap="12">
             OSA by {dim.toLowerCase()}
-            <AskInfiChatButton label={`OSA by ${dim.toLowerCase()}`} compact />
-            <ExcelDownloadButton label={`OSA by ${dim.toLowerCase()}`} compact />
+            <CardActions>
+              <AskInfiChatButton label={`OSA by ${dim.toLowerCase()}`} compact />
+              <ExcelDownloadButton label={`OSA by ${dim.toLowerCase()}`} compact />
+            </CardActions>
           </span>
           <RankedList
             rows={view.ranked[dim]}
@@ -106,8 +109,10 @@ export function RegionalBody({
           <div className={styles.panel}>
             <span className={styles.panelTitle} data-gap="14">
               OSA · city × retailer
-              <AskInfiChatButton label="OSA · city × retailer" compact />
-              <ExcelDownloadButton label="OSA · city × retailer" compact />
+              <CardActions>
+                <AskInfiChatButton label="OSA · city × retailer" compact />
+                <ExcelDownloadButton label="OSA · city × retailer" compact />
+              </CardActions>
             </span>
             <div className={styles.heatGrid}>
               <span />
@@ -137,8 +142,10 @@ export function RegionalBody({
           <div className={styles.panel}>
             <span className={styles.panelTitle} data-gap="6">
               Audit coverage vs availability
-              <AskInfiChatButton label="Audit coverage vs availability" compact />
-              <ExcelDownloadButton label="Audit coverage vs availability" compact />
+              <CardActions>
+                <AskInfiChatButton label="Audit coverage vs availability" compact />
+                <ExcelDownloadButton label="Audit coverage vs availability" compact />
+              </CardActions>
             </span>
             <GroupedColumns data={view.coverageColumns} />
           </div>

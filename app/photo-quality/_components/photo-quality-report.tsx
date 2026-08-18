@@ -1,7 +1,6 @@
 "use client";
 
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
-import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import type { CsvTable } from "@/app/_export/csv";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
@@ -26,6 +25,7 @@ import { WorstTable } from "./worst-table";
 import { TrendChart } from "./trend-chart";
 import shared from "@/app/_reports/reports.module.css";
 import styles from "./photo-quality.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 /** Serialized here, from the same rows the table renders below. */
 function worstCsv(rows: WorstRow[]): CsvTable {
@@ -98,8 +98,10 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
           <div className={`${shared.card} ${shared.cardPad}`}>
             <div className={shared.cardHead}>
               <div className={shared.cardTitle}>Why captures were rejected</div>
-              <AskInfiChatButton label="Why captures were rejected" compact />
-              <ExcelDownloadButton label="Why captures were rejected" compact />
+              <CardActions>
+                <AskInfiChatButton label="Why captures were rejected" compact />
+                <ExcelDownloadButton label="Why captures were rejected" compact />
+              </CardActions>
             </div>
             <div className={styles.reasonsCaption}>{view.reasonsCaption}</div>
 
@@ -120,14 +122,14 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
           <div className={`${shared.card} ${shared.cardPad}`}>
             <div className={shared.cardHead}>
               <div className={shared.cardTitle}>Rejection rate by region</div>
-              <span className={chatStyles.askGroup}>
+              <CardActions>
                 <span className={shared.legendNote}>
                   <span className={shared.dashSwatch} />
                   Target ≤5%
                 </span>
                 <AskInfiChatButton label="Rejection rate by region" compact />
                 <ExcelDownloadButton label="Rejection rate by region" compact />
-              </span>
+              </CardActions>
             </div>
 
             <div className={`${shared.barListStack} ${styles.regionStack}`}>
@@ -154,14 +156,14 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
                 worst 10 · min 20 captures
               </span>
             </div>
-            <span className={chatStyles.askGroup}>
+            <CardActions>
               <span className={styles.worstPill}>
                 <Icon name="shield-alert" />
                 Low-sample merchandisers excluded
               </span>
               <AskInfiChatButton label="Merchandisers by rejection rate" compact />
               <ExcelDownloadButton label="Merchandisers by rejection rate" compact />
-            </span>
+            </CardActions>
           </div>
 
           <WorstTable rows={worst} />

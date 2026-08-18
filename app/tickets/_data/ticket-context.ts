@@ -29,17 +29,13 @@ export type TicketContext = {
 
 const PARAM_KEYS = ["region", "metric", "period", "from", "f", "d"] as const;
 
-/** Where a "Create ticket" button on another screen should link to. */
-export function ticketContextHref(context: TicketContext): string {
-  const params = new URLSearchParams({ compose: "1" });
-  for (const key of PARAM_KEYS) {
-    const value = context[key];
-    if (value) params.set(key, value);
-  }
-  return `/tickets?${params.toString()}`;
-}
-
-/** Read back on the Tickets screen to auto-open `ComposePanel` pre-filled. */
+/**
+ * Read back on the Tickets screen to auto-open `ComposePanel` pre-filled.
+ *
+ * Nothing in the app links here any more — a "Create ticket" button composes in
+ * place rather than navigating — but a pasted or bookmarked `?compose=1` URL
+ * still works, and it is the same context shape either way.
+ */
 export function ticketContextFromParams(params: URLSearchParams): TicketContext | null {
   if (params.get("compose") !== "1") return null;
   const context: TicketContext = {};

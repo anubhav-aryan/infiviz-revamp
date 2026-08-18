@@ -12,6 +12,7 @@ import {
 } from "../_data/analytics";
 import { RankedList, Ribbon, RibbonLegend, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
+import { CardActions } from "@/app/_components/card-actions";
 
 export function FieldBody({
   view,
@@ -59,8 +60,10 @@ export function FieldBody({
         <div className={styles.panel}>
           <span className={styles.panelTitle} data-gap="12">
             OSA by {dim.toLowerCase()}
-            <AskInfiChatButton label={`OSA by ${dim.toLowerCase()}`} compact />
-            <ExcelDownloadButton label={`OSA by ${dim.toLowerCase()}`} compact />
+            <CardActions>
+              <AskInfiChatButton label={`OSA by ${dim.toLowerCase()}`} compact />
+              <ExcelDownloadButton label={`OSA by ${dim.toLowerCase()}`} compact />
+            </CardActions>
           </span>
           <RankedList
             rows={view.ranked[dim]}
@@ -82,8 +85,10 @@ export function FieldBody({
           <div className={styles.panel}>
             <span className={styles.panelTitle} data-gap="12">
               MSL checklist · absent first
-              <AskInfiChatButton label="MSL checklist" compact />
-              <ExcelDownloadButton label="MSL checklist" compact />
+              <CardActions>
+                <AskInfiChatButton label="MSL checklist" compact />
+                <ExcelDownloadButton label="MSL checklist" compact />
+              </CardActions>
             </span>
             {STORE_MSL.map((item) => (
               <div
@@ -103,8 +108,10 @@ export function FieldBody({
           <div className={styles.panel}>
             <span className={styles.panelTitle} data-gap="14">
               Shelf ribbon · what&apos;s facing out
-              <AskInfiChatButton label="Shelf ribbon" compact />
-              <ExcelDownloadButton label="Shelf ribbon" compact />
+              <CardActions>
+                <AskInfiChatButton label="Shelf ribbon" compact />
+                <ExcelDownloadButton label="Shelf ribbon" compact />
+              </CardActions>
             </span>
             <Ribbon segments={FIELD_RIBBON} variant="store" />
             <RibbonLegend

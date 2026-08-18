@@ -257,6 +257,15 @@
   padding: 24px;
 }
 
+/* The title and the card's actions, which used to share one flex group — so
+   the buttons hugged the heading instead of sitting at the panel's edge. */
+.panelTitleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .panelTitle {
   font-size: 17px;
   font-weight: 700;

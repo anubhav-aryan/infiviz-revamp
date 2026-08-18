@@ -25,7 +25,7 @@ import type { DimId } from "./registry";
  * Putting the bar on those was offering a control that belonged to a different
  * question.
  */
-export type FilterScopeId = "activity" | "analytics";
+export type FilterScopeId = "activity" | "analytics" | "store-explorer";
 
 /**
  * The three session-defining defaults the bar always draws, in row order.
@@ -37,6 +37,13 @@ const DEFAULTS: DimId[] = ["photoType", "category", "retailer"];
 
 export const FILTER_SCOPES: Record<FilterScopeId, DimId[]> = {
   activity: [...DEFAULTS, "region", "storeType"],
+  /**
+   * Store Explorer keeps its own chip row and draws no bar — see `FilterRegion`
+   * — but shares the state, so a slice chosen there is the slice the dashboards
+   * open on and vice versa. Its own list, not `DEFAULTS`: a visit has no photo
+   * type, and `placement` is the one dimension only this screen can answer for.
+   */
+  "store-explorer": ["retailer", "region", "storeType", "placement", "category", "store"],
   analytics: [
     ...DEFAULTS,
     "region",
@@ -66,6 +73,8 @@ export const FILTER_SCOPES: Record<FilterScopeId, DimId[]> = {
 export const SCOPE_SEEDS: Partial<Record<FilterScopeId, ActiveFilter[]>> = {
   analytics: [{ dim: "category", value: "toothpaste" }],
   activity: [{ dim: "category", value: "toothpaste" }],
+  /* No seed: this screen is a store list, and opening it pre-narrowed to one
+     category would hide visits rather than focus them. */
 };
 
 export function isFilterScope(value: string): value is FilterScopeId {
@@ -79,3 +88,15 @@ export function isFilterScope(value: string): value is FilterScopeId {
  * goes back on them.
  */
 export const DATE_IN_PATH: ReadonlySet<FilterScopeId> = new Set<FilterScopeId>();
+
+/**
+ * Scopes that mount the provider but draw no bar.
+ *
+ * Store Explorer already has a chip row and an Add-filter menu built from this
+ * same registry; a bar above them would be a second copy of the same control.
+ * It joins the shared state so a slice chosen there is the slice the dashboards
+ * open on — the sharing is the point, not the chrome.
+ */
+export const BARLESS_SCOPES: ReadonlySet<FilterScopeId> = new Set<FilterScopeId>([
+  "store-explorer",
+]);

@@ -15,7 +15,6 @@ import {
   MODULES,
   PERSONAS,
   allRoutes,
-  landingModule,
   modulePath,
   railGroupsFor,
   type ModuleId,
@@ -61,21 +60,16 @@ function overviewPath(persona: PersonaId): string {
   return persona === "exec" ? "/analytics" : `/analytics?persona=${persona}`;
 }
 
+/* Every persona sees every module now, so switching keeps your place instead of
+   bouncing you to the next persona's landing screen — what changes is the scope
+   the numbers are read at, which is the point of the switch. */
 function switcherTargets(module: ModuleId, tab: TabId) {
-  return PERSONAS.map((persona) => {
-    const owned = railGroupsFor(persona.id)
-      .flatMap((group) => group.items)
-      .some((entry) => entry.id === module);
-    const landing = landingModule(persona.id);
-    return {
-      id: persona.id,
-      label: persona.label,
-      blurb: persona.blurb,
-      href: owned
-        ? modulePath(persona.id, module, tab)
-        : modulePath(persona.id, landing.id, landing.tabs[0]),
-    };
-  });
+  return PERSONAS.map((persona) => ({
+    id: persona.id,
+    label: persona.label,
+    blurb: persona.blurb,
+    href: modulePath(persona.id, module, tab),
+  }));
 }
 
 export default async function AnalyticsModulePage(
@@ -86,13 +80,16 @@ export default async function AnalyticsModulePage(
   const moduleId = moduleParam as ModuleId;
   const tabId = tab as TabId;
 
+  /* Grouped but unlabelled: the grouping still orders the rail and spaces the
+     clusters, while the names, the section heading and the per-module blurbs
+     are gone — at 210px they were more explanation than navigation, and the
+     switcher above already says what this persona is for. */
   const groups: SectionGroup[] = railGroupsFor(personaId).map((group) => ({
-    label: group.label,
+    label: "",
     items: group.items.map((entry) => ({
       id: entry.id,
       label: entry.label,
       icon: entry.icon,
-      sub: entry.blurb,
       /* Unbuilt modules render inert, the treatment Master Data already gives
          its undesigned sub-surfaces — shown, so the rail is an honest map. */
       href: entry.built ? modulePath(personaId, entry.id, entry.tabs[0]) : undefined,
@@ -103,10 +100,7 @@ export default async function AnalyticsModulePage(
     <RailShell
       filterScope="analytics"
       active="analytics"
-      section={{
-        title: "Analytics",
-        caption: PERSONAS.find((entry) => entry.id === personaId)?.blurb ?? "",
-      }}
+      railLabel="Analytics modules"
       groups={groups}
       activeSection={moduleId}
       railHeader={
