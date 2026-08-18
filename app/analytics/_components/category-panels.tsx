@@ -101,6 +101,23 @@ export function CategoryPanels({
 
   const panels = shown.length ? shown : CATEGORY_METRICS;
 
+  /* The blend, promoted from footnote to a leading tile.
+     Always across *all* categories, never just the filtered ones: the tile's
+     job is the context the panels beside it lack, and a blend of one selected
+     category would simply restate that panel. It is `NATIONAL_SOS`/
+     `NATIONAL_OSA` by construction — the same weighting `category-metrics.ts`
+     asserts against the national series. */
+  const blend = (pick: (row: (typeof CATEGORY_METRICS)[number]) => number) =>
+    +CATEGORY_METRICS.reduce(
+      (total, row) => total + pick(row) * row.countShare,
+      0,
+    ).toFixed(1);
+
+  const overall = {
+    value: blend((row) => spec.value(row, level)),
+    delta: blend(spec.delta),
+  };
+
   return (
     <div className={styles.sosCard}>
       <div className={styles.sosHead}>
@@ -117,7 +134,50 @@ export function CategoryPanels({
         </CardActions>
       </div>
 
-      <div className={styles.sosGrid} data-count={Math.min(panels.length, 5)}>
+      <div className={styles.sosGrid} data-count={Math.min(panels.length + 1, 6)}>
+        {/* Leads the row: it is the number the headline card used to carry, and
+            it reads as a summary of the tiles after it rather than a sixth
+            category. The caveat travels with it. */}
+        <div className={styles.sosPanel} data-overall="true">
+          <div className={styles.sosName}>
+            All categories
+            <Hint
+              text="Every category, weighted by how many audited stores carry each. Category mix moves it even when no shelf changes, so the panels beside it are what you act on."
+              className={styles.healthInfo}
+            >
+              <Icon name="info" size={12} />
+            </Hint>
+          </div>
+          <div className={styles.sosValueRow}>
+            <span className={styles.sosValue}>
+              {overall.value}
+              <span className={styles.sosUnit}>%</span>
+            </span>
+            <span className={styles.delta} data-tone={overall.delta >= 0 ? "up" : "down"}>
+              <Icon
+                name={overall.delta >= 0 ? "arrow-up-right" : "arrow-down-right"}
+                size={13}
+              />
+              {Math.abs(overall.delta)}
+            </span>
+          </div>
+
+          <div className={styles.sosTrack}>
+            <div className={styles.sosFill} style={{ width: `${overall.value}%` }} />
+            {compare ? (
+              <div
+                className={styles.sosGhost}
+                style={{ left: `${+(overall.value - overall.delta).toFixed(1)}%` }}
+              />
+            ) : null}
+            <div className={styles.sosTarget} style={{ left: `${spec.target}%` }} />
+          </div>
+          <div className={styles.sosScale}>
+            <span>{overall.value >= spec.target ? "On target" : "Below target"}</span>
+            <span className={styles.mono}>{spec.target}%</span>
+          </div>
+        </div>
+
         {panels.map((row) => {
           const value = spec.value(row, level);
           const previous = +(value - spec.delta(row)).toFixed(1);
@@ -157,19 +217,13 @@ export function CategoryPanels({
         })}
       </div>
 
-      {/* The blend, stated as a footnote and never as the headline. */}
+      {/* The spread the blend hides. The number itself now leads the row, so
+          this says what it costs rather than repeating it. */}
       <div className={styles.sosFoot}>
         <Icon name="info" size={12} />
-        Blended across all categories this is {spec.national}% — a figure between{" "}
-        {spec.range.low.label} at {spec.of(spec.range.low)}% and{" "}
-        {spec.range.high.label} at {spec.of(spec.range.high)}%, describing no shelf
-        in particular.
-        <Hint
-          text="Category mix moves this number even when no shelf changes, which is why it is not the headline here."
-          className={styles.healthInfo}
-        >
-          <Icon name="info" size={12} />
-        </Hint>
+        That blend spans {spec.range.low.label} at {spec.of(spec.range.low)}% to{" "}
+        {spec.range.high.label} at {spec.of(spec.range.high)}% — no single shelf
+        looks like it, which is why the categories are shown separately beside it.
       </div>
     </div>
   );

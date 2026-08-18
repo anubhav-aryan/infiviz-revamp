@@ -1764,6 +1764,7 @@
 .sosGrid[data-count="3"] { --sos-cols: 3; }
 .sosGrid[data-count="4"] { --sos-cols: 4; }
 .sosGrid[data-count="5"] { --sos-cols: 5; }
+.sosGrid[data-count="6"] { --sos-cols: 6; }
 
 .sosPanel {
   min-width: 0;
@@ -1771,6 +1772,25 @@
   border: 1px solid var(--hairline);
   border-radius: 10px;
   background: var(--surface-sunken, var(--surface-card));
+}
+
+/* The blend reads as the row's summary, not as another category — tinted and
+   outlined so the eye groups the five beside it as the detail behind it. */
+.sosPanel[data-overall="true"] {
+  background: var(--indigo-50);
+  border-color: var(--indigo-100);
+}
+
+.sosPanel[data-overall="true"] .sosName {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--indigo-700);
+  font-weight: 600;
+}
+
+.sosPanel[data-overall="true"] .sosValue {
+  color: var(--indigo-800);
 }
 
 .sosName {

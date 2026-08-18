@@ -6,7 +6,7 @@ import { MonthMatrix } from "@/app/_charts/month-matrix";
 import { INSIGHTS, type AnalyticsView, type DimKey } from "../_data/analytics";
 import { movementMatrix } from "../_data/movement-matrix";
 import { CategoryPanels } from "./category-panels";
-import { RankedList, Sparkline, StatStrip } from "./shared";
+import { RankedList, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
 import { CardActions } from "@/app/_components/card-actions";
 
@@ -41,88 +41,6 @@ export function ExecBody({
             id: "osa-panels",
             node: (
               <CategoryPanels metric="osa" period={view.period} compare={compare} />
-            ),
-          },
-          {
-            id: "hero-grid",
-            node: (
-      /* Band B — the two headline metrics */
-      <div className={styles.heroGrid} data-single="true">
-        {/* Only OSA remains a single headline. Share of shelf moved to its own
-            card below, because one number cannot honestly stand for a measure
-            that runs 19.6% to 59.7% across this account's categories. */}
-        {view.heroes.slice(0, 1).map((hero) => (
-          <div key={hero.name} className={styles.heroCard}>
-            <div className={styles.heroTop}>
-              <span className={styles.heroName}>{hero.name}</span>
-              <Sparkline
-                points={hero.spark}
-                viewBox="0 0 100 30"
-                className={styles.heroSpark}
-                strokeWidth={2}
-                round
-              />
-            </div>
-
-            <div className={styles.heroValueRow}>
-              <span className={styles.bigNumber} data-size="exec">
-                {hero.val}
-                <span className={styles.bigUnit}>%</span>
-              </span>
-              <span className={styles.delta} data-tone={hero.tone}>
-                <Icon name={hero.deltaIcon} />
-                {hero.delta} pts
-              </span>
-            </div>
-            <div className={styles.heroDeltaLabel}>{hero.deltaLabel}</div>
-
-            <div className={styles.heroTrack}>
-              <div className={styles.heroFill} style={{ width: `${hero.val}%` }} />
-              {compare ? (
-                <div
-                  className={styles.heroGhost}
-                  style={{ left: `${hero.prev}%` }}
-                />
-              ) : null}
-              <div
-                className={styles.heroTarget}
-                style={{ left: `${hero.target}%` }}
-              />
-            </div>
-            <div className={`${styles.heroScale} ${styles.heroScaleGap}`}>
-              <span>{compare ? `Last month ${hero.prev}%` : "Below target"}</span>
-              <span className={styles.mono}>Target {hero.target}%</span>
-            </div>
-
-            <div className={styles.heroSubs}>
-              <div>
-                <div className={styles.subKey}>{hero.sub1k}</div>
-                <div className={styles.subVal}>{hero.sub1v}</div>
-              </div>
-              <div>
-                <div className={styles.subKey}>{hero.sub2k}</div>
-                {hero.sub2Kind === "ownComp" ? (
-                  <>
-                    <div className={styles.ownCompBar}>
-                      <span
-                        className={styles.ownCompOwn}
-                        style={{ width: `${view.ownComp.own}%` }}
-                      />
-                      <span
-                        className={styles.ownCompRest}
-                        style={{ width: `${view.ownComp.comp}%` }}
-                      />
-                    </div>
-                    <div className={styles.ownCompLabel}>{view.ownComp.label}</div>
-                  </>
-                ) : (
-                  <div className={styles.subVal}>{hero.sub2v}</div>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
             ),
           },
           {
