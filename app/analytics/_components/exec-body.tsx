@@ -6,7 +6,7 @@ import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { MonthMatrix } from "@/app/_charts/month-matrix";
 import { INSIGHTS, type AnalyticsView, type DimKey } from "../_data/analytics";
 import { movementMatrix } from "../_data/movement-matrix";
-import { SosPanels } from "./sos-panels";
+import { CategoryPanels } from "./category-panels";
 import { RankedList, Sparkline, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
 
@@ -33,7 +33,15 @@ export function ExecBody({
           { id: "stat-strip", node: <StatStrip items={view.bandA} /> },
           {
             id: "sos-panels",
-            node: <SosPanels period={view.period} compare={compare} />,
+            node: (
+              <CategoryPanels metric="sos" period={view.period} compare={compare} />
+            ),
+          },
+          {
+            id: "osa-panels",
+            node: (
+              <CategoryPanels metric="osa" period={view.period} compare={compare} />
+            ),
           },
           {
             id: "hero-grid",

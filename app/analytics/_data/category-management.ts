@@ -1,4 +1,4 @@
-import { CATEGORY_SOS } from "./category-sos";
+import { CATEGORY_SOS } from "./category-metrics";
 import { VIS_SERIES } from "./spine";
 import {
   precomputeModule,
@@ -87,7 +87,7 @@ const CONFIG: MetricModuleConfig = {
     ["Optic White", 2.1, -0.21, 32610],
   ],
 
-  /* Read from `category-sos.ts` rather than authored here. These used to say
+  /* Read from `category-metrics.ts` rather than authored here. These used to say
      Toothpaste was 49.5 while two other files said 40, and none of the three
      weight-averaged to the 38.7 this module's own headline prints. */
   groups: CATEGORY_SOS.map((row) => [

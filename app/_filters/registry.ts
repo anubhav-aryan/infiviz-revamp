@@ -149,8 +149,20 @@ export const REGISTRY: Record<DimId, CanonicalDim> = {
   category: {
     id: "category",
     label: "Category",
-    // The two the catalogue actually knows about — see `catalog.ts`.
-    values: plain("Toothpaste", "Toothbrush"),
+    /* The five this account actually has — the same set `catalog.ts`,
+       `category-metrics.ts` and `scope.ts` all carry. This used to hold two,
+       which is why the Analytics share-of-shelf card could show five
+       categories that the Category filter had never heard of.
+
+       A screen holding fewer than five narrows the list itself rather than
+       offering a value it cannot answer for; see Store Explorer's catalogue. */
+    values: plain(
+      "Toothpaste",
+      "Toothbrush",
+      "Mouthwash",
+      "Kids oral care",
+      "Whitening",
+    ),
   },
 
   placement: {

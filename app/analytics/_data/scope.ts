@@ -1,6 +1,6 @@
 import { STORES } from "@/app/_data/stores-geo";
 import { supervisorFor } from "@/app/photo-quality/_data/photo-quality";
-import { SOS_BY_ID } from "./category-sos";
+import { SOS_BY_ID } from "./category-metrics";
 import { SESSION_STORES } from "@/app/session-viewer/_data/session-viewer";
 import { lcg } from "@/app/_time/variants";
 import { group } from "@/app/_format/num";
@@ -139,29 +139,24 @@ export const REGION_SCOPE_IDS = Object.keys(REGION_SCOPES) as RegionScopeId[];
  * which have no `groups` of their own.
  */
 /**
- * OSA and SKU counts are authored here; **share of shelf and count share are
- * not** — they come from `category-sos.ts`, which is the one place per-category
- * SOS is written down. This table used to carry its own `sos` column
- * (40/36/34/31/28) that disagreed with the modules and weighted to 35.68
- * rather than the published 38.7.
+ * Only SKU counts are authored here. Share of shelf, availability and count
+ * share all come from `category-metrics.ts`, the one place per-category metrics
+ * are written down. This table used to carry its own `sos` column (weighting to
+ * 35.68 against a published 38.7) and its own `osa` column (59.4 against 63.8);
+ * both disagreed with the cards that quote them.
  */
-const CATEGORY_FACTS: [
-  id: CategoryScopeId,
-  label: string,
-  osa: number,
-  skus: number,
-][] = [
-  ["toothpaste", "Toothpaste", 65.1, 78],
-  ["toothbrush", "Toothbrush", 61.0, 43],
-  ["mouthwash", "Mouthwash", 58.4, 31],
-  ["kids-oral-care", "Kids oral care", 54.0, 26],
-  ["whitening", "Whitening", 46.2, 34],
+const CATEGORY_FACTS: [id: CategoryScopeId, label: string, skus: number][] = [
+  ["toothpaste", "Toothpaste", 78],
+  ["toothbrush", "Toothbrush", 43],
+  ["mouthwash", "Mouthwash", 31],
+  ["kids-oral-care", "Kids oral care", 26],
+  ["whitening", "Whitening", 34],
 ];
 
 const CATEGORY_SCOPES: Record<CategoryScopeId, Scope> = Object.fromEntries(
-  CATEGORY_FACTS.map(([id, label, osa, skus]) => {
+  CATEGORY_FACTS.map(([id, label, skus]) => {
     const shelf = SOS_BY_ID.get(id);
-    if (!shelf) throw new Error(`No per-category SOS authored for "${id}".`);
+    if (!shelf) throw new Error(`No per-category metrics authored for "${id}".`);
     return [
       id,
       {
@@ -169,7 +164,7 @@ const CATEGORY_SCOPES: Record<CategoryScopeId, Scope> = Object.fromEntries(
         kind: "category" as const,
         label,
         factors: {
-          osa: +(osa / AVAIL_SERIES[LAST]).toFixed(4),
+          osa: +(shelf.osa / AVAIL_SERIES[LAST]).toFixed(4),
           sos: +(shelf.sos / VIS_SERIES[LAST]).toFixed(4),
         },
         countShare: shelf.countShare,

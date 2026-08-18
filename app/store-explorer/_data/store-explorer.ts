@@ -250,14 +250,28 @@ function typeFacetFrom(retailers: FacetRow[], visits: number): FacetRow[] {
  * out: there are as many as there are captures, so a browsable list of them was
  * never the right control.
  */
-export const CATALOGUE: FilterDimension[] = catalogueFor([
-  "retailer",
-  "region",
-  "storeType",
-  "placement",
-  "category",
-  "store",
-]);
+/**
+ * Category is built from the visits rather than taken from the registry: the
+ * account has five categories but these fixtures only ever captured two, and a
+ * menu entry that returns no visits is worse than no menu entry. Everything
+ * else passes through unchanged.
+ */
+const CATEGORY_FACET: FilterDimension = {
+  key: "category",
+  label: "Category",
+  values: [
+    ...new Set(
+      VISITS.map((visit) => canon("category", visit.category)).filter(
+        (value): value is string => value !== undefined,
+      ),
+    ),
+  ],
+};
+
+export const CATALOGUE: FilterDimension[] = catalogueFor(
+  ["retailer", "region", "storeType", "placement", "store"],
+  [CATEGORY_FACET],
+);
 
 /**
  * The design draws these two chips on load. Making them live would mean the

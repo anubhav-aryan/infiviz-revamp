@@ -1,3 +1,4 @@
+import { CATEGORY_METRICS } from "./category-metrics";
 import { AVAIL_SERIES, DIM_SOURCE } from "./spine";
 import { precomputeModule, type MetricModuleConfig } from "./metric-module";
 
@@ -43,13 +44,11 @@ const CONFIG: MetricModuleConfig = {
 
   brands: BRANDS,
 
-  groups: [
-    ["Toothpaste", 65.1, 1.2, 100],
-    ["Toothbrush", 61.0, 0.5, 100],
-    ["Mouthwash", 58.4, -0.3, 100],
-    ["Kids oral care", 54.0, -1.1, 100],
-    ["Whitening", 46.2, -2.4, 100],
-  ],
+  /* Read from `category-metrics.ts` rather than authored here. These used to
+     weight-average to 59.4 against a published 63.8 — the same defect the
+     share-of-shelf numbers had. Target stays 100: every ranged SKU should be
+     on shelf. */
+  groups: CATEGORY_METRICS.map((row) => [row.label, row.osa, row.osaDelta, 100]),
 
   outlets: [
     ["3742 · Winlife HCM 94/54 - 56", "0274622", 74.0, 100, "3742-winlife-hcm-94-54-56"],

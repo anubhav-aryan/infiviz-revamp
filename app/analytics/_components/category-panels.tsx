@@ -6,18 +6,21 @@ import { Hint } from "@/app/_components/hint";
 import { Icon } from "@/app/_components/icon";
 import { useGlobalFilters } from "@/app/_filters/global-filter-context";
 import { valueLabel } from "@/app/_filters/registry";
-import { MONTH_INDEX, visLevel } from "../_data/spine";
+import { MONTH_INDEX, availLevel, visLevel } from "../_data/spine";
 import {
-  CATEGORY_SOS,
+  CATEGORY_METRICS,
+  NATIONAL_OSA,
   NATIONAL_SOS,
+  OSA_RANGE,
   SOS_RANGE,
+  categoryOsaAt,
   categorySosAt,
-} from "../_data/category-sos";
+} from "../_data/category-metrics";
 import type { MonthKey } from "@/app/_time/periods";
 import styles from "./analytics.module.css";
 
 /**
- * Share of shelf, one panel per category — never a blended average.
+ * A metric, one panel per category — never a blended average.
  *
  * **Why there is no single number here.** Averaging share of shelf across a
  * client's categories produces a figure that describes no shelf anyone can
@@ -34,22 +37,56 @@ import styles from "./analytics.module.css";
  * labelled as what it is.
  *
  * Panels weight-average back to that national figure by construction — see the
- * assertion in `category-sos.ts` — so this card and the rest of the dashboard
+ * assertion in `category-metrics.ts` — so this card and the rest of the dashboard
  * are the same measurement at two levels, not two unrelated numbers.
  */
 
-const TARGET = 45;
+/**
+ * The two metrics this card can draw. Structurally identical — the same
+ * filter-aware small multiples over the same table — so they share a component
+ * rather than becoming two files that drift, which is exactly how this codebase
+ * ended up with three disagreeing share-of-shelf tables.
+ */
+const METRICS = {
+  sos: {
+    title: "Share of shelf by category",
+    noun: "share of shelf",
+    target: 45,
+    value: categorySosAt,
+    level: visLevel,
+    delta: (row: (typeof CATEGORY_METRICS)[number]) => row.delta,
+    national: NATIONAL_SOS,
+    range: SOS_RANGE,
+    of: (row: (typeof CATEGORY_METRICS)[number]) => row.sos,
+  },
+  osa: {
+    title: "On-shelf availability by category",
+    noun: "availability",
+    target: 85,
+    value: categoryOsaAt,
+    level: availLevel,
+    delta: (row: (typeof CATEGORY_METRICS)[number]) => row.osaDelta,
+    national: NATIONAL_OSA,
+    range: OSA_RANGE,
+    of: (row: (typeof CATEGORY_METRICS)[number]) => row.osa,
+  },
+} as const;
 
-export function SosPanels({
+export type CategoryMetricId = keyof typeof METRICS;
+
+export function CategoryPanels({
+  metric,
   period,
   compare,
 }: {
+  metric: CategoryMetricId;
   period: MonthKey;
   compare: boolean;
 }) {
+  const spec = METRICS[metric];
   const api = useGlobalFilters();
   const monthIndex = MONTH_INDEX[period] ?? 0;
-  const level = visLevel(monthIndex);
+  const level = spec.level(monthIndex);
 
   /* The filter bar speaks canonical ids; this table is keyed by label. Only
      categories the bar actually offers can be selected, so an unmatched
@@ -59,16 +96,16 @@ export function SosPanels({
     .map((filter) => valueLabel("category", filter.value));
 
   const shown = selectedLabels.length
-    ? CATEGORY_SOS.filter((row) => selectedLabels.includes(row.label))
-    : CATEGORY_SOS;
+    ? CATEGORY_METRICS.filter((row) => selectedLabels.includes(row.label))
+    : CATEGORY_METRICS;
 
-  const panels = shown.length ? shown : CATEGORY_SOS;
+  const panels = shown.length ? shown : CATEGORY_METRICS;
 
   return (
     <div className={styles.sosCard}>
       <div className={styles.sosHead}>
         <div>
-          <span className={styles.panelTitle}>Share of shelf by category</span>
+          <span className={styles.panelTitle}>{spec.title}</span>
           <div className={styles.sosSubtitle}>
             {panels.length === 1
               ? `${panels[0].label} · ${period === "2026-07" ? "this month" : "selected month"}`
@@ -76,14 +113,14 @@ export function SosPanels({
           </div>
         </div>
         <span className={chatStyles.askGroup}>
-          <AskInfiChatButton label="Share of shelf by category" compact />
+          <AskInfiChatButton label={spec.title} compact />
         </span>
       </div>
 
       <div className={styles.sosGrid} data-count={Math.min(panels.length, 5)}>
         {panels.map((row) => {
-          const value = categorySosAt(row, level);
-          const previous = +(value - row.delta).toFixed(1);
+          const value = spec.value(row, level);
+          const previous = +(value - spec.delta(row)).toFixed(1);
           return (
             <div key={row.id} className={styles.sosPanel}>
               <div className={styles.sosName}>{row.label}</div>
@@ -94,13 +131,13 @@ export function SosPanels({
                 </span>
                 <span
                   className={styles.delta}
-                  data-tone={row.delta >= 0 ? "up" : "down"}
+                  data-tone={spec.delta(row) >= 0 ? "up" : "down"}
                 >
                   <Icon
-                    name={row.delta >= 0 ? "arrow-up-right" : "arrow-down-right"}
+                    name={spec.delta(row) >= 0 ? "arrow-up-right" : "arrow-down-right"}
                     size={13}
                   />
-                  {Math.abs(row.delta)}
+                  {Math.abs(spec.delta(row))}
                 </span>
               </div>
 
@@ -109,11 +146,11 @@ export function SosPanels({
                 {compare ? (
                   <div className={styles.sosGhost} style={{ left: `${previous}%` }} />
                 ) : null}
-                <div className={styles.sosTarget} style={{ left: `${TARGET}%` }} />
+                <div className={styles.sosTarget} style={{ left: `${spec.target}%` }} />
               </div>
               <div className={styles.sosScale}>
-                <span>{value >= TARGET ? "On target" : "Below target"}</span>
-                <span className={styles.mono}>{TARGET}%</span>
+                <span>{value >= spec.target ? "On target" : "Below target"}</span>
+                <span className={styles.mono}>{spec.target}%</span>
               </div>
             </div>
           );
@@ -123,9 +160,10 @@ export function SosPanels({
       {/* The blend, stated as a footnote and never as the headline. */}
       <div className={styles.sosFoot}>
         <Icon name="info" size={12} />
-        Blended across all categories this is {NATIONAL_SOS}% — a figure between{" "}
-        {SOS_RANGE.low.label} at {SOS_RANGE.low.sos}% and {SOS_RANGE.high.label} at{" "}
-        {SOS_RANGE.high.sos}%, describing no shelf in particular.
+        Blended across all categories this is {spec.national}% — a figure between{" "}
+        {spec.range.low.label} at {spec.of(spec.range.low)}% and{" "}
+        {spec.range.high.label} at {spec.of(spec.range.high)}%, describing no shelf
+        in particular.
         <Hint
           text="Category mix moves this number even when no shelf changes, which is why it is not the headline here."
           className={styles.healthInfo}

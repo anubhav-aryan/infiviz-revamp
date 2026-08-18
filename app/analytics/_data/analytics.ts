@@ -1,5 +1,7 @@
 import type { IconName } from "@/app/_components/icon";
 import type { CsvTable } from "@/app/_export/csv";
+import type { GroupedColumnsData, PlotBox } from "@/app/_charts/chart-types";
+import { bandX, gridLines, linearScale } from "@/app/_charts/geom";
 import { isDimId, valueLabel, type DimId } from "@/app/_filters/registry";
 import {
   applyFilters,
@@ -65,8 +67,6 @@ export type Persona = "exec" | "regional" | "category" | "field";
  */
 export type DeltaTone = "up" | "down" | "neutral";
 
-
-
 /* ---------------------------------------------------------------- */
 /* shell                                                            */
 /* ---------------------------------------------------------------- */
@@ -78,7 +78,6 @@ export const PERSONAS: { key: Persona; label: string }[] = [
   { key: "field", label: "Field" },
 ];
 
-
 /**
  * The design draws these as live chips on load. The screen opens unfiltered
  * instead — otherwise the designer's headline figures never appear — so they
@@ -89,7 +88,6 @@ const DESIGN_FILTERS = ["Store type: Hypermarket"];
 /* ---------------------------------------------------------------- */
 /* dimensions — shared by every persona's band C                    */
 /* ---------------------------------------------------------------- */
-
 
 export type RankRow = {
   name: string;
@@ -461,23 +459,7 @@ function buildOwnComp(i: number): OwnComp {
 
 /* --- OSA vs Share of Shelf scatter --- */
 
-export type ScatterPoint = { cx: string; cy: string };
-
-const SC_X0 = 36;
-const SC_X1 = 286;
-const SC_Y0 = 14;
-const SC_Y1 = 180;
-
 /** SOS runs 0–50 across the plot, OSA runs 0–90 up it. */
-const scX = (sos: number) => (SC_X0 + (sos / 50) * (SC_X1 - SC_X0)).toFixed(1);
-const scY = (osa: number) => (SC_Y1 - (osa / 90) * (SC_Y1 - SC_Y0)).toFixed(1);
-
-export const SCATTER_GUIDES = {
-  tx: scX(45),
-  ty: scY(85),
-  // Nudged off the already-rounded gridline, exactly as the design does it.
-  tyLabel: (parseFloat(scY(85)) - 3).toFixed(1),
-};
 
 /* --- biggest moves dumbbell --- */
 
@@ -718,29 +700,75 @@ function buildHeatRows(i: number): HeatRow[] {
   }));
 }
 
-/* --- audit coverage vs availability scatter --- */
+/* --- audit coverage vs availability, by city --- */
 
-const covX = (c: number) => (36 + (c / 100) * 250).toFixed(1);
-const covY = (o: number) => (180 - (o / 90) * 166).toFixed(1);
-
-const COV_SOURCE: [coverage: number, osa: number][] = [
-  [84, 72],
-  [79, 69],
-  [76, 66],
-  [71, 63],
-  [66, 60],
-  [58, 57],
+/**
+ * Two rates per city, as grouped columns.
+ *
+ * This was a scatter of six identical dots. Its aria-label said "by city" but
+ * the data carried no city names, and the points were pre-projected to
+ * `{cx, cy}` strings before reaching the component — so the numbers were gone
+ * by render time and no dot could be identified. Columns keep both measures,
+ * name the cities and print the values.
+ */
+const COV_SOURCE: [city: string, coverage: number, osa: number][] = [
+  ["Quận 1", 84, 72],
+  ["Quận 7", 79, 69],
+  ["Bình Thạnh", 76, 66],
+  ["Thủ Đức", 71, 63],
+  ["Gò Vấp", 66, 60],
+  ["Tân Phú", 58, 57],
 ];
 
-const CURRENT_COV_SCATTER: ScatterPoint[] = COV_SOURCE.map(([c, o]) => ({
-  cx: covX(c),
-  cy: covY(o),
-}));
+const COV_PLOT: PlotBox = { x0: 44, x1: 288, y0: 14, y1: 156, labelY: 174 };
+const COV_VIEW_BOX = "0 0 300 190";
 
-function buildCovScatter(i: number): ScatterPoint[] {
-  if (i === LAST) return CURRENT_COV_SCATTER;
+function buildCoverageColumns(i: number): GroupedColumnsData {
   const k = availLevel(i);
-  return COV_SOURCE.map(([c, o]) => ({ cx: covX(c * k), cy: covY(o * k) }));
+  const rows = COV_SOURCE.map(
+    ([city, coverage, osa]) =>
+      [city, +(coverage * k).toFixed(1), +(osa * k).toFixed(1)] as const,
+  );
+
+  // One shared 0–100 domain: both series are percentages, and separate scales
+  // would let a 60 draw taller than an 80.
+  const y = linearScale([0, 100], [COV_PLOT.y1, COV_PLOT.y0]);
+  const xs = bandX(rows.length, COV_PLOT.x0, COV_PLOT.x1);
+  const band = (COV_PLOT.x1 - COV_PLOT.x0) / rows.length;
+  const barWidth = Math.min(11, band / 3);
+
+  return {
+    viewBox: COV_VIEW_BOX,
+    plot: COV_PLOT,
+    grid: gridLines([0, 100], y, 4, (v) => `${Math.round(v)}`),
+    groups: rows.map(([city, coverage, osa], index) => {
+      const centre = xs[index] + band / 2;
+      const bar = (value: number, offset: number, tone: "primary" | "target") => ({
+        x: +(centre + offset).toFixed(1),
+        y: +y(value).toFixed(1),
+        width: +barWidth.toFixed(1),
+        height: +(COV_PLOT.y1 - y(value)).toFixed(1),
+        tone,
+      });
+      return {
+        label: city,
+        bars: [
+          bar(coverage, -barWidth - 1, "primary"),
+          bar(osa, 1, "target"),
+        ],
+      };
+    }),
+    legend: [
+      { label: "Audit coverage", tone: "primary" },
+      { label: "Availability", tone: "target" },
+    ],
+    xLabels: rows.map(([city], index) => ({
+      x: +(xs[index] + band / 2).toFixed(1),
+      label: city,
+    })),
+    axisTitle: { x: 12, y: 88, text: "%", rotate: -90 },
+    ariaLabel: "Audit coverage against availability, by city.",
+  };
 }
 
 /* --- store league table --- */
@@ -861,14 +889,16 @@ export type CategorySos = {
   comp: number;
 };
 
+/* `val`/`prev` track Toothpaste in `category-metrics.ts`; leaving 65.1 here
+   would put this hero and the category panels on different numbers. */
 const CURRENT_CATEGORY_OSA: CategoryOsa = {
   name: "On-Shelf Availability · Toothpaste",
-  val: "65.1",
+  val: "69.9",
   delta: "1.2",
   deltaIcon: "arrow-up-right",
   tone: "up",
   target: 85,
-  prev: 63.9,
+  prev: 68.7,
 };
 
 const CURRENT_CATEGORY_SOS: CategorySos = {
@@ -1286,15 +1316,13 @@ export type AnalyticsView = {
   fieldBandA: string[];
   /** Only the top six of a dimension ever render, however long the table is. */
   ranked: Record<DimKey, RankRow[]>;
-  /** The scatter plots the whole dimension, not just the six ranked rows. */
-  scatter: Record<DimKey, ScatterPoint[]>;
-  heroes: Hero[];
+    heroes: Hero[];
   ownComp: OwnComp;
   dumbbell: Dumbbell[];
   line: LineView;
   regionalHeroes: RegionalHero[];
   heatRows: HeatRow[];
-  covScatter: ScatterPoint[];
+  coverageColumns: GroupedColumnsData;
   league: LeagueRow[];
   categoryOsa: CategoryOsa;
   categorySos: CategorySos;
@@ -1337,19 +1365,13 @@ export function buildView(period: MonthKey, filters: ActiveFilter[]): AnalyticsV
     ranked: Object.fromEntries(
       DIM_KEYS.map((k) => [k, shown[k].slice(0, 6)]),
     ) as Record<DimKey, RankRow[]>,
-    scatter: Object.fromEntries(
-      DIM_KEYS.map((k) => [
-        k,
-        shown[k].map((r) => ({ cx: scX(r.sos), cy: scY(parseFloat(r.osa)) })),
-      ]),
-    ) as Record<DimKey, ScatterPoint[]>,
     heroes: buildHeroes(i),
     ownComp: buildOwnComp(i),
     dumbbell: buildDumbbell(i),
     line: buildLine(i),
     regionalHeroes: buildRegionalHeroes(i),
     heatRows: buildHeatRows(i),
-    covScatter: buildCovScatter(i),
+    coverageColumns: buildCoverageColumns(i),
     league: narrow(buildLeague(i), filters, LEAGUE_ACCESSORS),
     categoryOsa: buildCategoryOsa(i),
     categorySos,

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Fragment } from "react";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
+import { GroupedColumns } from "@/app/_charts/grouped-columns";
 import { Icon } from "@/app/_components/icon";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import {
@@ -139,42 +140,7 @@ export function RegionalBody({
               <AskInfiChatButton label="Audit coverage vs availability" compact />
               <ExcelDownloadButton label="Audit coverage vs availability" compact />
             </span>
-            <svg
-              viewBox="0 0 300 200"
-              className={styles.chart}
-              role="img"
-              aria-label="Audit coverage against availability, by city"
-            >
-              <text
-                x="34"
-                y="188"
-                textAnchor="end"
-                fontFamily="var(--font-ui)"
-                fontSize="9"
-                fill="var(--text-caption)"
-              >
-                cov →
-              </text>
-              <text
-                x="20"
-                y="16"
-                fontFamily="var(--font-ui)"
-                fontSize="9"
-                fill="var(--text-caption)"
-              >
-                OSA
-              </text>
-              {view.covScatter.map((p, i) => (
-                <circle
-                  key={i}
-                  cx={p.cx}
-                  cy={p.cy}
-                  r="5"
-                  fill="var(--indigo-600)"
-                  opacity="0.85"
-                />
-              ))}
-            </svg>
+            <GroupedColumns data={view.coverageColumns} />
           </div>
         </div>
       </div>
