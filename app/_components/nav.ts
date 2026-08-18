@@ -13,7 +13,8 @@ export type NavId =
   | "photo-quality"
   | "merch-activity"
   | "tickets"
-  | "infichat";
+  | "infichat"
+  | "admin";
 
 export type NavItem = {
   id: NavId;
@@ -22,6 +23,12 @@ export type NavItem = {
   title: string;
   icon: IconName;
   href: string;
+  /**
+   * Internal tooling, not part of the client's product. Present here so it is a
+   * valid `NavId` for the shells, but filtered out of both the sidebar and the
+   * icon rail — a PDM's staging console has no business in a client's nav.
+   */
+  internal?: true;
 };
 
 export const NAV: NavItem[] = [
@@ -40,7 +47,18 @@ export const NAV: NavItem[] = [
   },
   { id: "tickets", label: "Tickets", title: "Tickets", icon: "list-checks", href: "/tickets" },
   { id: "infichat", label: "InfiChat", title: "InfiChat", icon: "sparkles", href: "/infichat" },
+  {
+    id: "admin",
+    label: "Admin",
+    title: "Admin",
+    icon: "sliders-horizontal",
+    href: "/admin",
+    internal: true,
+  },
 ];
+
+/** What a client actually sees — every nav surface except internal tooling. */
+export const PRODUCT_NAV = NAV.filter((item) => !item.internal);
 
 export const NAV_BY_ID = Object.fromEntries(NAV.map((n) => [n.id, n])) as Record<
   NavId,
@@ -104,7 +122,7 @@ export const OTHER_APPS: OtherApp[] = [
 
 /** The full nav, with one surface marked active. */
 export function fullNav(active: NavId): NavEntry[] {
-  return NAV.map((n) => ({
+  return PRODUCT_NAV.map((n) => ({
     id: n.id,
     state: n.id === active ? ("active" as const) : ("normal" as const),
   }));

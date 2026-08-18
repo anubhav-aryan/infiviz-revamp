@@ -169,6 +169,16 @@ export const PERSONA_ACTOR: Record<string, Person> = {
   field: SUPERVISORS[0],
 };
 
+/** Seniority order, for grouping an assignee picker top-down. */
+export const RANK_ORDER: Rank[] = ["lead", "supervisor", "merchandiser", "exec"];
+
+export const RANK_LABEL: Record<Rank, string> = {
+  exec: "Executive",
+  lead: "Category & national leads",
+  supervisor: "Field supervisors",
+  merchandiser: "Merchandisers · store level",
+};
+
 export function assignableTo(persona: string): Person[] {
   const ranks = ASSIGNABLE_RANKS[persona] ?? ["merchandiser"];
   return PEOPLE.filter((person) => ranks.includes(person.rank));

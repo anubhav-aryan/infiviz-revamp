@@ -47,9 +47,8 @@ export function Pill({
 }
 
 export const STATUS_LABEL: Record<string, string> = {
-  todo: "To do",
-  "in-progress": "In progress",
-  done: "Done",
+  raised: "Raised",
+  closed: "Closed",
 };
 
 export const PRIORITY_LABEL: Record<string, string> = {

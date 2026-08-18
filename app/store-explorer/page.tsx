@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function StoreExplorerPage() {
   return (
-    <AppShell active="store-explorer">
+    <AppShell active="store-explorer" filterScope="store-explorer">
       <StoreExplorer />
     </AppShell>
   );

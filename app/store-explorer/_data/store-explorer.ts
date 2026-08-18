@@ -2,8 +2,9 @@ import type { IconName } from "@/app/_components/icon";
 import {
   type ActiveFilter,
   type FilterDimension,
-  applyFilters,
+  narrowFilters,
 } from "@/app/_filters/model";
+import { canon, type DimId } from "@/app/_filters/registry";
 import { clockFromMinutes, group } from "@/app/_format/num";
 import { type Shift, lcg, shiftCount, shiftFor } from "@/app/_time/variants";
 import {
@@ -510,23 +511,28 @@ export type View = {
   pins: GeoStore[];
 };
 
-const VISIT_ACCESSORS = {
-  [DIM_RETAILER]: (visit: Visit) => visit.retailer,
-  [DIM_REGION]: (visit: Visit) => visit.region,
-  [DIM_TYPE]: (visit: Visit) => visit.type,
-  [DIM_PLACEMENT]: (visit: Visit) => visit.placement,
-  [DIM_CATEGORY]: (visit: Visit) => visit.category,
-  [DIM_STORE]: (visit: Visit) => visit.store,
-  [DIM_SESSION]: (visit: Visit) => visit.sessionId,
+/**
+ * Keyed by canonical `DimId` and read through `canon()`, so both sides of the
+ * comparison in `applyFilters` are in the shared vocabulary. Without this the
+ * fixtures' own spellings (`Minimart`) would never match what the global bar
+ * puts in the URL (`mini-mart`). See `app/_filters/registry.ts`.
+ */
+const VISIT_ACCESSORS: Record<string, (visit: Visit) => string | undefined> = {
+  retailer: (visit) => canon("retailer", visit.retailer),
+  region: (visit) => canon("region", visit.region),
+  storeType: (visit) => canon("storeType", visit.type),
+  placement: (visit) => canon("placement", visit.placement),
+  category: (visit) => canon("category", visit.category),
+  store: (visit) => canon("store", visit.store),
 };
 
-const PIN_ACCESSORS = {
+const PIN_ACCESSORS: Record<string, (store: GeoStore) => string | undefined> = {
   // Stores now carry their own type, so this reads the field instead of
   // inferring the format from the banner.
-  [DIM_RETAILER]: (store: GeoStore) => store.retailer,
-  [DIM_REGION]: (store: GeoStore) => store.region,
-  [DIM_TYPE]: (store: GeoStore) => store.type,
-  [DIM_STORE]: (store: GeoStore) => store.name,
+  retailer: (store) => canon("retailer", store.retailer),
+  region: (store) => canon("region", store.region),
+  storeType: (store) => canon("storeType", store.type),
+  store: (store) => canon("store", store.name),
 };
 
 /**
@@ -536,27 +542,37 @@ const PIN_ACCESSORS = {
  * kept out of the headline-scaling math in `build()` below and out of the map's
  * filter set — see the comments at both call sites.
  */
-const SCALED_DIMS = new Set([DIM_RETAILER, DIM_REGION, DIM_TYPE]);
-const PIN_DIMS = new Set([DIM_RETAILER, DIM_REGION, DIM_TYPE, DIM_STORE]);
+const SCALED_DIMS = new Set<string>(["retailer", "region", "storeType"]);
+const PIN_DIMS = new Set<string>(["retailer", "region", "storeType", "store"]);
 
 function facetFor(facts: Facts, dim: string): FacetRow[] {
-  if (dim === DIM_RETAILER) return facts.retailers;
-  if (dim === DIM_REGION) return facts.regions;
-  if (dim === DIM_TYPE) return facts.storeTypes;
+  if (dim === "retailer") return facts.retailers;
+  if (dim === "region") return facts.regions;
+  if (dim === "storeType") return facts.storeTypes;
 
   // No authored marginal exists for these — tallied from the sampled rows
   // themselves, which is honest about being a sample rather than a day total.
-  const accessor = VISIT_ACCESSORS[dim as keyof typeof VISIT_ACCESSORS];
+  const accessor = VISIT_ACCESSORS[dim];
+  if (!accessor) return [];
   const counts = new Map<string, number>();
   for (const visit of facts.visitRows) {
     const value = accessor(visit);
+    if (value === undefined) continue;
     counts.set(value, (counts.get(value) ?? 0) + 1);
   }
   return [...counts.entries()].map(([name, visits]) => ({ name, visits }));
 }
 
+/** Facet rows for the authored marginals carry raw fixture names; the derived
+ *  ones already carry canonical ids. `canonRow` puts both in one vocabulary. */
+function canonRow(dim: string, name: string): string {
+  return canon(dim as DimId, name) ?? name;
+}
+
 export function facetCount(facts: Facts, dim: string, value: string): number {
-  return facetFor(facts, dim).find((row) => row.name === value)?.visits ?? 0;
+  return (
+    facetFor(facts, dim).find((row) => canonRow(dim, row.name) === value)?.visits ?? 0
+  );
 }
 
 /**
@@ -584,7 +600,7 @@ export function build(facts: Facts, filters: ActiveFilter[]): View {
     // list and map below but never move these KPI tiles.
     if (!SCALED_DIMS.has(dim)) continue;
     const sum = facetFor(facts, dim)
-      .filter((row) => values.includes(row.name))
+      .filter((row) => values.includes(canonRow(dim, row.name)))
       .reduce((total, row) => total + row.visits, 0);
     sums.set(dim, sum);
     fractions.set(dim, facts.visits ? sum / facts.visits : 0);
@@ -655,12 +671,14 @@ export function build(facts: Facts, filters: ActiveFilter[]): View {
       width: +((row.visits / max) * 100).toFixed(1),
     })),
     visitsLabel: `${group(visits)} visits`,
-    visits: applyFilters(facts.visitRows, filters, VISIT_ACCESSORS),
-    // A store can't answer for a visit-level fact like Category or Session ID
-    // — passing every filter through would blank the map the moment one of
-    // those is applied, so pins only see the dimensions they can actually be
-    // filtered by.
-    pins: applyFilters(
+    /* `narrowFilters`, not `applyFilters`: under the global bar a filter this
+       screen never offered — Photo type, say — can arrive from another screen,
+       and `applyFilters` fails a row on any dimension it cannot answer for. It
+       would blank the list rather than ignore the filter. */
+    visits: narrowFilters(facts.visitRows, filters, VISIT_ACCESSORS),
+    // A store can't answer for a visit-level fact like Category or Placement —
+    // so pins only see the dimensions they can actually be filtered by.
+    pins: narrowFilters(
       STORES,
       filters.filter((f) => PIN_DIMS.has(f.dim)),
       PIN_ACCESSORS,

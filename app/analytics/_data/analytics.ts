@@ -1,5 +1,6 @@
 import type { IconName } from "@/app/_components/icon";
 import type { CsvTable } from "@/app/_export/csv";
+import { isDimId, valueLabel, type DimId } from "@/app/_filters/registry";
 import {
   applyFilters,
   type Accessors,
@@ -200,6 +201,48 @@ export const FILTER_DIMENSIONS: FilterDimension[] = DIM_KEYS.map((key) => ({
   label: key,
   values: DIM_SOURCE[key].map(([name]) => name),
 }));
+
+/**
+ * Canonical dimension id → this screen's own `DimKey`.
+ *
+ * The global bar speaks the shared vocabulary in `_filters/registry.ts`; this
+ * screen's spine is keyed by its own labels. Translating once at the boundary
+ * keeps every downstream table, accessor and `narrowDims` call untouched, which
+ * is a far smaller blast radius than re-keying the spine.
+ *
+ * `store` is deliberately absent: the registry's stores are the 124-pin estate
+ * keyed by master code, while this spine holds six abbreviated names that are
+ * not the same identifiers. Mapping them would be inventing a correspondence,
+ * so Analytics simply does not offer a store filter — see `FILTER_SCOPES`.
+ */
+const CANONICAL_TO_DIM: Partial<Record<DimId, DimKey>> = {
+  region: "Region",
+  retailer: "Retailer",
+  storeType: "Store type",
+  category: "Category",
+  brand: "Brand",
+  city: "City",
+  merchandiser: "Merchandiser",
+  subCategory: "Sub-category",
+  sku: "SKU",
+};
+
+/**
+ * Canonical filters → the shape this screen's machinery already understands.
+ * Anything the spine cannot answer for (photo type, placement) is dropped here
+ * rather than passed on to fail a row inside `applyFilters`.
+ */
+export function toAnalyticsFilters(filters: ActiveFilter[]): ActiveFilter[] {
+  const out: ActiveFilter[] = [];
+  for (const filter of filters) {
+    if (!isDimId(filter.dim)) continue;
+    const key = CANONICAL_TO_DIM[filter.dim];
+    if (!key) continue;
+    // The canonical *label* is what the spine's rows are named by.
+    out.push({ dim: key, value: valueLabel(filter.dim, filter.value) });
+  }
+  return out;
+}
 
 export const SUGGESTED_FILTERS: ActiveFilter[] = DESIGN_FILTERS.map((label) => {
   const at = label.indexOf(": ");

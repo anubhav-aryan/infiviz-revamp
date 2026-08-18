@@ -37,6 +37,7 @@ export type TabId =
   | "trend-analysis"
   | "oos"
   | "raw-data"
+  | "recommendations"
   | "attendance"
   | "photo-quality"
   | "store-coverage"
@@ -58,6 +59,7 @@ export const TAB_LABELS: Record<TabId, string> = {
   "trend-analysis": "Trend Analysis",
   oos: "Out of stock",
   "raw-data": "Raw Data",
+  recommendations: "Recommendations",
   attendance: "Attendance",
   "photo-quality": "Photo Quality",
   "store-coverage": "Store Coverage",
@@ -83,10 +85,14 @@ export type ModuleDef = {
 };
 
 /** The seven-tab shape the four measure modules share. */
+/* `recommendations` sits after `actions` deliberately: Actions reports what was
+   already raised and closed, Recommendations proposes what to do next. Reading
+   them in that order is the difference between a report and a plan. */
 const MEASURE_TABS: TabId[] = [
   "analytics",
   "gap-analysis",
   "actions",
+  "recommendations",
   "merchandising-impact",
   "trend-analysis",
   "raw-data",
@@ -135,7 +141,19 @@ export const MODULES: Record<ModuleId, ModuleDef> = {
     group: "Availability & revenue",
     icon: "package",
     blurb: "On-shelf availability and out of stock",
-    tabs: [...MEASURE_TABS.slice(0, 4), "oos", "trend-analysis", "raw-data"],
+    /* Spelled out rather than sliced from `MEASURE_TABS`: a positional slice
+       silently changes meaning the moment a tab is inserted upstream, which is
+       exactly what happened when Recommendations was added. */
+    tabs: [
+      "analytics",
+      "gap-analysis",
+      "actions",
+      "recommendations",
+      "merchandising-impact",
+      "oos",
+      "trend-analysis",
+      "raw-data",
+    ],
     built: true,
   },
   revenue: {

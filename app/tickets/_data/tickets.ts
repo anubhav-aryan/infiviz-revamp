@@ -26,7 +26,16 @@ import {
  * the authored month rather than a clock, per the house rule.
  */
 
-export type TicketStatus = "todo" | "in-progress" | "done";
+/**
+ * Two states, not three.
+ *
+ * A ticket is raised, and it closes when the next visit's IR output shows the
+ * problem gone. Nobody moves it through a middle stage — an "in progress" that
+ * no process updates is a field everyone learns to distrust, so it does not
+ * exist. This is also why there is no status control in the UI: closure is
+ * derived, not chosen.
+ */
+export type TicketStatus = "raised" | "closed";
 export type Priority = "high" | "medium" | "low";
 
 /** Which screen raised a suggestion, so a card can point back at it. */
@@ -71,6 +80,14 @@ export type Ticket = {
   figure?: string;
   /** Set when the ticket began life as a suggestion. */
   source?: SourceId;
+  /**
+   * The view this ticket was raised from — pathname plus the global filter
+   * bar's `f`/`d` at that moment. Absent on the authored fixtures, which
+   * predate it; `originHref` falls back to the source screen's static link for
+   * those. Anything raised through the UI carries it, which is what makes the
+   * link back land on the same numbers.
+   */
+  origin?: { from?: string; f?: string; d?: string };
   /** Set when the ticket began life as a "Create ticket" button on another
    *  screen — see `ticket-context.ts`. None of the fixture tickets carry
    *  these; they only ever come from a live compose action. */
@@ -215,7 +232,7 @@ const TICKET_FACTS: [
     "TIC-101",
     "Re-shoot blurred captures at Co.opmart Quy Nhơn",
     "Three visits in a row came back blurred. Re-shoot the toothpaste bay and confirm focus before leaving the store.",
-    "in-progress",
+    "raised",
     "high",
     sup("Central"),
     "huy_le",
@@ -229,7 +246,7 @@ const TICKET_FACTS: [
     "TIC-102",
     "Optic White absent across 576 ranged stores",
     "Worst brand nationally at 8.6% availability. Break the chase down by region and assign per supervisor.",
-    "in-progress",
+    "raised",
     "high",
     EXEC,
     LEADS[0].id,
@@ -243,7 +260,7 @@ const TICKET_FACTS: [
     "TIC-103",
     "Aeon Hà Đông overdue by 73 days",
     "Longest-overdue store in Red River Delta. Confirm the store is still trading before rescheduling the journey plan.",
-    "todo",
+    "raised",
     "high",
     sup("Red River Delta"),
     "duc_ngo",
@@ -257,7 +274,7 @@ const TICKET_FACTS: [
     "TIC-104",
     "North Highlands below 55% availability for a third month",
     "Third consecutive month under target. Regional review with the supervisor, then a corrective plan.",
-    "in-progress",
+    "raised",
     "high",
     EXEC,
     sup("North Highlands").id,
@@ -271,7 +288,7 @@ const TICKET_FACTS: [
     "TIC-105",
     "Fix planogram sequence at MM Mega Market An Phú",
     "Shelf was rebuilt by the retailer and the sequence no longer matches the planogram.",
-    "todo",
+    "raised",
     "medium",
     sup("South East"),
     "linh_pham",
@@ -284,7 +301,7 @@ const TICKET_FACTS: [
     "TIC-106",
     "Check in with Bảo Vũ — not seen in 9 days",
     "No captures logged for nine days. Confirm availability and reassign the route if needed.",
-    "todo",
+    "raised",
     "medium",
     sup("Central"),
     "bao_vu",
@@ -298,7 +315,7 @@ const TICKET_FACTS: [
     "TIC-107",
     "Price tags missing at Winmart Q7",
     "Four SKUs on the toothpaste bay have no price tag. Photograph the shelf edge after the fix.",
-    "todo",
+    "raised",
     "low",
     sup("Ho Chi Minh City"),
     "minh_tran",
@@ -311,7 +328,7 @@ const TICKET_FACTS: [
     "TIC-108",
     "Rebuild Colgate block at Emart Gò Vấp",
     "Brand block compliance fell to 61%. Rebuild to planogram and capture before and after.",
-    "done",
+    "closed",
     "medium",
     sup("Ho Chi Minh City"),
     "quan_do",
@@ -324,7 +341,7 @@ const TICKET_FACTS: [
     "TIC-109",
     "Recapture Lotte Mart Cần Thơ — not a shelf",
     "Session rejected as not a shelf. Recapture the full bay in sequence.",
-    "done",
+    "closed",
     "high",
     sup("Mekong Delta"),
     "thao_vo",
@@ -338,7 +355,7 @@ const TICKET_FACTS: [
     "TIC-110",
     "Confirm must-stock list for Kids oral care",
     "Category lead to confirm the ranged list before the next audit cycle.",
-    "done",
+    "closed",
     "low",
     EXEC,
     LEADS[1].id,
@@ -351,7 +368,7 @@ const TICKET_FACTS: [
     "TIC-111",
     "Winmart Hà Giang — two rejected visits",
     "Both captures slanted. Coach on framing, then re-shoot.",
-    "todo",
+    "raised",
     "medium",
     sup("North Highlands"),
     "nam_hoang",
@@ -365,7 +382,7 @@ const TICKET_FACTS: [
     "TIC-112",
     "Coverage plan for Mekong Delta",
     "Region is 12 points below the 90% coverage target. Rework the journey plan with the supervisor.",
-    "in-progress",
+    "raised",
     "medium",
     LEADS[0],
     sup("Mekong Delta").id,

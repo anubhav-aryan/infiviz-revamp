@@ -1,3 +1,4 @@
+import { CATEGORY_SOS } from "./category-sos";
 import { VIS_SERIES } from "./spine";
 import {
   precomputeModule,
@@ -19,6 +20,16 @@ import {
  * are national six-month series, and narrowing them would put figures on screen
  * that no fact accounts for. Same line `analytics.ts` draws.
  */
+
+/** Planogram compliance per category — this module's own third column, and the
+ *  only part of `groups` that is not share of shelf. */
+const GROUP_COMPLIANCE: Record<string, number> = {
+  toothpaste: 54.8,
+  toothbrush: 70.2,
+  mouthwash: 60.6,
+  "kids-oral-care": 62.1,
+  whitening: 53.3,
+};
 
 /** SOS is the authored spine; the rest are offsets from it. */
 const SOS = VIS_SERIES;
@@ -76,13 +87,15 @@ const CONFIG: MetricModuleConfig = {
     ["Optic White", 2.1, -0.21, 32610],
   ],
 
-  groups: [
-    ["Toothpaste", 49.5, -2.08, 54.8],
-    ["Toothbrush", 21.3, -0.58, 70.2],
-    ["Mouthwash", 19.6, -0.05, 60.6],
-    ["Kids oral care", 34.6, 0.47, 62.1],
-    ["Whitening", 59.7, -1.14, 53.3],
-  ],
+  /* Read from `category-sos.ts` rather than authored here. These used to say
+     Toothpaste was 49.5 while two other files said 40, and none of the three
+     weight-averaged to the 38.7 this module's own headline prints. */
+  groups: CATEGORY_SOS.map((row) => [
+    row.label,
+    row.sos,
+    row.delta,
+    GROUP_COMPLIANCE[row.id],
+  ]),
 
   outlets: [
     ["3742 · Winlife HCM 94/54 - 56", "0486650", 21.4, 30, "3742-winlife-hcm-94-54-56"],

@@ -1,5 +1,6 @@
 import { STORES } from "@/app/_data/stores-geo";
 import { supervisorFor } from "@/app/photo-quality/_data/photo-quality";
+import { SOS_BY_ID } from "./category-sos";
 import { SESSION_STORES } from "@/app/session-viewer/_data/session-viewer";
 import { lcg } from "@/app/_time/variants";
 import { group } from "@/app/_format/num";
@@ -137,36 +138,45 @@ export const REGION_SCOPE_IDS = Object.keys(REGION_SCOPES) as RegionScopeId[];
  * with the group card the national view shows. These drive the bespoke modules,
  * which have no `groups` of their own.
  */
+/**
+ * OSA and SKU counts are authored here; **share of shelf and count share are
+ * not** — they come from `category-sos.ts`, which is the one place per-category
+ * SOS is written down. This table used to carry its own `sos` column
+ * (40/36/34/31/28) that disagreed with the modules and weighted to 35.68
+ * rather than the published 38.7.
+ */
 const CATEGORY_FACTS: [
   id: CategoryScopeId,
   label: string,
   osa: number,
-  sos: number,
-  countShare: number,
   skus: number,
 ][] = [
-  ["toothpaste", "Toothpaste", 65.1, 40, 0.42, 78],
-  ["toothbrush", "Toothbrush", 61.0, 36, 0.18, 43],
-  ["mouthwash", "Mouthwash", 58.4, 34, 0.14, 31],
-  ["kids-oral-care", "Kids oral care", 54.0, 31, 0.12, 26],
-  ["whitening", "Whitening", 46.2, 28, 0.14, 34],
+  ["toothpaste", "Toothpaste", 65.1, 78],
+  ["toothbrush", "Toothbrush", 61.0, 43],
+  ["mouthwash", "Mouthwash", 58.4, 31],
+  ["kids-oral-care", "Kids oral care", 54.0, 26],
+  ["whitening", "Whitening", 46.2, 34],
 ];
 
 const CATEGORY_SCOPES: Record<CategoryScopeId, Scope> = Object.fromEntries(
-  CATEGORY_FACTS.map(([id, label, osa, sos, countShare, skus]) => [
-    id,
-    {
+  CATEGORY_FACTS.map(([id, label, osa, skus]) => {
+    const shelf = SOS_BY_ID.get(id);
+    if (!shelf) throw new Error(`No per-category SOS authored for "${id}".`);
+    return [
       id,
-      kind: "category" as const,
-      label,
-      factors: {
-        osa: +(osa / AVAIL_SERIES[LAST]).toFixed(4),
-        sos: +(sos / VIS_SERIES[LAST]).toFixed(4),
+      {
+        id,
+        kind: "category" as const,
+        label,
+        factors: {
+          osa: +(osa / AVAIL_SERIES[LAST]).toFixed(4),
+          sos: +(shelf.sos / VIS_SERIES[LAST]).toFixed(4),
+        },
+        countShare: shelf.countShare,
+        caption: `${label} · ${skus} SKUs`,
       },
-      countShare,
-      caption: `${label} · ${skus} SKUs`,
-    },
-  ]),
+    ];
+  }),
 ) as Record<CategoryScopeId, Scope>;
 
 export const CATEGORY_SCOPE_IDS = CATEGORY_FACTS.map(([id]) => id);

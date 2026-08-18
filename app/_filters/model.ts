@@ -43,6 +43,39 @@ export function applyFilters<T>(
   });
 }
 
+/**
+ * `applyFilters`, but ignoring dimensions this row type cannot answer for.
+ *
+ * `applyFilters` fails a row whose dimension has no accessor, which is right
+ * when a screen owns its own filter list — a filter you can see must do
+ * something. It is wrong under a *global* filter bar, where a Photo-type filter
+ * set on one screen travels to a table that has never heard of photo types and
+ * would empty it. Narrowing first means each table answers for the dimensions
+ * it carries and abstains on the rest, which is what lets one filter set span
+ * screens that hold different facts.
+ *
+ * Every call site under the global bar must go through this rather than
+ * `applyFilters` directly. Screens then mark the figures they could not narrow,
+ * so an abstention is visible rather than silent.
+ */
+export function narrowFilters<T>(
+  rows: T[],
+  filters: ActiveFilter[],
+  accessors: Accessors<T>,
+): T[] {
+  const carried = filters.filter((f) => f.dim in accessors);
+  return carried.length ? applyFilters(rows, carried, accessors) : rows;
+}
+
+/** Which of `filters` this row type can actually answer for. Screens use it to
+ *  decide whether a figure is genuinely filtered or needs an "unfiltered" mark. */
+export function carriedFilters<T>(
+  filters: ActiveFilter[],
+  accessors: Accessors<T>,
+): ActiveFilter[] {
+  return filters.filter((f) => f.dim in accessors);
+}
+
 export function hasFilter(filters: ActiveFilter[], dim: string, value: string): boolean {
   return filters.some((f) => f.dim === dim && f.value === value);
 }

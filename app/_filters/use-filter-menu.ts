@@ -18,20 +18,35 @@ import type { FilterDimension } from "./model";
  *
  * It is also usable as a plain popover: pass an empty catalogue and ignore the
  * `dim`/`dimension` step, which is what the date picker and saved-views menu do.
+ *
+ * `query`/`setQuery`/`matches` are additive — callers that never destructure
+ * them are unaffected. They exist because a real client has thousands of stores
+ * and hundreds of retailers, so a long dimension needs typeahead; see
+ * `SEARCH_THRESHOLD` in `registry.ts` for where that line is drawn and why.
  */
 export function useFilterMenu(catalogue: FilterDimension[]) {
   const [open, setOpen] = useState(false);
   const [dim, setDim] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
   const rootRef = useRef<HTMLDivElement>(null);
 
+  // Every transition between steps clears the query: a search typed against one
+  // dimension's values means nothing against another's.
   const close = useCallback(() => {
     setOpen(false);
     setDim(null);
+    setQuery("");
   }, []);
 
   const toggle = useCallback(() => {
     setOpen((wasOpen) => !wasOpen);
     setDim(null);
+    setQuery("");
+  }, []);
+
+  const chooseDim = useCallback((next: string | null) => {
+    setDim(next);
+    setQuery("");
   }, []);
 
   useEffect(() => {
@@ -56,5 +71,23 @@ export function useFilterMenu(catalogue: FilterDimension[]) {
 
   const dimension = dim ? catalogue.find((d) => d.key === dim) ?? null : null;
 
-  return { open, toggle, close, dim, setDim, dimension, rootRef };
+  /** Case-insensitive substring match. No debounce: these are in-memory arrays,
+   *  and the render is capped by the caller rather than by time. */
+  const matches = useCallback(
+    (label: string) => label.toLowerCase().includes(query.trim().toLowerCase()),
+    [query],
+  );
+
+  return {
+    open,
+    toggle,
+    close,
+    dim,
+    setDim: chooseDim,
+    dimension,
+    rootRef,
+    query,
+    setQuery,
+    matches,
+  };
 }

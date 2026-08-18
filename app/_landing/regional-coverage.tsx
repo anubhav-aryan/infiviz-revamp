@@ -1,7 +1,11 @@
+"use client";
+
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
+import { COVERAGE_REGION_ACCESSORS } from "@/app/merch-activity/_data/accessors";
 import { MERCH_ACTIVITY } from "@/app/merch-activity/_data/merch-activity";
+import { useNarrowed } from "@/app/_filters/use-narrowed";
 import { CURRENT_MONTH } from "@/app/_time/periods";
 import styles from "./landing.module.css";
 
@@ -11,6 +15,9 @@ const REGIONS = MERCH_ACTIVITY[CURRENT_MONTH].coverageRegions;
 const MAX_PCT = Math.max(...REGIONS.map((region) => region.pct));
 
 export function RegionalCoverage() {
+  // The one card on this screen whose rows carry a filterable dimension.
+  const regions = useNarrowed(REGIONS, COVERAGE_REGION_ACCESSORS);
+
   return (
     <div className={`${styles.card} ${styles.retailerCard}`}>
       <div className={`${styles.cardHead} ${styles.retailerHead}`}>
@@ -21,7 +28,7 @@ export function RegionalCoverage() {
           <ExcelDownloadButton label="Coverage by region" compact />
         </span>
       </div>
-      {REGIONS.map((region) => (
+      {regions.map((region) => (
         <div key={region.name} className={styles.retailerRow}>
           <span className={styles.retailerName}>{region.name}</span>
           <span className={styles.retailerTrack}>

@@ -5,7 +5,7 @@ import { Icon } from "@/app/_components/icon";
 import { Avatar } from "./bits";
 import { SOURCES, type Suggestion } from "../_data/tickets";
 import type { TicketContext } from "../_data/ticket-context";
-import { assignableTo, PERSONA_ACTOR } from "../_data/people";
+import { assignableTo, PERSONA_ACTOR, RANK_LABEL, RANK_ORDER } from "../_data/people";
 import styles from "./tickets.module.css";
 
 /**
@@ -128,6 +128,16 @@ export function ComposePanel({
             </div>
           ) : null}
 
+          {/* Stated rather than implied: this is what makes the ticket
+              returnable to the view it was raised from. */}
+          {context?.from ? (
+            <p className={styles.originNote}>
+              <Icon name="target" size={12} />
+              Captured the filters applied when this was raised, so opening the
+              ticket returns to these numbers.
+            </p>
+          ) : null}
+
           <label className={styles.field}>
             <span className={styles.fieldLabel}>Summary</span>
             <input
@@ -157,16 +167,28 @@ export function ComposePanel({
                   {reporter ? `you are ${reporter.role}` : ""}
                 </span>
               </span>
+              {/* Grouped by rank so the hierarchy is visible in the picker
+                  itself: a ticket can be directed at a supervisor or all the
+                  way down to the merchandiser who will actually fix the shelf.
+                  `assignableTo` keeps it downward-only from whoever is raising. */}
               <select
                 className={styles.input}
                 value={assignee}
                 onChange={(event) => setAssignee(event.target.value)}
               >
-                {options.map((person) => (
-                  <option key={person.id} value={person.id}>
-                    {person.name} — {person.role}
-                    {person.region !== "National" ? ` · ${person.region}` : ""}
-                  </option>
+                {RANK_ORDER.filter((rank) =>
+                  options.some((person) => person.rank === rank),
+                ).map((rank) => (
+                  <optgroup key={rank} label={RANK_LABEL[rank]}>
+                    {options
+                      .filter((person) => person.rank === rank)
+                      .map((person) => (
+                        <option key={person.id} value={person.id}>
+                          {person.name} — {person.role}
+                          {person.region !== "National" ? ` · ${person.region}` : ""}
+                        </option>
+                      ))}
+                  </optgroup>
                 ))}
               </select>
             </label>

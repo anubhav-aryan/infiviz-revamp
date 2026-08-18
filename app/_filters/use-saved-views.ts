@@ -20,9 +20,13 @@ export type SavedView = {
   filters: ActiveFilter[];
 };
 
-type Stored = { version: 1; views: SavedView[] };
+type Stored = { version: 2; views: SavedView[] };
 
-const VERSION = 1;
+/* Bumped to 2 when the global filter bar canonicalised the vocabulary: views
+   saved before it hold raw spellings like `Store type~Minimart` that no longer
+   parse. The version check below discards them wholesale, which is this file's
+   documented behaviour — repairing them would mean guessing. */
+const VERSION = 2;
 
 /** Stable empty array: a new [] each call would spin useSyncExternalStore. */
 const EMPTY: SavedView[] = [];

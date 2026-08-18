@@ -3,24 +3,16 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import type { CsvTable } from "@/app/_export/csv";
-import {
-  filterKey,
-  parseFilters,
-  serializeFilters,
-  type ActiveFilter,
-} from "@/app/_filters/model";
-import {
-  CURRENT_MONTH,
-  isMonthKey,
-  previousMonth,
-  type MonthKey,
-} from "@/app/_time/periods";
+import { useGlobalFilters } from "@/app/_filters/global-filter-context";
+import type { ActiveFilter } from "@/app/_filters/model";
+import { CURRENT_MONTH, previousMonth, type MonthKey } from "@/app/_time/periods";
+import { presetToMonth } from "@/app/_time/presets";
 import {
   DEFAULT_DIM,
   DIM_OPTIONS,
-  FILTER_DIMENSIONS,
   PRECOMPUTED,
   buildView,
+  toAnalyticsFilters,
   exportFilename,
   missingCsv,
   rankedCsv,
@@ -28,6 +20,7 @@ import {
   type Persona,
 } from "../_data/analytics";
 import { AnalyticsHeader } from "./analytics-header";
+import { DataHealthBand } from "./data-health-band";
 import { CategoryBody } from "./category-body";
 import { ExecBody } from "./exec-body";
 import { FieldBody } from "./field-body";
@@ -67,9 +60,11 @@ function toQuery(scope: Scope): string {
   const query = new URLSearchParams();
   if (scope.persona !== "exec") query.set("persona", scope.persona);
   if (scope.dim !== DEFAULT_DIM[scope.persona]) query.set("dim", scope.dim);
-  if (scope.period !== CURRENT_MONTH) query.set("month", scope.period);
   if (scope.compare) query.set("compare", "1");
-  if (scope.filters.length) query.set("f", serializeFilters(scope.filters));
+  // `month` is retired alongside `f`: the global bar's date token is the one
+  // place the period is written, and this screen resolves it.
+  // `f` is deliberately absent: the global filter bar owns that parameter, and
+  // two writers on one param is how they end up disagreeing.
   return query.toString();
 }
 
@@ -82,16 +77,26 @@ export function Analytics() {
   const persona: Persona = isPersona(rawPersona) ? rawPersona : "exec";
   const dim = readDim(persona, params.get("dim"));
 
-  const rawMonth = params.get("month");
-  const period: MonthKey =
-    rawMonth && isMonthKey(rawMonth) ? rawMonth : CURRENT_MONTH;
 
   const compare = params.get("compare") === "1";
 
-  const rawFilters = params.get("f") ?? "";
+  /* The global bar owns `?f=` and writes it in the shared vocabulary; this
+     screen translates it into its own dimension keys at the boundary. */
+  const globalFilters = useGlobalFilters();
   const filters = useMemo(
-    () => parseFilters(rawFilters, FILTER_DIMENSIONS),
-    [rawFilters],
+    () => toAnalyticsFilters(globalFilters?.filters ?? []),
+    [globalFilters?.filters],
+  );
+
+  /* The month comes from the bar's date token, resolved by the same
+     `presetToMonth` the report screens use — one token, one resolver per
+     screen. `?month=` is retired so there is a single writer of the date. */
+  const period: MonthKey = useMemo(
+    () =>
+      globalFilters
+        ? presetToMonth(globalFilters.date.preset, globalFilters.date.custom)
+        : CURRENT_MONTH,
+    [globalFilters],
   );
 
   // Unfiltered is the overwhelmingly common case and every month of it is
@@ -127,34 +132,11 @@ export function Analytics() {
 
   const changeDim = (next: DimKey) => navigate({ ...scope, dim: next });
 
-  const changePeriod = (next: MonthKey) =>
-    navigate({
-      ...scope,
-      period: next,
-      // Nothing precedes February inside the authored window.
-      compare: compare && previousMonth(next) !== null,
-    });
-
   const changeCompare = (next: boolean) => navigate({ ...scope, compare: next });
 
-  const addFilter = (filter: ActiveFilter) => {
-    if (filters.some((f) => filterKey(f) === filterKey(filter))) return;
-    navigate({ ...scope, filters: [...filters, filter] });
-  };
-
-  const removeFilter = (filter: ActiveFilter) =>
-    navigate({
-      ...scope,
-      filters: filters.filter((f) => filterKey(f) !== filterKey(filter)),
-    });
-
-  const applyView = (nextPeriod: MonthKey, nextFilters: ActiveFilter[]) =>
-    navigate({
-      ...scope,
-      period: nextPeriod,
-      filters: nextFilters,
-      compare: compare && previousMonth(nextPeriod) !== null,
-    });
+  /* Saved views record a period the bar now owns, so applying one restores the
+     filters and leaves the date alone rather than fighting the bar for it. */
+  const applyView = () => navigate({ ...scope });
 
   const dimPicker = (
     <Segmented
@@ -178,18 +160,18 @@ export function Analytics() {
         persona={persona}
         onPersonaChange={changePersona}
         period={period}
-        onPeriodChange={changePeriod}
         compare={compare}
         onCompareChange={changeCompare}
         comparable={previousMonth(period) !== null}
         coverage={view.coverage}
         filters={filters}
-        onAddFilter={addFilter}
-        onRemoveFilter={removeFilter}
         onApplyView={applyView}
         exportTable={exportTable}
         exportFilename={exportFilename(persona, dim, period)}
       />
+
+      {/* Top of funnel, above every other figure — it qualifies all of them. */}
+      <DataHealthBand month={period} />
 
       {persona === "exec" ? (
         <ExecBody view={view} dim={dim} dimPicker={dimPicker} compare={compare} />

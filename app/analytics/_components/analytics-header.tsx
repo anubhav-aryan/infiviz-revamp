@@ -5,27 +5,15 @@ import Link from "next/link";
 import { Icon } from "@/app/_components/icon";
 import type { CsvTable } from "@/app/_export/csv";
 import { ExportButton } from "@/app/_export/export-button";
-import {
-  filterKey,
-  filterLabel,
-  hasFilter,
-  type ActiveFilter,
-  type FilterDimension,
-} from "@/app/_filters/model";
+import type { ActiveFilter, FilterDimension } from "@/app/_filters/model";
 import { useFilterMenu } from "@/app/_filters/use-filter-menu";
 import { useSavedViews } from "@/app/_filters/use-saved-views";
-import { DatePresetPicker } from "@/app/_time/date-preset-picker";
 import {
   MONTH_BY_KEY,
   isMonthKey,
   type MonthKey,
 } from "@/app/_time/periods";
-import {
-  FILTER_DIMENSIONS,
-  PERSONAS,
-  SUGGESTED_FILTERS,
-  type Persona,
-} from "../_data/analytics";
+import { PERSONAS, type Persona } from "../_data/analytics";
 import {
   PERSONA_IDS,
   modulePath,
@@ -45,15 +33,13 @@ type AnalyticsHeaderProps = {
   persona: Persona;
   onPersonaChange: (persona: Persona) => void;
   period: MonthKey;
-  onPeriodChange: (period: MonthKey) => void;
   compare: boolean;
   onCompareChange: (compare: boolean) => void;
   /** February has no earlier month inside the authored window. */
   comparable: boolean;
   coverage: number;
+  /** Still needed: saved views record the filter set that was applied. */
   filters: ActiveFilter[];
-  onAddFilter: (filter: ActiveFilter) => void;
-  onRemoveFilter: (filter: ActiveFilter) => void;
   onApplyView: (period: MonthKey, filters: ActiveFilter[]) => void;
   exportTable: CsvTable;
   exportFilename: string;
@@ -78,28 +64,17 @@ export function AnalyticsHeader({
   persona,
   onPersonaChange,
   period,
-  onPeriodChange,
   compare,
   onCompareChange,
   comparable,
   coverage,
   filters,
-  onAddFilter,
-  onRemoveFilter,
   onApplyView,
   exportTable,
   exportFilename,
 }: AnalyticsHeaderProps) {
   // Destructured on purpose: the linter treats the whole returned object as
   // ref-tainted while a plain field read is fine.
-  const {
-    open: filterOpen,
-    toggle: toggleFilterMenu,
-    close: closeFilterMenu,
-    setDim: setFilterDim,
-    dimension: openDimension,
-    rootRef: filterRef,
-  } = useFilterMenu(FILTER_DIMENSIONS);
   const {
     open: viewsOpen,
     toggle: toggleViews,
@@ -109,15 +84,6 @@ export function AnalyticsHeader({
 
   const savedViews = useSavedViews("analytics");
   const [viewName, setViewName] = useState("");
-
-  const suggestions = SUGGESTED_FILTERS.filter(
-    (f) => !hasFilter(filters, f.dim, f.value),
-  );
-
-  const addFilter = (filter: ActiveFilter) => {
-    onAddFilter(filter);
-    closeFilterMenu();
-  };
 
   const saveView = () => {
     const name = viewName.trim();
@@ -176,8 +142,6 @@ export function AnalyticsHeader({
           row's controls keep their right-hand position via `.headRow2`. */}
       <div className={`${styles.headRow} ${styles.headRow2}`}>
         <div className={styles.headActions}>
-          <DatePresetPicker mode="callback" period={period} onChange={onPeriodChange} />
-
           <button
             type="button"
             className={styles.ghostButton}
@@ -193,104 +157,9 @@ export function AnalyticsHeader({
       </div>
 
       <div className={`${styles.headRow} ${styles.headRow3}`}>
-        <div className={styles.chips}>
-          {filters.map((filter) => (
-            <span key={filterKey(filter)} className={styles.chip}>
-              {filterLabel(filter)}
-              <button
-                type="button"
-                className={styles.chipRemove}
-                aria-label={`Remove filter ${filterLabel(filter)}`}
-                onClick={() => onRemoveFilter(filter)}
-              >
-                <Icon name="x" size={13} />
-              </button>
-            </span>
-          ))}
-
-          <div className={styles.menuAnchor} ref={filterRef}>
-            <button
-              type="button"
-              className={styles.addFilter}
-              aria-expanded={filterOpen}
-              onClick={toggleFilterMenu}
-            >
-              <Icon name="plus" size={14} />
-              Add filter
-            </button>
-
-            {filterOpen ? (
-              <div className={styles.menu} data-wide="true">
-                {openDimension ? (
-                  <>
-                    <button
-                      type="button"
-                      className={styles.menuBack}
-                      onClick={() => setFilterDim(null)}
-                    >
-                      <Icon name="chevron-left" size={14} />
-                      {openDimension.label}
-                    </button>
-                    <div className={styles.menuScroll}>
-                      {openDimension.values.map((value) => {
-                        const on = hasFilter(filters, openDimension.key, value);
-                        return (
-                          <button
-                            key={value}
-                            type="button"
-                            className={styles.menuItem}
-                            data-active={on}
-                            disabled={on}
-                            onClick={() =>
-                              addFilter({ dim: openDimension.key, value })
-                            }
-                          >
-                            {value}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {suggestions.length ? (
-                      <>
-                        <div className={styles.menuLabel}>Suggested</div>
-                        {suggestions.map((filter) => (
-                          <button
-                            key={filterKey(filter)}
-                            type="button"
-                            className={styles.menuItem}
-                            onClick={() => addFilter(filter)}
-                          >
-                            {filterLabel(filter)}
-                          </button>
-                        ))}
-                      </>
-                    ) : null}
-
-                    <div className={styles.menuLabel}>Filter by</div>
-                    <div className={styles.menuScroll}>
-                      {FILTER_DIMENSIONS.map((dimension) => (
-                        <button
-                          key={dimension.key}
-                          type="button"
-                          className={styles.menuItem}
-                          onClick={() => setFilterDim(dimension.key)}
-                        >
-                          {dimension.label}
-                          <span className={styles.menuCount}>
-                            {dimension.values.length}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : null}
-          </div>
-        </div>
+        {/* Chips and "Add filter" moved to the global filter bar — one bar,
+            one place. This row keeps only what is Analytics' own. */}
+        <div />
 
         <div className={styles.headActions}>
           <div className={styles.menuAnchor} ref={viewsRef}>

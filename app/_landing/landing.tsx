@@ -38,7 +38,7 @@ export function Landing() {
 
   return (
     <>
-      <AppShell active="activity" nav={state.nav}>
+      <AppShell active="activity" nav={state.nav} filterScope="activity">
         {state.render()}
       </AppShell>
 

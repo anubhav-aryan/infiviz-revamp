@@ -1,21 +1,19 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Icon } from "@/app/_components/icon";
 import { Segmented } from "@/app/_charts/segmented";
-import { SortableTable } from "@/app/_charts/sortable-table";
-import { num, text, type Column, type Row } from "@/app/_charts/table";
 import charts from "@/app/_charts/charts.module.css";
-import { PRIORITY_LABEL, STATUS_LABEL } from "./bits";
 import { ComposePanel } from "./compose-panel";
-import { TicketBoard } from "./ticket-board";
+import { TicketFilters, type TicketFilterState, EMPTY_FILTERS } from "./ticket-filters";
+import { TicketList } from "./ticket-list";
 import { TicketPanel } from "./ticket-panel";
 import {
-  SUGGESTIONS,
   nameFor,
   ticketsForPersona,
   type Suggestion,
+  type Ticket,
 } from "../_data/tickets";
 import { ticketContextFromParams, type TicketContext } from "../_data/ticket-context";
 import { PERSONA_ACTOR } from "../_data/people";
@@ -24,10 +22,17 @@ import styles from "./tickets.module.css";
 /**
  * The Tickets screen.
  *
+ * A flat list of every raised ticket, and nothing else. The Kanban board that
+ * used to lead this screen is gone: a board implies people drag work between
+ * stages, and in this model nobody does — a ticket closes when the next visit's
+ * IR output shows the problem resolved. Keeping the board would have advertised
+ * an interaction that does not exist.
+ *
+ * The list is the visibility layer. Raising a ticket without being able to see
+ * the ones already raised is assignment into a void, which is what this answers.
+ *
  * All state is local and nothing persists — this is a mockup of the workflow,
- * not a ticket store. What it is meant to show is the shape: a higher persona
- * looking at work, the suggestions the platform raised, and the act of turning
- * one into an assignment for someone below them.
+ * not a ticket store.
  */
 
 const PERSONAS = [
@@ -37,36 +42,19 @@ const PERSONAS = [
   { id: "field", label: "Field supervisor" },
 ] as const;
 
-const VIEWS = [
-  { id: "board", label: "Board" },
-  { id: "list", label: "List" },
-] as const;
-
-const LIST_COLUMNS: Column[] = [
-  { key: "key", label: "Key", width: "92px" },
-  { key: "title", label: "Summary" },
-  { key: "subject", label: "Subject" },
-  { key: "assignee", label: "Assignee" },
-  { key: "priority", label: "Priority" },
-  { key: "status", label: "Status" },
-  { key: "due", label: "Due", align: "right" },
-];
-
-const PRIORITY_ORDER: Record<string, number> = { high: 3, medium: 2, low: 1 };
-const STATUS_ORDER: Record<string, number> = { todo: 1, "in-progress": 2, done: 3 };
-
 export function Tickets() {
-  /* Opens on the executive — the top of the hierarchy sees every ticket, so
-     the board is populated on arrival. Switching down to a field supervisor
-     then visibly narrows it, which is the point of the control. */
   const params = useSearchParams();
+  /* Opens on the executive — the top of the hierarchy sees every ticket, so the
+     list is populated on arrival. Switching down to a field supervisor then
+     visibly narrows it, which is the point of the control. */
   const [persona, setPersona] = useState<string>("exec");
-  const [view, setView] = useState<"board" | "list">("board");
   const [openKey, setOpenKey] = useState<string | null>(null);
-  /* A "Create ticket" button on another screen (a chart's region/metric/
-     period) lands here via `?compose=1&region=...` — read once, on mount,
-     so the compose panel opens pre-filled instead of requiring a second
-     click on this screen. */
+  const [filters, setFilters] = useState<TicketFilterState>(EMPTY_FILTERS);
+  /** Deleted keys. Deletion is the only manual action on a ticket — see below. */
+  const [deleted, setDeleted] = useState<ReadonlySet<string>>(() => new Set());
+  /* A "Create ticket" button on another screen lands here via
+     `?compose=1&metric=…&from=…&f=…` — read once, on mount, so the compose
+     panel opens pre-filled instead of requiring a second click. */
   const [composing, setComposing] = useState<
     { open: false } | { open: true; from?: Suggestion; context?: TicketContext }
   >(() => {
@@ -74,30 +62,32 @@ export function Tickets() {
     return context ? { open: true, context } : { open: false };
   });
 
-  const tickets = useMemo(() => ticketsForPersona(persona), [persona]);
-  const open = tickets.find((ticket) => ticket.key === openKey) ?? null;
+  const forPersona = useMemo(() => ticketsForPersona(persona), [persona]);
+
+  const visible = useMemo(
+    () => forPersona.filter((ticket) => !deleted.has(ticket.key)),
+    [forPersona, deleted],
+  );
+
+  const filtered = useMemo(
+    () => applyTicketFilters(visible, filters),
+    [visible, filters],
+  );
+
+  const open = filtered.find((ticket) => ticket.key === openKey) ?? null;
   const actor = PERSONA_ACTOR[persona];
 
-  const rows: Row[] = tickets.map((ticket) => ({
-    id: ticket.key,
-    cells: [
-      { text: ticket.key, mono: true },
-      text(ticket.title),
-      text(ticket.subject),
-      text(nameFor(ticket.assigneeId)),
-      {
-        text: PRIORITY_LABEL[ticket.priority],
-        value: PRIORITY_ORDER[ticket.priority],
-        pill: { label: PRIORITY_LABEL[ticket.priority], tone: ticket.priority },
-      },
-      {
-        text: STATUS_LABEL[ticket.status],
-        value: STATUS_ORDER[ticket.status],
-        pill: { label: STATUS_LABEL[ticket.status], tone: ticket.status },
-      },
-      num(ticket.due, Number(ticket.due.slice(0, 2))),
-    ],
-  }));
+  /**
+   * Closure comes from the next visit's IR output, so deleting is the only
+   * thing a person can do to a ticket by hand — which makes it the sole escape
+   * hatch for one raised in error, and worth a confirm.
+   */
+  const remove = useCallback((key: string) => {
+    setDeleted((current) => new Set(current).add(key));
+    setOpenKey((current) => (current === key ? null : current));
+  }, []);
+
+  const raised = visible.filter((ticket) => ticket.status === "raised").length;
 
   return (
     <div className={styles.screen}>
@@ -107,18 +97,11 @@ export function Tickets() {
             <div className={styles.eyebrow}>Work</div>
             <h1 className={styles.title}>Tickets</h1>
             <p className={styles.subtitle}>
-              Colgate-Palmolive Vietnam · {tickets.length} open to you ·{" "}
-              {SUGGESTIONS.length} suggestions waiting
+              Colgate-Palmolive Vietnam · {raised} raised · {visible.length} total
             </p>
           </div>
 
           <div className={styles.headActions}>
-            <Segmented
-              options={VIEWS}
-              value={view}
-              onChange={setView}
-              label="View"
-            />
             <button
               type="button"
               className={styles.primaryButton}
@@ -148,27 +131,29 @@ export function Tickets() {
       </header>
 
       <div className={styles.body}>
-        {view === "board" ? (
-          <TicketBoard
-            tickets={tickets}
-            suggestions={SUGGESTIONS}
-            onOpen={setOpenKey}
-            onCreateFrom={(from) => setComposing({ open: true, from })}
-          />
-        ) : (
-          <div className={`${charts.card} ${charts.tableCard}`}>
-            <SortableTable
-              columns={LIST_COLUMNS}
-              rows={rows}
-              emptyLabel="No tickets for this persona."
-              defaultSort={{ index: 4, dir: "desc" }}
-              maxHeight={620}
-            />
-          </div>
-        )}
+        <TicketFilters
+          tickets={visible}
+          value={filters}
+          onChange={setFilters}
+          shown={filtered.length}
+        />
+
+        {/* The "Suggested" lane is parked, not cancelled — `SUGGESTIONS` is
+            still derived in `_data/tickets.ts`, and this is where the lane
+            returns once the recommendation logic behind it exists. */}
+
+        <div className={`${charts.card} ${charts.tableCard}`}>
+          <TicketList tickets={filtered} onOpen={setOpenKey} />
+        </div>
       </div>
 
-      {open ? <TicketPanel ticket={open} onClose={() => setOpenKey(null)} /> : null}
+      {open ? (
+        <TicketPanel
+          ticket={open}
+          onClose={() => setOpenKey(null)}
+          onDelete={remove}
+        />
+      ) : null}
 
       {composing.open ? (
         <ComposePanel
@@ -180,4 +165,20 @@ export function Tickets() {
       ) : null}
     </div>
   );
+}
+
+/** AND across fields, matching how the global filter bar reads. */
+function applyTicketFilters(
+  tickets: Ticket[],
+  filters: TicketFilterState,
+): Ticket[] {
+  return tickets.filter((ticket) => {
+    if (filters.status && ticket.status !== filters.status) return false;
+    if (filters.assignee && nameFor(ticket.assigneeId) !== filters.assignee) {
+      return false;
+    }
+    if (filters.subject && ticket.subject !== filters.subject) return false;
+    if (filters.label && !ticket.labels.includes(filters.label)) return false;
+    return true;
+  });
 }

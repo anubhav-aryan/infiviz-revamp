@@ -108,9 +108,13 @@ export const DIM_SOURCE: Record<DimKey, DimFacts[]> = {
     ["Mini mart", 61.3, 0.6, 1290, 38],
     ["Convenience", 54.0, -1.1, 44, 33],
   ],
+  /* `sos` here must match `category-sos.ts`, which is where per-category share
+     of shelf is authored. It cannot import from that file — `category-sos.ts`
+     reads this module's `VIS_SERIES` — so the values are repeated and guarded
+     by the assertion at the bottom of that file instead. */
   Category: [
-    ["Toothpaste", 65.1, 1.2, 78, 40],
-    ["Toothbrush", 61.0, 0.5, 43, 36],
+    ["Toothpaste", 65.1, 1.2, 78, 46.7],
+    ["Toothbrush", 61.0, 0.5, 43, 21.3],
   ],
   Brand: [
     ["Colgate Total", 74.0, 2.0, 610, 11],

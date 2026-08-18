@@ -1,11 +1,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { FilterRegion } from "@/app/_filters/filter-region";
+import type { FilterScopeId } from "@/app/_filters/filter-scopes";
 import { ChatLauncher } from "./chat/chat-launcher";
 import { ChatPaneProvider } from "./chat/chat-pane-context";
 import { Icon } from "./icon";
 import { Sidebar } from "./sidebar";
 import {
-  NAV_BY_ID,
+  PRODUCT_NAV,
   OTHER_APPS,
   fullNav,
   type NavEntry,
@@ -18,10 +20,16 @@ type AppShellProps = {
   active: NavId;
   /** Override the nav entirely — used by Landing's onboarding state. */
   nav?: NavEntry[];
+  /**
+   * Shows the global filter bar for this scope. Omitted on screens where
+   * session filters are meaningless — Catalog, Master data, Tickets — and the
+   * bar's absence is the signal that they are not session-scoped.
+   */
+  filterScope?: FilterScopeId;
   children: ReactNode;
 };
 
-export function AppShell({ active, nav, children }: AppShellProps) {
+export function AppShell({ active, nav, filterScope, children }: AppShellProps) {
   const entries = nav ?? fullNav(active);
 
   return (
@@ -30,7 +38,16 @@ export function AppShell({ active, nav, children }: AppShellProps) {
 
       <ChatPaneProvider active={active}>
         <main className={styles.main}>
-          <div className={styles.mainInner}>{children}</div>
+          {/* The bar sits outside `.mainInner` because every page supplies its
+              own padding; inside it, the bar would inherit that inset and stop
+              spanning the screen. */}
+          {filterScope ? (
+            <FilterRegion scope={filterScope}>
+              <div className={styles.mainInner}>{children}</div>
+            </FilterRegion>
+          ) : (
+            <div className={styles.mainInner}>{children}</div>
+          )}
         </main>
 
         <ChatLauncher active={active} />
@@ -74,6 +91,8 @@ type RailShellProps = {
    * should render so the prerendered HTML is identical either way.
    */
   railItems?: ReactNode;
+  /** See `AppShellProps.filterScope`. */
+  filterScope?: FilterScopeId;
   children: ReactNode;
 };
 
@@ -147,6 +166,7 @@ export function RailShell({
   activeSection,
   railHeader,
   railItems,
+  filterScope,
   children,
 }: RailShellProps) {
   return (
@@ -155,7 +175,7 @@ export function RailShell({
         <Link href="/" className={styles.railMark} aria-label="InfiViz home">
           iV
         </Link>
-        {Object.values(NAV_BY_ID).map((item) => (
+        {PRODUCT_NAV.map((item) => (
           <Link
             key={item.id}
             href={item.href}
@@ -199,7 +219,13 @@ export function RailShell({
 
       <ChatPaneProvider active={active}>
         <main className={styles.main}>
-          <div className={styles.mainInner}>{children}</div>
+          {filterScope ? (
+            <FilterRegion scope={filterScope}>
+              <div className={styles.mainInner}>{children}</div>
+            </FilterRegion>
+          ) : (
+            <div className={styles.mainInner}>{children}</div>
+          )}
         </main>
 
         <ChatLauncher active={active} />

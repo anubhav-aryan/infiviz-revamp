@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { AppShell } from "@/app/_components/app-shell";
+import { RailShell } from "@/app/_components/app-shell";
+import { SessionFilterRail } from "../_components/session-filter-rail";
 import { SessionViewer } from "../_components/session-viewer";
 import {
+  SECTION,
   SESSION_STORES,
   sessionFor,
   visitBySlug,
@@ -45,8 +47,17 @@ export default async function StoreSessionPage(
   return (
     // Analytics stays highlighted: this surface has no nav entry of its own and
     // is only ever reached by drilling into an Analytics number.
-    <AppShell active="analytics">
+    <RailShell
+      active="analytics"
+      filterScope="session-viewer"
+      section={SECTION}
+      groups={[]}
+      activeSection=""
+      railItems={
+        <SessionFilterRail activeSlug={store} sessionId={visit.sessionId} />
+      }
+    >
       <SessionViewer session={sessionFor(visit)} visit={visit} />
-    </AppShell>
+    </RailShell>
   );
 }

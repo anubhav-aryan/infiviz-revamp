@@ -1,0 +1,302 @@
+/* The internal PDM console. Deliberately plainer than the client surfaces —
+   this is tooling, and it should not be mistaken for the product. */
+
+.console {
+  padding: 24px 30px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.consoleHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  max-width: 620px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* Publishing is a deliberate act, so its state is always on screen rather than
+   discovered at the moment of clicking. */
+.publishBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-card);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.publishBar[data-pending="true"] {
+  border-color: var(--amber-200, var(--border-strong));
+  background: var(--amber-50);
+  color: var(--amber-700);
+}
+
+.publishButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  border: none;
+  border-radius: 8px;
+  background: var(--indigo-600);
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--neutral-0);
+  cursor: pointer;
+}
+
+.publishButton:hover {
+  background: var(--indigo-700);
+}
+
+.metricTable {
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--surface-card);
+  overflow: hidden;
+}
+
+.metricHeadRow,
+.metricRow {
+  display: grid;
+  grid-template-columns: 1.4fr 140px 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 18px;
+}
+
+.metricHeadRow {
+  background: var(--indigo-50);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-heading);
+}
+
+.metricRow {
+  border-bottom: 1px solid var(--hairline);
+  font-size: 13px;
+}
+
+.metricRow:last-child {
+  border-bottom: none;
+}
+
+/* A row that differs from what the client currently sees. */
+.metricRow[data-changed="true"] {
+  background: var(--amber-50);
+}
+
+.metricRow[data-off="true"] .metricName {
+  color: var(--text-caption);
+}
+
+.metricName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.changedChip {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--amber-100);
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--amber-700);
+}
+
+/* Same switch treatment Analytics' category screen already uses. */
+.switch {
+  width: 38px;
+  height: 21px;
+  padding: 2px;
+  border: none;
+  border-radius: 999px;
+  background: var(--neutral-300);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background var(--transition-snap);
+}
+
+.switch[data-on="true"] {
+  background: var(--indigo-600);
+}
+
+.switch:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.switchKnob {
+  width: 17px;
+  height: 17px;
+  border-radius: 999px;
+  background: var(--neutral-0);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-snap);
+}
+
+.switch[data-on="true"] .switchKnob {
+  transform: translateX(17px);
+}
+
+.chartSelect {
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface-card);
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-body);
+  cursor: pointer;
+}
+
+.chartSelect:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.readOnlyNote {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+/* ---------- session validity ---------- */
+
+.ruleStack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ruleCard {
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--surface-card);
+  padding: 16px 18px;
+}
+
+.ruleHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.ruleName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.ruleNote {
+  margin: 4px 0 0;
+  max-width: 600px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* The three mechanisms do not behave the same way, and the badge says so
+   rather than leaving it to be discovered. */
+.outcomeBadge {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.outcomeBadge[data-outcome="auto"] {
+  background: var(--danger-subtle);
+  color: var(--danger);
+}
+
+.outcomeBadge[data-outcome="review"] {
+  background: var(--amber-50);
+  color: var(--amber-700);
+}
+
+.ruleControls {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid var(--hairline);
+}
+
+.ruleField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ruleLabel {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-caption);
+}
+
+.ruleInput {
+  width: 110px;
+  padding: 7px 9px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface-card);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-body);
+}
+
+.ruleEffect {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+.ruleEffect b {
+  font-family: var(--font-mono);
+  color: var(--text-heading);
+}

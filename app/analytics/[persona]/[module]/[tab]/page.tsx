@@ -101,6 +101,7 @@ export default async function AnalyticsModulePage(
 
   return (
     <RailShell
+      filterScope="analytics"
       active="analytics"
       section={{
         title: "Analytics",

@@ -66,6 +66,9 @@ import {
   User,
   Users,
   X,
+  Share2,
+  ZoomIn,
+  ZoomOut,
   type LucideProps,
 } from "lucide-react";
 
@@ -128,6 +131,7 @@ const ICONS = {
   'refresh-cw': RefreshCw,
   search: Search,
   send: Send,
+  'share-2': Share2,
   'shield-alert': ShieldAlert,
   'shield-check': ShieldCheck,
   'sliders-horizontal': SlidersHorizontal,
@@ -142,6 +146,8 @@ const ICONS = {
   user: User,
   users: Users,
   x: X,
+  'zoom-in': ZoomIn,
+  'zoom-out': ZoomOut,
 } as const;
 
 export type IconName = keyof typeof ICONS;

@@ -3,7 +3,10 @@ import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { ReorderableGrid } from "@/app/_components/reorderable-grid";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
-import { INSIGHTS, SCATTER_GUIDES, type AnalyticsView, type DimKey } from "../_data/analytics";
+import { MonthMatrix } from "@/app/_charts/month-matrix";
+import { INSIGHTS, type AnalyticsView, type DimKey } from "../_data/analytics";
+import { movementMatrix } from "../_data/movement-matrix";
+import { SosPanels } from "./sos-panels";
 import { RankedList, Sparkline, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
 
@@ -18,8 +21,8 @@ export function ExecBody({
   dimPicker: React.ReactNode;
   compare: boolean;
 }) {
-  const points = view.scatter[dim];
   const line = view.line;
+  const matrix = movementMatrix(view.period);
 
   return (
     <div className={styles.body}>
@@ -29,11 +32,18 @@ export function ExecBody({
         items={[
           { id: "stat-strip", node: <StatStrip items={view.bandA} /> },
           {
+            id: "sos-panels",
+            node: <SosPanels period={view.period} compare={compare} />,
+          },
+          {
             id: "hero-grid",
             node: (
       /* Band B — the two headline metrics */
-      <div className={styles.heroGrid}>
-        {view.heroes.map((hero) => (
+      <div className={styles.heroGrid} data-single="true">
+        {/* Only OSA remains a single headline. Share of shelf moved to its own
+            card below, because one number cannot honestly stand for a measure
+            that runs 19.6% to 59.7% across this account's categories. */}
+        {view.heroes.slice(0, 1).map((hero) => (
           <div key={hero.name} className={styles.heroCard}>
             <div className={styles.heroTop}>
               <span className={styles.heroName}>{hero.name}</span>
@@ -122,7 +132,7 @@ export function ExecBody({
           {dimPicker}
         </div>
 
-        <div className={styles.dimGrid}>
+        <div className={styles.dimSingle}>
           <div className={styles.panel}>
             <div className={styles.panelHead}>
               <span className={styles.panelTitle}>
@@ -145,76 +155,53 @@ export function ExecBody({
             />
           </div>
 
-          <div className={styles.panel}>
-            <span className={styles.panelTitle} data-gap="6">
-              OSA vs Share of Shelf
-              <AskInfiChatButton label="OSA vs Share of Shelf" compact />
-              <ExcelDownloadButton label="OSA vs Share of Shelf" compact />
+        </div>
+      </div>
+            ),
+          },
+          {
+            id: "band-movement",
+            node: (
+      /* The scatter that used to sit in band C is gone: it plotted OSA against
+         share of shelf as a cloud of same-sized dots and left the reader to
+         work out what it was for. This answers the question it was reaching
+         for — where did the shelf actually move — by making the whole surface
+         scannable and colouring only what shifted. */
+      <div className={styles.band}>
+        <div className={styles.bandHead}>
+          <div>
+            <h2 className={styles.bandTitle}>Where it moved</h2>
+            <div className={styles.bandSubtitle}>
+              Share of shelf by store and brand · colour marks the biggest
+              movement, not the biggest number
+            </div>
+          </div>
+          <span className={chatStyles.askGroup}>
+            <AskInfiChatButton label="Share of shelf by store and brand" compact />
+            <ExcelDownloadButton label="Share of shelf by store and brand" compact />
+          </span>
+        </div>
+
+        <div className={styles.panel}>
+          <MonthMatrix
+            columns={matrix.columns}
+            groups={matrix.groups}
+            rowHeader="Retailer / store"
+            ariaLabel="Share of shelf by store and brand, coloured by movement"
+          />
+          <div className={styles.matrixLegend}>
+            <span className={styles.matrixLegendLabel}>Movement</span>
+            {[0, 1, 2, 3, 4].map((level) => (
+              <span
+                key={level}
+                className={styles.matrixLegendSwatch}
+                data-level={level}
+                aria-hidden="true"
+              />
+            ))}
+            <span className={styles.matrixLegendLabel}>
+              flat → 6+ pts · click a cell to open that store and brand
             </span>
-            <svg
-              viewBox="0 0 300 210"
-              className={styles.chart}
-              role="img"
-              aria-label={`OSA against share of shelf, by ${dim.toLowerCase()}`}
-            >
-              <line
-                x1={SCATTER_GUIDES.tx}
-                x2={SCATTER_GUIDES.tx}
-                y1="14"
-                y2="180"
-                stroke="var(--neutral-400)"
-                strokeWidth="1"
-                strokeDasharray="4 3"
-              />
-              <line
-                x1="36"
-                x2="286"
-                y1={SCATTER_GUIDES.ty}
-                y2={SCATTER_GUIDES.ty}
-                stroke="var(--neutral-400)"
-                strokeWidth="1"
-                strokeDasharray="4 3"
-              />
-              <text
-                x="288"
-                y={SCATTER_GUIDES.tyLabel}
-                fontFamily="var(--font-mono)"
-                fontSize="8"
-                fill="var(--text-caption)"
-              >
-                OSA 85
-              </text>
-              <text
-                x={SCATTER_GUIDES.tx}
-                y="192"
-                textAnchor="middle"
-                fontFamily="var(--font-mono)"
-                fontSize="8"
-                fill="var(--text-caption)"
-              >
-                SOS 45
-              </text>
-              <text
-                x="34"
-                y="196"
-                textAnchor="end"
-                fontFamily="var(--font-ui)"
-                fontSize="9"
-                fill="var(--text-caption)"
-              >
-                SOS →
-              </text>
-              {points.map((p, i) => (
-                <circle
-                  key={i}
-                  cx={p.cx}
-                  cy={p.cy}
-                  r="4.5"
-                  fill="var(--indigo-600)"
-                  opacity="0.85"
-                />
-              ))}
-            </svg>
           </div>
         </div>
       </div>

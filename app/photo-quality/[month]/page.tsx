@@ -33,7 +33,7 @@ export default async function PhotoQualityMonthPage(
   if (!isMonthKey(month)) notFound();
 
   return (
-    <AppShell active="photo-quality">
+    <AppShell active="photo-quality" filterScope="photo-quality">
       <PhotoQualityReport month={month} />
     </AppShell>
   );

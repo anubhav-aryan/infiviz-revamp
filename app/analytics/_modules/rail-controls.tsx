@@ -29,7 +29,9 @@ import styles from "./persona.module.css";
  */
 
 /** Query keys that survive navigation inside a persona's rail. */
-const KEPT = ["scope", "month", "measure"] as const;
+/* `f` and `d` ride along so rail navigation does not silently drop the global
+   filter set — the bar writes them, every in-section link must preserve them. */
+const KEPT = ["scope", "month", "measure", "f", "d"] as const;
 
 function withQuery(href: string, params: URLSearchParams, keys: readonly string[]) {
   const next = new URLSearchParams();
