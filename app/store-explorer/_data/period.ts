@@ -1,4 +1,3 @@
-import type { DateToken } from "@/app/_filters/date-token";
 import {
   CURRENT_MONTH,
   MONTHS,
@@ -211,39 +210,4 @@ export function monthLabel(month: MonthKey): string {
 
 export function stepPickerMonth(month: MonthKey, delta: number): MonthKey | null {
   return stepMonth(month, delta);
-}
-
-/* ---------- resolving the global date token ---------- */
-
-/**
- * The global bar's date token → this screen's `Period`.
- *
- * The bar carries one token and each screen resolves it with the granularity
- * its own fixtures have: the month-routed reports call `presetToMonth()`, and
- * Store Explorer — the one screen with day-level periods — calls this. The two
- * preset vocabularies only partly overlap, so the mapping is explicit:
- * `wtd`/`last-week` both land on `last7`, the nearest thing this screen has to
- * a multi-day window, and `mtd` has no day-level equivalent so it falls back to
- * the authored day rather than inventing a month-long visit list.
- */
-export function periodForDate(token: DateToken | undefined): Period {
-  if (!token) return TODAY;
-  switch (token.preset) {
-    case "yesterday":
-      return { kind: "yesterday" };
-    case "wtd":
-    case "last-week":
-      return { kind: "last7" };
-    case "custom":
-      // The bar's custom range is ISO dates over the authored window; this
-      // screen's custom period is a pair of DayRefs, so reuse its own parser.
-      // Both sides speak ISO dates over the same authored window, so the range
-      // hands straight to this file's own parser — which clamps anything
-      // outside it back to TODAY.
-      return token.custom
-        ? parsePeriod(`${token.custom.start}${RANGE_SEP}${token.custom.end}`)
-        : TODAY;
-    default:
-      return TODAY;
-  }
 }

@@ -2,20 +2,32 @@ import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
-import type { ActiveFilter } from "@/app/_filters/model";
+import { DimensionMenu } from "@/app/_filters/dimension-menu";
+import { filterKey, type ActiveFilter } from "@/app/_filters/model";
+import { describeFilter } from "@/app/_filters/registry";
+import { group } from "@/app/_format/num";
 import type { Period } from "../_data/period";
-import type { View, Visit } from "../_data/store-explorer";
+import {
+  CATALOGUE,
+  facetCount,
+  type Facts,
+  type View,
+  type Visit,
+} from "../_data/store-explorer";
 import { SavedViewsMenu } from "./saved-views-menu";
+import { TimeControl } from "./time-control";
 import { VietnamMap } from "./vietnam-map";
 import { VisitGallery, VisitList } from "./visit-list";
 import styles from "./store-explorer.module.css";
 
 type ExplorerViewProps = {
   view: View;
+  facts: Facts;
   period: Period;
+  onPeriodChange: (period: Period) => void;
   filters: ActiveFilter[];
-  /** Only for the empty list's "clear filters" affordance — the bar owns the
-   *  real control. */
+  onAddFilter: (filter: ActiveFilter) => void;
+  onRemoveFilter: (filter: ActiveFilter) => void;
   onClearFilters: () => void;
   onApplySavedView: (period: Period, filters: ActiveFilter[]) => void;
   mapOpen: boolean;
@@ -27,8 +39,12 @@ type ExplorerViewProps = {
 
 export function ExplorerView({
   view,
+  facts,
   period,
+  onPeriodChange,
   filters,
+  onAddFilter,
+  onRemoveFilter,
   onClearFilters,
   onApplySavedView,
   mapOpen,
@@ -48,10 +64,49 @@ export function ExplorerView({
         </div>
       </div>
 
-      {/* Period, chips and "Add filter" all moved to the global filter bar —
-          one bar, one place. Only saved views remain, because they are this
-          screen's own concept rather than part of the shared filter set. */}
+      {/* This screen's own filter row. It reads the canonical catalogue, so a
+          filter set here means the same thing it does on a dashboard — but the
+          controls belong to the screen rather than to a bar scoped to the two
+          dashboards' question. */}
       <div className={styles.filterRow}>
+        <TimeControl period={period} onChange={onPeriodChange} />
+
+        <div className={styles.divider} />
+
+        {filters.map((filter) => {
+          const { dimLabel, valueLabel } = describeFilter(filter);
+          return (
+            <span key={filterKey(filter)} className={styles.filterChip}>
+              {dimLabel}: {valueLabel}
+              <button
+                type="button"
+                className={styles.filterChipRemove}
+                aria-label={`Remove filter ${dimLabel}: ${valueLabel}`}
+                onClick={() => onRemoveFilter(filter)}
+              >
+                <Icon name="x" size={13} />
+              </button>
+            </span>
+          );
+        })}
+
+        <DimensionMenu
+          catalogue={CATALOGUE}
+          filters={filters}
+          onAdd={onAddFilter}
+          countFor={(dim, value) => group(facetCount(facts, dim, value))}
+        />
+
+        {filters.length > 1 ? (
+          <button
+            type="button"
+            className={styles.linkButton}
+            onClick={onClearFilters}
+          >
+            Clear all
+          </button>
+        ) : null}
+
         <div className={styles.filterRowEnd}>
           <SavedViewsMenu
             period={period}

@@ -23,9 +23,20 @@ type DimensionMenuProps = {
   catalogue: FilterDimension[];
   filters: ActiveFilter[];
   onAdd: (filter: ActiveFilter) => void;
+  /**
+   * How many rows a value would leave, shown beside it. Optional because only
+   * a screen holding the underlying rows can answer — the global bar spans
+   * screens that count different things, so it does not pass one.
+   */
+  countFor?: (dim: string, value: string) => string;
 };
 
-export function DimensionMenu({ catalogue, filters, onAdd }: DimensionMenuProps) {
+export function DimensionMenu({
+  catalogue,
+  filters,
+  onAdd,
+  countFor,
+}: DimensionMenuProps) {
   // Destructured rather than kept as one object: the ref inside it makes every
   // property read look like a ref read during render to the linter.
   const { open, toggle, close, setDim, dimension, rootRef, query, setQuery, matches } =
@@ -107,6 +118,10 @@ export function DimensionMenu({ catalogue, filters, onAdd }: DimensionMenuProps)
                       </span>
                       {applied ? (
                         <span className={styles.menuCount}>applied</span>
+                      ) : countFor ? (
+                        <span className={styles.menuCount}>
+                          {countFor(dimension.key, value)}
+                        </span>
                       ) : null}
                     </button>
                   );

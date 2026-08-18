@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 /** The base route is the current month, so existing links keep working. */
 export default function MerchActivityPage() {
   return (
-    <AppShell active="merch-activity" filterScope="merch-activity">
+    <AppShell active="merch-activity">
       <MerchActivityReport month={CURRENT_MONTH} />
     </AppShell>
   );

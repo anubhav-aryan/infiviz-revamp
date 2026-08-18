@@ -4,7 +4,7 @@ import {
   type FilterDimension,
   narrowFilters,
 } from "@/app/_filters/model";
-import { canon, type DimId } from "@/app/_filters/registry";
+import { canon, catalogueFor, type DimId } from "@/app/_filters/registry";
 import { clockFromMinutes, group } from "@/app/_format/num";
 import { type Shift, lcg, shiftCount, shiftFor } from "@/app/_time/variants";
 import {
@@ -30,18 +30,6 @@ import { STORES, storeById, type GeoStore } from "@/app/_data/stores-geo";
  */
 
 /* ---------- filterable dimensions ---------- */
-
-/**
- * The dimension keys are the words the chips show, because `filterLabel`
- * renders `dim: value` and the design's chips read "Region: Ho Chi Minh City".
- */
-export const DIM_RETAILER = "Retailer";
-export const DIM_REGION = "Region";
-export const DIM_TYPE = "Store type";
-export const DIM_PLACEMENT = "Placement";
-export const DIM_CATEGORY = "Category";
-export const DIM_STORE = "Store";
-export const DIM_SESSION = "Session ID";
 
 export type FacetRow = { name: string; visits: number };
 
@@ -253,43 +241,23 @@ function typeFacetFrom(retailers: FacetRow[], visits: number): FacetRow[] {
   return rows;
 }
 
-export const CATALOGUE: FilterDimension[] = [
-  {
-    key: DIM_RETAILER,
-    label: DIM_RETAILER,
-    values: CURRENT_FACTS.retailers.map((row) => row.name),
-  },
-  {
-    key: DIM_REGION,
-    label: DIM_REGION,
-    values: CURRENT_FACTS.regions.map((row) => row.name),
-  },
-  {
-    key: DIM_TYPE,
-    label: DIM_TYPE,
-    values: CURRENT_FACTS.storeTypes.map((row) => row.name),
-  },
-  {
-    key: DIM_PLACEMENT,
-    label: DIM_PLACEMENT,
-    values: PLACEMENTS,
-  },
-  {
-    key: DIM_CATEGORY,
-    label: DIM_CATEGORY,
-    values: CATEGORIES,
-  },
-  {
-    key: DIM_STORE,
-    label: DIM_STORE,
-    values: VISITS.map((visit) => visit.store),
-  },
-  {
-    key: DIM_SESSION,
-    label: DIM_SESSION,
-    values: VISITS.map((visit) => visit.sessionId),
-  },
-];
+/**
+ * Built from the canonical registry rather than authored here, because
+ * `VISIT_ACCESSORS` reads every field through `canon()` — a catalogue of raw
+ * fixture spellings would offer values the accessors can never match.
+ *
+ * Only the six dimensions a visit row can actually answer for. Session ID is
+ * out: there are as many as there are captures, so a browsable list of them was
+ * never the right control.
+ */
+export const CATALOGUE: FilterDimension[] = catalogueFor([
+  "retailer",
+  "region",
+  "storeType",
+  "placement",
+  "category",
+  "store",
+]);
 
 /**
  * The design draws these two chips on load. Making them live would mean the
@@ -297,8 +265,8 @@ export const CATALOGUE: FilterDimension[] = [
  * so they are offered as the menu's first suggestions instead.
  */
 export const SUGGESTED_FILTERS: ActiveFilter[] = [
-  { dim: DIM_REGION, value: "Ho Chi Minh City" },
-  { dim: DIM_RETAILER, value: "Bach Hoa Xanh" },
+  { dim: "region", value: "ho-chi-minh-city" },
+  { dim: "retailer", value: "bach-hoa-xanh" },
 ];
 
 /* ---------- deriving the other periods ---------- */
@@ -563,6 +531,14 @@ function facetFor(facts: Facts, dim: string): FacetRow[] {
   return [...counts.entries()].map(([name, visits]) => ({ name, visits }));
 }
 
+/** Canonical store-type id back to the spelling `TYPE_MIX` is keyed by. */
+function typeLabelFor(id: string): string {
+  return (
+    CURRENT_FACTS.storeTypes.find((row) => canon("storeType", row.name) === id)?.name ??
+    id
+  );
+}
+
 /** Facet rows for the authored marginals carry raw fixture names; the derived
  *  ones already carry canonical ids. `canonRow` puts both in one vocabulary. */
 function canonRow(dim: string, name: string): string {
@@ -632,16 +608,22 @@ export function build(facts: Facts, filters: ActiveFilter[]): View {
   // trades in contribute. Region has no cross-tab and scales the bars flat.
   let others = 1;
   for (const [dim, fraction] of fractions) {
-    if (dim !== DIM_RETAILER && dim !== DIM_TYPE) others *= fraction;
+    if (dim !== "retailer" && dim !== "storeType") others *= fraction;
   }
-  const keepRetailers = selected.get(DIM_RETAILER);
-  const keepTypes = selected.get(DIM_TYPE);
+  /* `selected` is keyed by canonical dim and holds canonical values, while
+     `facts.retailers` and `typeShare` are authored in the fixtures' own
+     spellings — so each row is canonicalised before the comparison. */
+  const keepRetailers = selected.get("retailer");
+  const keepTypes = selected.get("storeType");
+  const keepTypeLabels = keepTypes?.map((id) => typeLabelFor(id));
   const bars = facts.retailers
-    .filter((row) => !keepRetailers || keepRetailers.includes(row.name))
+    .filter(
+      (row) => !keepRetailers || keepRetailers.includes(canonRow("retailer", row.name)),
+    )
     .map((row) => ({
       name: row.name,
       visits: Math.round(
-        row.visits * others * (keepTypes ? typeShare(row.name, keepTypes) : 1),
+        row.visits * others * (keepTypeLabels ? typeShare(row.name, keepTypeLabels) : 1),
       ),
     }))
     .filter((row) => row.visits > 0);

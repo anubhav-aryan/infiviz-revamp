@@ -18,7 +18,6 @@ export default function SessionViewerPage() {
     // holds the session's filters, not sub-navigation.
     <RailShell
       active="analytics"
-      filterScope="session-viewer"
       section={SECTION}
       groups={[]}
       activeSection=""

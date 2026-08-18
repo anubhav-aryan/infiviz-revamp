@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 /** The base route is the current month, so existing links keep working. */
 export default function PhotoQualityPage() {
   return (
-    <AppShell active="photo-quality" filterScope="photo-quality">
+    <AppShell active="photo-quality">
       <PhotoQualityReport month={CURRENT_MONTH} />
     </AppShell>
   );

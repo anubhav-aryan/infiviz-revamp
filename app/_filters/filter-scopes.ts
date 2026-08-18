@@ -17,13 +17,15 @@ import type { DimId } from "./registry";
  * abstain from it.
  */
 
-export type FilterScopeId =
-  | "activity"
-  | "store-explorer"
-  | "analytics"
-  | "session-viewer"
-  | "photo-quality"
-  | "merch-activity";
+/**
+ * Only the two dashboards. The bar answers "what slice of the business am I
+ * looking at", which is a question Activity and Analytics are asking and the
+ * other screens are not: Store Explorer is a store list with its own filters,
+ * Session Viewer is one capture, and the two reports are month-scoped.
+ * Putting the bar on those was offering a control that belonged to a different
+ * question.
+ */
+export type FilterScopeId = "activity" | "analytics";
 
 /**
  * The three session-defining defaults the bar always draws, in row order.
@@ -35,14 +37,6 @@ const DEFAULTS: DimId[] = ["photoType", "category", "retailer"];
 
 export const FILTER_SCOPES: Record<FilterScopeId, DimId[]> = {
   activity: [...DEFAULTS, "region", "storeType"],
-  "store-explorer": [
-    ...DEFAULTS,
-    "region",
-    "storeType",
-    "placement",
-    "store",
-    "merchandiser",
-  ],
   analytics: [
     ...DEFAULTS,
     "region",
@@ -54,9 +48,6 @@ export const FILTER_SCOPES: Record<FilterScopeId, DimId[]> = {
     "city",
     "sku",
   ],
-  "session-viewer": [...DEFAULTS, "placement", "store", "region"],
-  "photo-quality": [...DEFAULTS, "region", "merchandiser", "storeType"],
-  "merch-activity": [...DEFAULTS, "region", "storeType", "merchandiser"],
 };
 
 /**
@@ -82,11 +73,9 @@ export function isFilterScope(value: string): value is FilterScopeId {
 }
 
 /**
- * Scopes whose date lives in the URL path (`/photo-quality/[month]`) rather
- * than in `?d=`. Those routes are prerendered and deep-linked, so the path
- * stays the source of truth and the bar reflects it instead of competing.
+ * Scopes whose date lives in the URL path rather than in `?d=`. Empty now that
+ * the month-routed reports no longer carry the bar; kept because the provider
+ * still takes the flag and the reports are the obvious candidates if it ever
+ * goes back on them.
  */
-export const DATE_IN_PATH: ReadonlySet<FilterScopeId> = new Set<FilterScopeId>([
-  "photo-quality",
-  "merch-activity",
-]);
+export const DATE_IN_PATH: ReadonlySet<FilterScopeId> = new Set<FilterScopeId>();

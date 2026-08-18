@@ -33,7 +33,7 @@ export default async function MerchActivityMonthPage(
   if (!isMonthKey(month)) notFound();
 
   return (
-    <AppShell active="merch-activity" filterScope="merch-activity">
+    <AppShell active="merch-activity">
       <MerchActivityReport month={month} />
     </AppShell>
   );

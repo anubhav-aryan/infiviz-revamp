@@ -49,7 +49,6 @@ export default async function StoreSessionPage(
     // is only ever reached by drilling into an Analytics number.
     <RailShell
       active="analytics"
-      filterScope="session-viewer"
       section={SECTION}
       groups={[]}
       activeSection=""

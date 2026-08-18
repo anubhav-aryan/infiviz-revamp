@@ -1,10 +1,16 @@
 "use client";
 
-import { Suspense, useCallback, useMemo, useState } from "react";
-import type { ActiveFilter } from "@/app/_filters/model";
-import { useGlobalFilters } from "@/app/_filters/global-filter-context";
-import { periodForDate, type Period } from "../_data/period";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import {
+  parseFilters,
+  serializeFilters,
+  type ActiveFilter,
+} from "@/app/_filters/model";
+import { useFilters } from "@/app/_filters/use-filters";
+import { parsePeriod, serializePeriod, type Period } from "../_data/period";
+import {
+  CATALOGUE,
   build,
   factsFor,
   photosFor,
@@ -17,10 +23,15 @@ import { PhotoLightbox } from "./photo-lightbox";
 import styles from "./store-explorer.module.css";
 
 /**
- * The filter set and the period now come from the global bar, which owns the
- * query string. This screen used to seed `useState` from `?f=` once and write
- * the URL downstream — the inversion that made filters vanish the moment you
- * navigated away and back. It reads, it does not own.
+ * Store Explorer owns its own filters again.
+ *
+ * The global bar covers the two dashboards, where the question is "what slice
+ * of the business am I looking at". This screen is asking a different one —
+ * which stores were visited, over what period — so it carries its own row
+ * rather than borrowing a bar scoped to somebody else's question.
+ *
+ * The catalogue is still the canonical one from `_filters/registry.ts`, so a
+ * filter set means the same thing here as it does on a dashboard.
  */
 export function StoreExplorer() {
   return (
@@ -30,19 +41,17 @@ export function StoreExplorer() {
   );
 }
 
+const PATH = "/store-explorer";
+
 function StoreExplorerInner() {
-  const globalFilters = useGlobalFilters();
-  const filters = useMemo(() => globalFilters?.filters ?? [], [globalFilters]);
+  const router = useRouter();
+  const params = useSearchParams();
 
-  /* The bar carries one date token; this screen resolves it to the `Period` its
-     fixtures are keyed by, the same way the month screens resolve it to a
-     `MonthKey`. One token, one resolver per screen. */
-  const period = useMemo<Period>(
-    () => periodForDate(globalFilters?.date),
-    [globalFilters?.date],
+  const [period, setPeriod] = useState<Period>(() =>
+    parsePeriod(params.get("period")),
   );
-
-  const clear = useCallback(() => globalFilters?.clear(), [globalFilters]);
+  const [initialFilters] = useState(() => parseFilters(params.get("f"), CATALOGUE));
+  const { filters, add, remove, clear, replace } = useFilters(initialFilters);
 
   // Carries the visit the "images" screen is drilled into, so Open shows the
   // row that was actually clicked instead of a fixed fixture regardless of
@@ -55,6 +64,26 @@ function StoreExplorerInner() {
   const [lightbox, setLightbox] = useState<number | null>(null);
 
 
+  const current = params.toString();
+
+  /* State is upstream of the URL here, which is the right way round for a
+     screen that owns its own filters: the row is the source of truth and the
+     query string is how it is shared. */
+  useEffect(() => {
+    const query = new URLSearchParams();
+    const encodedPeriod = serializePeriod(period);
+    if (encodedPeriod) query.set("period", encodedPeriod);
+    const encodedFilters = serializeFilters(filters);
+    if (encodedFilters) query.set("f", encodedFilters);
+
+    const next = query.toString();
+    if (next === current) return;
+    // `replace`, not `push`: removing a chip is not a place to go back to.
+    router.replace(next ? `${PATH}?${next}` : PATH, { scroll: false });
+  }, [period, filters, current, router]);
+
+  const facts = useMemo(() => factsFor(period), [period]);
+
   // The unfiltered path reads a value built at module scope, so the first
   // client render is identical to the one the server produced.
   const view = useMemo(
@@ -62,16 +91,12 @@ function StoreExplorerInner() {
     [period, filters],
   );
 
-  /* Saved views predate the global bar and still restore a filter set; the
-     period they carry is now the bar's to set, so it is replayed as filters
-     only. */
   const applySavedView = useCallback(
-    (_savedPeriod: Period, savedFilters: ActiveFilter[]) => {
-      if (!globalFilters) return;
-      globalFilters.clear();
-      for (const filter of savedFilters) globalFilters.add(filter);
+    (savedPeriod: Period, savedFilters: ActiveFilter[]) => {
+      setPeriod(savedPeriod);
+      replace(savedFilters);
     },
-    [globalFilters],
+    [replace],
   );
 
   const openImages = useCallback((visit: Visit) => {
@@ -101,8 +126,12 @@ function StoreExplorerInner() {
       {screen.name === "explorer" ? (
         <ExplorerView
           view={view}
+          facts={facts}
           period={period}
+          onPeriodChange={setPeriod}
           filters={filters}
+          onAddFilter={add}
+          onRemoveFilter={remove}
           onClearFilters={clear}
           onApplySavedView={applySavedView}
           mapOpen={mapOpen}
