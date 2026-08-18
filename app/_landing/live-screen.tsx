@@ -120,6 +120,10 @@ export function LiveScreen() {
                       style={{ width: `${SOS_SPLIT.own}%` }}
                     />
                     <span
+                      className={styles.splitPrivate}
+                      style={{ width: `${SOS_SPLIT.privateLabel}%` }}
+                    />
+                    <span
                       className={styles.splitCompetition}
                       style={{ width: `${SOS_SPLIT.competition}%` }}
                     />
@@ -131,6 +135,13 @@ export function LiveScreen() {
                         style={{ background: "var(--indigo-600)" }}
                       />
                       {SOS_SPLIT.ownLabel}
+                    </span>
+                    <span className={styles.splitLegendItem}>
+                      <span
+                        className={styles.splitSwatch}
+                        style={{ background: "var(--neutral-500)" }}
+                      />
+                      {SOS_SPLIT.privateLabelLabel}
                     </span>
                     <span className={styles.splitLegendItem}>
                       <span
@@ -172,17 +183,10 @@ export function LiveScreen() {
             </div>
           </div>
 
-          {/* trend + geography */}
-          <div className={styles.pair}>
-            <SessionsCard />
-            <RegionalCoverage />
-          </div>
-
-          {/* what needs following up, on the ground */}
-          <div className={styles.pair}>
-            <OverdueStoresCard />
-            <QualityAlertsCard />
-          </div>
+          {/* Full width, and alone on this row: its head carries a caption, a
+              month/week toggle and two buttons, so it is the one card here that
+              genuinely needs the wider column. */}
+          <SessionsCard />
 
           {/* primary actions */}
           <div className={styles.trio}>
@@ -224,7 +228,17 @@ export function LiveScreen() {
           </div>
         </div>
 
-        <ActivityFeed />
+        {/* The right column used to hold the feed and nothing else, which left
+            most of its height empty. Three cards join it — the two alert
+            strips share the feed's row markup exactly, so the four read as one
+            stack rather than four unrelated boxes. Splitting them this way
+            leaves the two columns within ~10px of each other. */}
+        <div className={styles.bodySide}>
+          <ActivityFeed />
+          <RegionalCoverage />
+          <OverdueStoresCard />
+          <QualityAlertsCard />
+        </div>
       </div>
     </div>
   );

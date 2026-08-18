@@ -9,12 +9,9 @@ import {
 /**
  * The global date filter, as one URL token.
  *
- * Date is spelled three ways in this app: `?period=` (Store Explorer),
- * `?month=` (Analytics) and a `/[month]` path segment (Photo quality, Merch
- * activity, Journey plans). Rather than migrate those — the path routes are
- * prerendered and deep-linked — the bar carries one token and each screen
- * resolves it with the resolver it already has: `presetToMonth()` for the month
- * screens, `presetToPeriod()` for Store Explorer.
+ * The bar carries one token and each screen that reads it resolves the token
+ * with its own resolver — Analytics calls `presetToMonth()`. Store Explorer is
+ * not one of them: it owns its own `Period` again and no longer reads this.
  *
  * Grammar: a preset id (`today`, `wtd`, …) or `c:START..END` for a custom range.
  */

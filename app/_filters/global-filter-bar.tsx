@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Icon } from "@/app/_components/icon";
 import { DimensionMenu } from "./dimension-menu";
 import { dateLabel, isDefaultDate, type DateToken } from "./date-token";
@@ -7,7 +8,14 @@ import { useGlobalFilters } from "./global-filter-context";
 import { filterKey, type ActiveFilter } from "./model";
 import { describeFilter, REGISTRY, valueLabel, type DimId } from "./registry";
 import { useFilterMenu } from "./use-filter-menu";
-import { DATE_PRESETS } from "@/app/_time/presets";
+import {
+  CUSTOM_RANGE_MAX,
+  CUSTOM_RANGE_MIN,
+  DATE_PRESETS,
+  presetToMonth,
+  type CustomRange,
+} from "@/app/_time/presets";
+import { MONTH_BY_KEY } from "@/app/_time/periods";
 import styles from "./global-filter-bar.module.css";
 
 /**
@@ -135,6 +143,17 @@ function DefaultPicker({
 
 /* ---------- the date group ---------- */
 
+/**
+ * The date control: five presets, plus a custom range.
+ *
+ * The range is bounded to the authored Feb–Jul 2026 window and each input caps
+ * the other, so it cannot be inverted. The caption underneath states which
+ * month the range resolves to, because there is no day-level data behind any of
+ * this — `presetToMonth` collapses a range to the month containing its end, and
+ * a control that silently turned "3–17 March" into all of March would look
+ * broken rather than coarse. `_time/date-preset-picker.tsx` makes the same
+ * admission for the same reason.
+ */
 function DatePicker({
   date,
   onChange,
@@ -143,6 +162,14 @@ function DatePicker({
   onChange: (token: DateToken) => void;
 }) {
   const { open, toggle, close, rootRef } = useFilterMenu([]);
+
+  /* Seeded from the applied range so reopening shows what is in force, and
+     from the window's edges when no range has been picked yet. */
+  const [range, setRange] = useState<CustomRange>(
+    () => date.custom ?? { start: CUSTOM_RANGE_MIN, end: CUSTOM_RANGE_MAX },
+  );
+
+  const resolved = MONTH_BY_KEY[presetToMonth("custom", range)];
 
   return (
     <div className={styles.popoverWrap} ref={rootRef}>
@@ -176,6 +203,56 @@ function DatePicker({
                 {date.preset === preset.id ? <Icon name="check" size={13} /> : null}
               </button>
             ))}
+          </div>
+
+          {/* Authored by hand rather than mapped: `custom` is in the
+              `DatePreset` union but deliberately absent from `DATE_PRESETS`,
+              which other screens iterate. */}
+          <div className={styles.customRow} data-active={date.preset === "custom"}>
+            <div className={styles.customLabel}>Custom range</div>
+
+            <div className={styles.customInputs}>
+              <input
+                type="date"
+                className={styles.dateInput}
+                aria-label="Range start"
+                value={range.start}
+                min={CUSTOM_RANGE_MIN}
+                max={range.end}
+                onChange={(event) =>
+                  setRange((current) => ({ ...current, start: event.target.value }))
+                }
+              />
+              <span className={styles.customSep} aria-hidden="true">
+                –
+              </span>
+              <input
+                type="date"
+                className={styles.dateInput}
+                aria-label="Range end"
+                value={range.end}
+                min={range.start}
+                max={CUSTOM_RANGE_MAX}
+                onChange={(event) =>
+                  setRange((current) => ({ ...current, end: event.target.value }))
+                }
+              />
+            </div>
+
+            <button
+              type="button"
+              className={styles.applyButton}
+              onClick={() => {
+                onChange({ preset: "custom", custom: range });
+                close();
+              }}
+            >
+              Apply range
+            </button>
+
+            <div className={styles.resolvedCaption}>
+              → showing {resolved.label}
+            </div>
           </div>
         </div>
       ) : null}

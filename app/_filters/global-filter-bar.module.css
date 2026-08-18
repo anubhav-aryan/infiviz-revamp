@@ -384,3 +384,81 @@
   white-space: nowrap;
   cursor: help;
 }
+
+/* ---------- custom date range ---------- */
+
+.customRow {
+  margin-top: 6px;
+  padding: 10px 8px 4px;
+  border-top: 1px solid var(--hairline);
+}
+
+/* Marks the custom range as the one in force, since the preset list above
+   carries the only other tick. */
+.customRow[data-active="true"] {
+  background: var(--indigo-50);
+  border-radius: 8px;
+}
+
+.customLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-caption);
+  margin-bottom: 7px;
+}
+
+.customInputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dateInput {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface-card);
+  font: inherit;
+  font-size: 11.5px;
+  color: var(--text-body);
+}
+
+.dateInput:focus-visible {
+  outline: 2px solid var(--indigo-600);
+  outline-offset: 1px;
+}
+
+.customSep {
+  flex: none;
+  color: var(--text-caption);
+}
+
+.applyButton {
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px 0;
+  border: none;
+  border-radius: 7px;
+  background: var(--indigo-600);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--neutral-0);
+  cursor: pointer;
+}
+
+.applyButton:hover {
+  background: var(--indigo-700);
+}
+
+/* There is no day-level data behind any of this, so the control says which
+   month a range actually resolves to rather than implying a daily figure. */
+.resolvedCaption {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-caption);
+}

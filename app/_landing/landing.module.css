@@ -97,6 +97,14 @@
   min-width: 0;
 }
 
+/* The right column stacks the same way the left does. */
+.bodySide {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
 .pair {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -382,11 +390,14 @@
   margin-bottom: 14px;
 }
 
+/* `130px … 96px` of fixed chrome left the bar almost nothing once this card
+   moved into the narrower right column, so the name flexes and the value takes
+   only the width it needs. */
 .retailerRow {
   display: grid;
-  grid-template-columns: 130px 1fr 96px;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 5px 0;
 }
 
@@ -716,6 +727,13 @@
 
 .splitOwn {
   background: var(--indigo-600);
+}
+
+/* A retailer's own brand competes for the same shelf but is not a rival
+   manufacturer, so it reads as its own tone between ours and theirs rather
+   than being folded into either. */
+.splitPrivate {
+  background: var(--neutral-500);
 }
 
 .splitCompetition {

@@ -327,12 +327,24 @@ export const SOS: HeroTile = {
   targetLabel: "Target 45%",
 };
 
+/**
+ * Three shares, summing to 100. Private label is broken out of what used to sit
+ * inside "competition" — a retailer's own brand competes for the same shelf but
+ * is not a rival manufacturer, and lumping the two together hides the one a
+ * category manager can actually negotiate over.
+ *
+ * The concept already exists in the data model: `catalog.ts` types ownership as
+ * own / competitor / private-label and carries a Winmart Choice SKU. This
+ * surfaces it on the dashboard.
+ */
 export const SOS_SPLIT = {
-  label: "Own vs competition",
-  ratio: "38.3 / 61.7",
+  label: "Own vs private label vs competition",
+  ratio: "38.3 / 7.4 / 54.3",
   own: 38.3,
-  competition: 61.7,
+  privateLabel: 7.4,
+  competition: 54.3,
   ownLabel: "Colgate",
+  privateLabelLabel: "Private label",
   competitionLabel: "Competitors",
 };
 
