@@ -137,29 +137,24 @@ export function AnalyticsHeader({
         </div>
       </div>
 
-      {/* The scope trail that used to lead this row is gone — it was inert, and
-          nothing in these fixtures is region-scoped for it to describe. The
-          row's controls keep their right-hand position via `.headRow2`. */}
+      {/* One toolbar row rather than two. The date picker and the filter chips
+          that used to lead these rows both moved to the global filter bar,
+          which left two rows carrying nothing but a right-hand button and a
+          stretch of empty space beside it. What is left splits naturally:
+          the view toggle on one edge, the things that take a view away —
+          saving it, exporting it — on the other. */}
       <div className={`${styles.headRow} ${styles.headRow2}`}>
-        <div className={styles.headActions}>
-          <button
-            type="button"
-            className={styles.ghostButton}
-            data-active={compare}
-            aria-pressed={compare}
-            disabled={!comparable}
-            onClick={() => onCompareChange(!compare)}
-          >
-            <Icon name="git-compare" />
-            Compare to previous month
-          </button>
-        </div>
-      </div>
-
-      <div className={`${styles.headRow} ${styles.headRow3}`}>
-        {/* Chips and "Add filter" moved to the global filter bar — one bar,
-            one place. This row keeps only what is Analytics' own. */}
-        <div />
+        <button
+          type="button"
+          className={styles.ghostButton}
+          data-active={compare}
+          aria-pressed={compare}
+          disabled={!comparable}
+          onClick={() => onCompareChange(!compare)}
+        >
+          <Icon name="git-compare" />
+          Compare to previous month
+        </button>
 
         <div className={styles.headActions}>
           <div className={styles.menuAnchor} ref={viewsRef}>
