@@ -213,6 +213,9 @@
 .main {
   flex: 1;
   min-width: 0;
+  /* Overridden to the bar's real height wherever `FilterRegion` mounts one, so
+     screens with a full-viewport minimum can subtract it. */
+  --filter-bar-h: 0px;
 }
 
 /* The source designs are fixed 1440px desktop canvases with no responsive

@@ -1,9 +1,13 @@
 /* The module screen inside the analytics rail. */
 
+/* `100dvh` minus the global filter bar: the bar sits above this screen inside
+   `<main>`, so a full-viewport minimum here would push the page past the fold
+   by exactly the bar's height. The variable is declared on the shell and is
+   `0px` wherever no bar is mounted. */
 .screen {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--filter-bar-h, 0px));
 }
 
 .head {
@@ -163,4 +167,194 @@
   font-family: var(--font-mono);
   font-size: 10.5px;
   color: var(--text-secondary);
+}
+
+/* ---------- store-level recommendations ---------- */
+
+.recIntro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.recIntroTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.recIntroText {
+  margin: 4px 0 0;
+  max-width: 620px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* A target nobody supplied must never pass for one they agreed to. */
+.derivedNote {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 320px;
+  padding: 8px 11px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 8px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.recGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 14px;
+}
+
+.recCard {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+}
+
+.recHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.recStore {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+  min-width: 0;
+}
+
+.recRetailer {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-caption);
+  margin-top: 2px;
+}
+
+.recReasonLabel,
+.recActionLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-caption);
+  margin-bottom: 7px;
+}
+
+.recActionLabel {
+  margin-top: 14px;
+  color: var(--indigo-600);
+}
+
+/* Inputs before instruction — a recommendation that cannot show its working is
+   just an order. */
+.recReasons {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.recReasons li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.recReasons svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--text-caption);
+}
+
+.recAction {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+  line-height: 1.4;
+}
+
+.recFoot {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+  color: var(--text-caption);
+}
+
+.recFigure {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.recFigureLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  color: var(--text-caption);
+}
+
+.recFigureValue {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-heading);
+  line-height: 1;
+}
+
+/* Dashed underline, so a derived target reads differently at a glance. */
+.recFigureValue[data-basis="derived"] {
+  color: var(--text-secondary);
+  border-bottom: 1.5px dashed var(--border-strong);
+  padding-bottom: 2px;
+}
+
+.recDerivedChip {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--neutral-100);
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  cursor: help;
+}
+
+.recUpside {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--success);
 }

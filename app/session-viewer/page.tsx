@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/app/_components/app-shell";
+import { RailShell } from "@/app/_components/app-shell";
+import { SessionFilterRail } from "./_components/session-filter-rail";
 import { SessionViewer } from "./_components/session-viewer";
+import { DEFAULT_SESSION_ID, SECTION } from "./_data/session-viewer";
 
 export const metadata: Metadata = {
   title: "Session Viewer",
@@ -11,9 +13,18 @@ export const metadata: Metadata = {
 export default function SessionViewerPage() {
   return (
     // Analytics stays highlighted: this surface has no nav entry of its own and
-    // is only ever reached by drilling into an Analytics number.
-    <AppShell active="analytics">
+    // is only ever reached by drilling into an Analytics number. `groups` is
+    // empty because `railItems` replaces the rendered nav entirely — this rail
+    // holds the session's filters, not sub-navigation.
+    <RailShell
+      active="analytics"
+      filterScope="session-viewer"
+      section={SECTION}
+      groups={[]}
+      activeSection=""
+      railItems={<SessionFilterRail sessionId={DEFAULT_SESSION_ID} />}
+    >
       <SessionViewer />
-    </AppShell>
+    </RailShell>
   );
 }

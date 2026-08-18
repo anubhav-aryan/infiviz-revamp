@@ -19,10 +19,12 @@ type MetricsPanelProps = {
 };
 
 /**
- * The right column: every number Analytics rolled up, next to the evidence it
- * was computed from. Only the session header varies by store — the metrics
- * below it are one authored session's figures. Entirely static; nothing here
- * reacts to the box toggle.
+ * Every number Analytics rolled up, next to the evidence it was computed from.
+ * The body of the session metrics drawer.
+ *
+ * These are one authored session's figures — only the must-stock checklist
+ * varies by store. The session's own identity is not repeated here: it is the
+ * page header, and the drawer's own head names the session.
  */
 export function MetricsPanel({ session, visit }: MetricsPanelProps) {
   const retailer = session.header.find((row) => row.key === "Retailer")?.value;
@@ -34,19 +36,6 @@ export function MetricsPanel({ session, visit }: MetricsPanelProps) {
 
   return (
     <div className={styles.column}>
-      {/* session header */}
-      <div className={`${styles.card} ${styles.metricsCard}`}>
-        <h1 className={styles.sessionTitle}>{session.title}</h1>
-        <div className={styles.sessionMeta}>
-          {session.header.map((row) => (
-            <div key={row.key} className={styles.sessionMetaRow}>
-              <span className={styles.sessionMetaKey}>{row.key}</span>
-              <span className={styles.sessionMetaValue}>{row.value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* shelf metrics */}
       <div className={`${styles.card} ${styles.metricsCard}`}>
         <div className={`${styles.sectionLabel} ${styles.sectionLabelBlock}`}>

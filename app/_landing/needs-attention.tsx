@@ -21,7 +21,7 @@ const PRIORITY_LABEL: Record<string, string> = {
   low: "Low",
 };
 
-const OPEN_TICKETS = TICKETS.filter((ticket) => ticket.status !== "done");
+const OPEN_TICKETS = TICKETS.filter((ticket) => ticket.status === "raised");
 const TOP_TICKETS = [...OPEN_TICKETS]
   .sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority])
   .slice(0, 5);

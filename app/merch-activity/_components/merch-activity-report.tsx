@@ -1,3 +1,5 @@
+"use client";
+
 import { CoverageMap } from "@/app/_components/coverage-map";
 import Link from "next/link";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
@@ -7,6 +9,13 @@ import type { CsvTable } from "@/app/_export/csv";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { Bar, TargetHero, TargetRule } from "@/app/_reports/marks";
 import { ReportHeader } from "@/app/_reports/report-header";
+import { UnfilteredMark } from "@/app/_filters/unfiltered-mark";
+import { useNarrowed } from "@/app/_filters/use-narrowed";
+import {
+  ACTIVITY_ACCESSORS,
+  COVERAGE_REGION_ACCESSORS,
+  OVERDUE_ACCESSORS,
+} from "../_data/accessors";
 import type { MonthKey } from "@/app/_time/periods";
 import {
   COVERAGE_TARGET_FRACTION,
@@ -73,6 +82,13 @@ function BreakdownCard({
 export function MerchActivityReport({ month }: { month: MonthKey }) {
   const view = MERCH_ACTIVITY[month];
 
+  /* Row-level tables carry region and merchandiser and genuinely narrow; the
+     coverage hero and the four activity tiles are authored monthly totals with
+     no per-row basis to recompute from, so they say so instead. */
+  const activityRows = useNarrowed(view.activityRows, ACTIVITY_ACCESSORS);
+  const overdue = useNarrowed(view.overdue, OVERDUE_ACCESSORS);
+  const coverageRegions = useNarrowed(view.coverageRegions, COVERAGE_REGION_ACCESSORS);
+
   return (
     <>
       <ReportHeader
@@ -80,7 +96,7 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
         active="merch-activity"
         month={month}
         basePath="/merch-activity"
-        csv={activityCsv(view.activityRows)}
+        csv={activityCsv(activityRows)}
         detailHref="/analytics/field/merchandiser/attendance"
       />
 
@@ -94,6 +110,7 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
           <span className={styles.sectionCaption}>
             Is the field team working?
           </span>
+          <UnfilteredMark what="These four tiles" />
         </div>
 
         <div className={styles.tileGrid}>
@@ -142,7 +159,7 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
             <span className={shared.numRight}>Last active</span>
           </div>
 
-          {view.activityRows.map((row) => (
+          {activityRows.map((row) => (
             <div
               key={row.mrch}
               className={`${styles.activityGrid} ${shared.tableRow} ${styles.activityRow}`}
@@ -181,6 +198,7 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
             <Icon name="map-pin" />
           </span>
           <h2 className={styles.sectionTitle}>Audit State</h2>
+          <UnfilteredMark what="Stores audited" />
 
           {/* Coverage lives in a different Analytics module than attendance,
               so this half of the screen gets its own way through. */}
@@ -223,7 +241,7 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
 
             <div className={shared.barListStack}>
               <TargetRule fraction={COVERAGE_TARGET_FRACTION} />
-              {view.coverageRegions.map((region) => (
+              {coverageRegions.map((region) => (
                 <div key={region.name} className={shared.barRow}>
                   <span className={shared.barRowName}>{region.name}</span>
                   <Bar pct={region.pct} height={11} />
@@ -279,7 +297,7 @@ export function MerchActivityReport({ month }: { month: MonthKey }) {
               <span>Merchandiser</span>
             </div>
 
-            {view.overdue.map((row) => (
+            {overdue.map((row) => (
               <div
                 key={row.store}
                 className={`${styles.overdueGrid} ${shared.tableRow} ${styles.overdueRow}`}

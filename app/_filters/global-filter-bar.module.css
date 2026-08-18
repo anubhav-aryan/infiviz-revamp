@@ -1,0 +1,368 @@
+/* The global filter bar — one row, on every session-scoped screen.
+
+   The row never wraps and never scrolls. The fixed group (date + three
+   defaults) has a known width; the trailing group is pushed right; the chips
+   between them shrink rather than push, because chips are the only part that
+   can grow and the only part that has an overflow affordance. */
+
+/* Height is published as a custom property on the shared `--filter-bar-h` so
+   screens with a `100dvh` minimum can subtract it. Kept in step with the
+   padding + control height below. */
+.region {
+  --filter-bar-h: 53px;
+  display: contents;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  padding: 10px 28px;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--hairline);
+  position: sticky;
+  top: 0;
+  /* Above page popovers (30) so the bar's own menus are never covered. */
+  z-index: 40;
+}
+
+/* The faint rules between groups the design asked for. */
+.divider {
+  width: 1px;
+  height: 22px;
+  flex: none;
+  background: var(--hairline);
+}
+
+.barEnd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  margin-left: auto;
+  padding-left: 8px;
+}
+
+/* ---------- the fixed defaults ---------- */
+
+.default {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  max-width: 190px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface-card);
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 6px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-snap), border-color var(--transition-snap);
+}
+
+.default:hover {
+  background: var(--surface-hover);
+}
+
+/* A default holding a value reads as applied without becoming a chip. */
+.default[data-set="true"] {
+  border-color: var(--indigo-200);
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+}
+
+.defaultLabel {
+  color: var(--text-caption);
+}
+
+.default[data-set="true"] .defaultLabel {
+  color: var(--indigo-600);
+}
+
+.defaultValue {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- ad-hoc chips ---------- */
+
+/* `min-width` plus ellipsis is what keeps the row one line: chips give up
+   width before the fixed controls do, and the title attribute carries the
+   full text for anything clipped. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 1 auto;
+  min-width: 70px;
+  overflow: hidden;
+  background: var(--indigo-50);
+  border: 1px solid var(--indigo-200);
+  border-radius: 999px;
+  padding: 5px 6px 5px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--indigo-700);
+  white-space: nowrap;
+}
+
+.chipDim {
+  color: var(--indigo-600);
+  font-weight: 500;
+  flex: none;
+}
+
+.chipValue {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chipRemove {
+  display: inline-flex;
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  flex: none;
+}
+
+.moreChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  background: var(--surface-card);
+  border: 1px solid var(--indigo-200);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--indigo-700);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.moreChip:hover {
+  background: var(--indigo-50);
+}
+
+.addFilter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  background: var(--surface-card);
+  border: 1px dashed var(--border-strong);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.addFilter:hover {
+  background: var(--surface-hover);
+  color: var(--text-body);
+}
+
+.clearAll {
+  border: none;
+  background: none;
+  padding: 4px 2px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-caption);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.clearAll:hover {
+  color: var(--danger);
+}
+
+/* ---------- popovers ---------- */
+
+.popoverWrap {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  min-width: 0;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 41;
+  width: 272px;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2);
+}
+
+.menuHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-2) var(--space-1);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-caption);
+}
+
+.menuBack {
+  display: inline-flex;
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* 340px is the height the app's menus have always been; it is also what sets
+   SEARCH_THRESHOLD — see registry.ts. */
+.menuScroll {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.menuSearch {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: var(--space-1);
+  padding: 6px 9px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  color: var(--text-caption);
+}
+
+.menuSearch:focus-within {
+  border-color: var(--indigo-400, var(--indigo-600));
+}
+
+.menuSearchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--text-body);
+  outline: none;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 8px var(--space-2);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--text-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+.menuItem:hover:not(:disabled) {
+  background: var(--brand-subtle);
+  color: var(--indigo-700);
+}
+
+.menuItem:disabled {
+  color: var(--text-disabled);
+  cursor: default;
+}
+
+.menuItemLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuCount {
+  font-size: 11px;
+  color: var(--text-caption);
+  flex: none;
+}
+
+.menuEmpty {
+  padding: 10px var(--space-2);
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+/* A row in the overflow popover — text plus its own remove button, so it is a
+   div with a nested button rather than one clickable row. */
+.menuRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 7px var(--space-2);
+  font-size: 12.5px;
+  color: var(--text-body);
+}
+
+.menuRowDim {
+  color: var(--text-caption);
+  margin-right: 6px;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  flex: none;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface-card);
+  color: var(--neutral-0);
+}
+
+.checkbox[data-on="true"] {
+  background: var(--indigo-600);
+  border-color: var(--indigo-600);
+}
+
+/* ---------- the "unfiltered" marker ---------- */
+
+.unfilteredMark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--neutral-100);
+  color: var(--text-caption);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  cursor: help;
+}

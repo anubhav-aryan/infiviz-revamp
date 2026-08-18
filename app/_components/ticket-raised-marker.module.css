@@ -1,0 +1,66 @@
+/* Sits under a card's title, so the reader learns a ticket exists before they
+   act on the number rather than after. */
+
+.markers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-card);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.marker:hover {
+  border-color: var(--indigo-300, var(--indigo-200));
+  color: var(--indigo-700);
+}
+
+/* Raised, nothing measured yet. */
+.marker[data-state="raised"] {
+  border-style: dashed;
+}
+
+/* Measured but not resolved — the number moved, the ticket is still open. */
+.marker[data-state="measured"] {
+  border-color: var(--indigo-200);
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+}
+
+/* Closed and moved the right way. Only this one is green. */
+.marker[data-state="resolved"] {
+  border-color: var(--success);
+  background: var(--success-subtle);
+  color: var(--success);
+}
+
+.markerKey {
+  font-family: var(--font-mono);
+}
+
+.beforeAfter {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.pending {
+  color: var(--text-caption);
+  font-weight: 500;
+}

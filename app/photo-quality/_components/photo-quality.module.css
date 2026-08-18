@@ -599,3 +599,205 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* Sits above the hero without displacing it — the mark only appears while a
+   filter is applied, so it must not change the card's layout when absent. */
+.heroMark {
+  grid-column: 1 / -1;
+}
+
+/* ---------- review queue ---------- */
+
+.queueCard {
+  padding: 18px 20px;
+}
+
+.queueHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.queueSubtitle {
+  font-size: 11.5px;
+  color: var(--text-caption);
+  margin-top: 3px;
+}
+
+.queueSummary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.queueList {
+  display: flex;
+  flex-direction: column;
+}
+
+/* One row, one decision. Everything needed to make it is on the row. */
+.queueRow {
+  display: grid;
+  grid-template-columns: 200px 1.3fr 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid var(--hairline);
+}
+
+/* A decided row stays put, dimmed, so a misclick is visible and recoverable. */
+.queueRow[data-outcome] {
+  opacity: 0.6;
+}
+
+.queueWhy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.queueFlag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.queueFlag[data-reason="photo-quality"] {
+  background: var(--danger-subtle);
+  color: var(--danger);
+}
+
+.queueFlag[data-reason="photo-count"] {
+  background: var(--amber-50);
+  color: var(--amber-700);
+}
+
+.queueFlag[data-reason="percentile"] {
+  background: var(--neutral-100);
+  color: var(--text-secondary);
+}
+
+.queueFigure {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.queueStore {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.queueStoreName {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queueMeta {
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.queueBaseline {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.queueActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.queueLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--indigo-600);
+  text-decoration: none;
+}
+
+.queueAccept,
+.queueDisable,
+.queueUndo {
+  border-radius: 8px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.queueAccept {
+  border: 1px solid var(--success);
+  background: var(--surface-card);
+  color: var(--success);
+}
+
+.queueAccept:hover {
+  background: var(--success-subtle);
+}
+
+.queueDisable {
+  border: 1px solid var(--hairline);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+}
+
+.queueDisable:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.queueUndo {
+  border: none;
+  background: none;
+  color: var(--text-caption);
+  padding: 6px 4px;
+}
+
+.queueUndo:hover {
+  color: var(--indigo-600);
+}
+
+.queueOutcome {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.queueOutcome[data-outcome="accepted"] {
+  background: var(--success-subtle);
+  color: var(--success);
+}
+
+.queueOutcome[data-outcome="disabled"] {
+  background: var(--neutral-100);
+  color: var(--text-secondary);
+}

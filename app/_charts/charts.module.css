@@ -1091,6 +1091,18 @@
   background: var(--neutral-100);
 }
 
+/* Ownership, for brand-blocking tables. The same indigo/neutral pairing the
+   session viewer's own-vs-competition bars use. */
+.pill[data-tone="own"] {
+  color: var(--indigo-700);
+  background: var(--indigo-50);
+}
+
+.pill[data-tone="comp"] {
+  color: var(--text-secondary);
+  background: var(--neutral-100);
+}
+
 /* ---------- tabbed table head ---------- */
 
 .tabbedHead {
@@ -1123,4 +1135,23 @@
   background: var(--indigo-50);
   color: var(--indigo-700);
   font-weight: 600;
+}
+
+/* A drillable matrix cell. The whole cell is the target, so the link fills it
+   rather than underlining a number inside it. */
+.matrixLink {
+  display: block;
+  margin: -8px -12px;
+  padding: 8px 12px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.matrixLink:hover {
+  text-decoration: underline;
+}
+
+.matrixCell:has(.matrixLink):hover {
+  outline: 2px solid var(--indigo-600);
+  outline-offset: -2px;
 }

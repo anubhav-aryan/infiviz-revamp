@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function AnalyticsPage() {
   return (
-    <AppShell active="analytics">
+    <AppShell active="analytics" filterScope="analytics">
       {/* Persona, month, dimension, compare and filters round-trip through the
           query string, and `useSearchParams` needs a boundary to suspend on.
           The accepted trade is that the route prerenders the shell and the nav

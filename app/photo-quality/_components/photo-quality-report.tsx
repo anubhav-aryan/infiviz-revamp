@@ -1,3 +1,5 @@
+"use client";
+
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
@@ -5,6 +7,13 @@ import type { CsvTable } from "@/app/_export/csv";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { Bar, DeltaChip, TargetHero, TargetRule } from "@/app/_reports/marks";
 import { ReportHeader } from "@/app/_reports/report-header";
+import { UnfilteredMark } from "@/app/_filters/unfiltered-mark";
+import { useNarrowed } from "@/app/_filters/use-narrowed";
+import {
+  REGION_ACCESSORS,
+  REJECTED_ACCESSORS,
+  WORST_ACCESSORS,
+} from "../_data/accessors";
 import type { MonthKey } from "@/app/_time/periods";
 import {
   PHOTO_QUALITY,
@@ -12,6 +21,7 @@ import {
   type WorstRow,
 } from "../_data/photo-quality";
 import { RecentRejected } from "./recent-rejected";
+import { ReviewQueue } from "./review-queue";
 import { WorstTable } from "./worst-table";
 import { TrendChart } from "./trend-chart";
 import shared from "@/app/_reports/reports.module.css";
@@ -34,6 +44,14 @@ function worstCsv(rows: WorstRow[]): CsvTable {
 export function PhotoQualityReport({ month }: { month: MonthKey }) {
   const view = PHOTO_QUALITY[month];
 
+  /* The row-level tables carry region and merchandiser, so they genuinely
+     narrow. The hero, trend and rejection-reason split are authored monthly
+     totals with no per-row basis to recompute from, so they carry an
+     "unfiltered" mark instead of a number that only looks filtered. */
+  const worst = useNarrowed(view.worst, WORST_ACCESSORS);
+  const rejected = useNarrowed(view.rejected, REJECTED_ACCESSORS);
+  const regions = useNarrowed(view.regions, REGION_ACCESSORS);
+
   return (
     <>
       <ReportHeader
@@ -41,13 +59,16 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
         active="photo-quality"
         month={month}
         basePath="/photo-quality"
-        csv={worstCsv(view.worst)}
+        csv={worstCsv(worst)}
         detailHref="/analytics/field/merchandiser/photo-quality"
       />
 
       <div className={shared.body}>
-        {/* hero + 30-day trend */}
+        {/* hero + 30-day trend — both authored monthly totals, hence the mark */}
         <div className={`${shared.card} ${styles.heroCard}`}>
+          <div className={styles.heroMark}>
+            <UnfilteredMark what="Pass rate" />
+          </div>
           <TargetHero
             label={view.hero.label}
             value={view.hero.value}
@@ -111,7 +132,7 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
 
             <div className={`${shared.barListStack} ${styles.regionStack}`}>
               <TargetRule fraction={view.regionTargetFraction} inset />
-              {view.regions.map((region) => (
+              {regions.map((region) => (
                 <div key={region.name} className={shared.barRow}>
                   <span className={shared.barRowName}>{region.name}</span>
                   <Bar pct={region.width} height={11} />
@@ -143,10 +164,16 @@ export function PhotoQualityReport({ month }: { month: MonthKey }) {
             </span>
           </div>
 
-          <WorstTable rows={view.worst} />
+          <WorstTable rows={worst} />
         </div>
 
-        <RecentRejected sessions={view.rejected} />
+        <RecentRejected sessions={rejected} />
+
+        {/* Everything the validity rules flagged rather than auto-disabled.
+            It belongs here because the evidence a reviewer needs — the images,
+            the store's history, the effect on the month — is already on this
+            screen. */}
+        <ReviewQueue month={month} />
       </div>
     </>
   );

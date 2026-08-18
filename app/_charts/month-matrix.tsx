@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Icon } from "@/app/_components/icon";
 import styles from "./charts.module.css";
@@ -23,6 +24,14 @@ export type MatrixCell = {
   text: string;
   /** 0–4 on the same ramp the heatmaps use; omitted for a blank cell. */
   level?: 0 | 1 | 2 | 3 | 4;
+  /**
+   * Drill-down for this cell. A string rather than a handler because these are
+   * built in `_data` on the server and handed to a client component, the same
+   * constraint `table.ts` documents for `Cell`.
+   */
+  href?: string;
+  /** Hover/assistive text — what the colour means, since colour alone cannot say. */
+  title?: string;
 };
 
 export type MatrixRow = {
@@ -60,6 +69,16 @@ export function MonthMatrix({
     return <div className={styles.empty}>No history for this selection.</div>;
   }
 
+  /** A cell is a link when it has somewhere to go, plain text otherwise. */
+  const body = (cell: MatrixCell) =>
+    cell.href ? (
+      <Link href={cell.href} className={styles.matrixLink}>
+        {cell.text}
+      </Link>
+    ) : (
+      cell.text
+    );
+
   return (
     <div className={styles.matrixScroll}>
       <table className={styles.matrix} aria-label={ariaLabel}>
@@ -96,8 +115,9 @@ export function MonthMatrix({
                     key={`${group.id}-${index}`}
                     className={styles.matrixCell}
                     data-level={cell.level}
+                    title={cell.title}
                   >
-                    {cell.text}
+                    {body(cell)}
                   </td>
                 ))}
               </tr>,
@@ -112,8 +132,9 @@ export function MonthMatrix({
                           key={`${child.id}-${index}`}
                           className={styles.matrixCell}
                           data-level={cell.level}
+                          title={cell.title}
                         >
-                          {cell.text}
+                          {body(cell)}
                         </td>
                       ))}
                     </tr>

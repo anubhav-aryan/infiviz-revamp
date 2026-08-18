@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import chatStyles from "@/app/_components/chat/chat.module.css";
@@ -8,6 +8,8 @@ import { Icon } from "@/app/_components/icon";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { Avatar, PRIORITY_LABEL, Pill, STATUS_LABEL } from "./bits";
 import { SOURCES, nameFor, type Ticket } from "../_data/tickets";
+import { originHref } from "../_data/ticket-context";
+import { markerByKey } from "../_data/issue-instances";
 import { merchandiserByHandle, personById } from "../_data/people";
 import styles from "./tickets.module.css";
 
@@ -23,10 +25,14 @@ import styles from "./tickets.module.css";
 export function TicketPanel({
   ticket,
   onClose,
+  onDelete,
 }: {
   ticket: Ticket;
   onClose: () => void;
+  onDelete: (key: string) => void;
 }) {
+  const [confirming, setConfirming] = useState(false);
+  const marker = markerByKey(ticket.key);
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -112,12 +118,80 @@ export function TicketPanel({
           </span>
           <p className={styles.panelDetail}>{ticket.detail}</p>
 
+          {/* Replays the filter scope the ticket was raised under, so this
+              lands on the numbers it is actually about rather than a default
+              dashboard showing different ones. */}
           {ticket.source ? (
-            <Link href={SOURCES[ticket.source].href} className={styles.sourceLink}>
+            <Link
+              href={originHref(ticket.origin ?? {}, SOURCES[ticket.source].href)}
+              className={styles.sourceLink}
+            >
               <Icon name="star" size={13} />
               Raised from {SOURCES[ticket.source].label}
               <Icon name="arrow-up-right" size={13} />
             </Link>
+          ) : null}
+
+          {/* Whether anything actually happened. Bound to the issue instance
+              this ticket was raised against, so it compares like with like
+              rather than reporting the store's overall drift. */}
+          {marker ? (
+            <div className={styles.beforeAfterCard} data-resolved={marker.resolved}>
+              <div className={styles.beforeAfterLabel}>
+                {marker.movement === null
+                  ? "Raised — awaiting the next visit"
+                  : marker.resolved
+                    ? "Resolved on the next visit"
+                    : "Measured on the next visit"}
+              </div>
+              {marker.movement === null ? (
+                <p className={styles.beforeAfterNote}>
+                  {marker.metric} on {marker.subject} was {marker.before}
+                  {marker.unit} when this was raised on {marker.raisedOn}. Nothing
+                  to compare against until the store is visited again.
+                </p>
+              ) : (
+                <>
+                  <div className={styles.beforeAfterRow}>
+                    <span>
+                      <span className={styles.beforeAfterKey}>
+                        {marker.raisedOn}
+                      </span>
+                      <span className={styles.beforeAfterValue}>
+                        {marker.before}
+                        {marker.unit}
+                      </span>
+                    </span>
+                    <Icon
+                      name={marker.movement > 0 ? "arrow-up-right" : "arrow-down-right"}
+                      size={16}
+                    />
+                    <span>
+                      <span className={styles.beforeAfterKey}>
+                        {marker.measuredOn}
+                      </span>
+                      <span
+                        className={styles.beforeAfterValue}
+                        data-tone={marker.movement > 0 ? "up" : "down"}
+                      >
+                        {marker.after}
+                        {marker.unit}
+                      </span>
+                    </span>
+                    <span className={styles.beforeAfterDelta} data-tone={marker.movement > 0 ? "up" : "down"}>
+                      {marker.movement > 0 ? "+" : ""}
+                      {marker.movement} pts
+                    </span>
+                  </div>
+                  {marker.skus.length > 0 ? (
+                    <p className={styles.beforeAfterNote}>
+                      Measured across {marker.skus.length} SKU
+                      {marker.skus.length === 1 ? "" : "s"} — {marker.skus.join(", ")}
+                    </p>
+                  ) : null}
+                </>
+              )}
+            </div>
           ) : null}
 
           <dl className={styles.attributes}>
@@ -137,7 +211,41 @@ export function TicketPanel({
             ))}
           </div>
 
-          
+          {/* The only manual action on a ticket. Closure is derived from the
+              next visit's IR output, so deleting is the sole way to retract one
+              raised in error — which is exactly why it asks first. */}
+          <div className={styles.panelFoot}>
+            {confirming ? (
+              <div className={styles.confirmRow}>
+                <span className={styles.confirmText}>
+                  Delete {ticket.key}? This cannot be undone.
+                </span>
+                <button
+                  type="button"
+                  className={styles.dangerButton}
+                  onClick={() => onDelete(ticket.key)}
+                >
+                  Delete
+                </button>
+                <button
+                  type="button"
+                  className={styles.ghostButton}
+                  onClick={() => setConfirming(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className={styles.deleteButton}
+                onClick={() => setConfirming(true)}
+              >
+                <Icon name="x" size={13} />
+                Delete ticket
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -1,62 +1,85 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useState } from "react";
-import { Icon } from "@/app/_components/icon";
 import type { Visit } from "@/app/store-explorer/_data/store-explorer";
 import {
-  CONTEXT,
   DEFAULT_SESSION,
+  type ExtraKind,
   type SessionIdentity,
+  type ShelfView,
 } from "../_data/session-viewer";
-import { EvidencePanel } from "./evidence-panel";
-import { MetricsPanel } from "./metrics-panel";
-import { VisitContextCard } from "./visit-context-card";
+import { SessionHeader } from "./session-header";
+import { SessionMetricsDrawer } from "./session-metrics-drawer";
+import { SessionTables } from "./session-tables";
+import { SessionToolbar } from "./session-toolbar";
+import { ShelfStage } from "./shelf-stage";
+import { ShelfToggles } from "./shelf-toggles";
 import styles from "./session-viewer.module.css";
 
 type SessionViewerProps = {
-  /** Which store's session header to show; omit for the design's own session. */
+  /** Which store's session to show; omit for the design's own session. */
   session?: SessionIdentity;
   /** The `Visit` the session was resolved from — absent for the no-store
    *  default session, which has no `Visit` to carry. Threaded down so the MSL
-   *  checklist and visit-context card can derive their per-store figures
-   *  without re-deriving it themselves. */
+   *  checklist can derive its per-store figures without re-deriving it. */
   visit?: Visit;
 };
 
 /**
- * Mirrors the design doc's component state, which is a single flag: whether the
- * recognition overlay is drawn on the stitched shelf.
+ * Discrete zoom steps rather than a continuous control: the stitch is one
+ * fixed-resolution image, so past about 4× there is nothing more to see.
  */
+const ZOOM_STEPS = [1, 1.5, 2, 3, 4];
+
 export function SessionViewer({ session = DEFAULT_SESSION, visit }: SessionViewerProps) {
-  const [boxes, setBoxes] = useState(true);
-  const toggleBoxes = useCallback(() => setBoxes((on) => !on), []);
+  const [view, setView] = useState<ShelfView>("store");
+  const [zoomIndex, setZoomIndex] = useState(0);
+  const [shown, setShown] = useState<Set<ExtraKind>>(() => new Set());
+  const [metricsOpen, setMetricsOpen] = useState(false);
+
+  const toggleExtra = useCallback((kind: ExtraKind) => {
+    setShown((current) => {
+      const next = new Set(current);
+      if (next.has(kind)) next.delete(kind);
+      else next.add(kind);
+      return next;
+    });
+  }, []);
+
+  const zoom = ZOOM_STEPS[zoomIndex];
 
   return (
     <div className={styles.page}>
-      {/* context banner — the Analytics number that sent the user here */}
-      <div className={styles.banner}>
-        <span className={styles.bannerIcon} aria-hidden="true">
-          <Icon name="target" />
-        </span>
-        <div className={styles.bannerText}>
-          <div className={styles.bannerEyebrow}>{CONTEXT.eyebrow}</div>
-          <div className={styles.bannerHeadline}>{CONTEXT.headline}</div>
-        </div>
-        {/* The design had no handler here; in the app it is the real way back. */}
-        <Link href="/analytics" className={styles.backLink}>
-          <Icon name="arrow-left" size={15} />
-          Back to Analytics
-        </Link>
-      </div>
+      <SessionToolbar
+        title={session.title}
+        date={session.date}
+        view={view}
+        onViewChange={setView}
+        onZoomIn={() =>
+          setZoomIndex((index) => Math.min(ZOOM_STEPS.length - 1, index + 1))
+        }
+        onZoomOut={() => setZoomIndex((index) => Math.max(0, index - 1))}
+        canZoomIn={zoomIndex < ZOOM_STEPS.length - 1}
+        canZoomOut={zoomIndex > 0}
+        zoomLabel={`${zoom}×`}
+        onOpenMetrics={() => setMetricsOpen(true)}
+      />
 
-      <div className={styles.grid}>
-        <div className={styles.column}>
-          <EvidencePanel boxes={boxes} onToggleBoxes={toggleBoxes} />
-          {visit ? <VisitContextCard visit={visit} /> : null}
-        </div>
-        <MetricsPanel session={session} visit={visit} />
-      </div>
+      <SessionHeader session={session} />
+
+      <ShelfStage view={view} zoom={zoom} shown={shown} />
+
+      <ShelfToggles shown={shown} onToggle={toggleExtra} />
+
+      <SessionTables />
+
+      {metricsOpen ? (
+        <SessionMetricsDrawer
+          session={session}
+          visit={visit}
+          onClose={() => setMetricsOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }

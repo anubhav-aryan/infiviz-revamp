@@ -1681,3 +1681,268 @@
 .detailLink:hover {
   background: var(--indigo-100);
 }
+
+/* ---------- data-health band ---------- */
+
+/* Sits above every other figure because it qualifies all of them: how much of
+   the period's capture actually arrived, finished, and is safe to analyse. */
+.healthBand {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1.2fr;
+  gap: 14px;
+  padding: 0 28px 16px;
+}
+
+.healthTile {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+  min-width: 0;
+}
+
+.healthLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.healthInfo {
+  display: inline-flex;
+  color: var(--text-caption);
+  cursor: help;
+}
+
+.healthPair {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 8px 0 4px;
+  color: var(--text-caption);
+}
+
+.healthValue {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+/* The processed half of the pair — present, but the captured figure leads. */
+.healthValue[data-muted="true"] {
+  color: var(--text-secondary);
+}
+
+.healthDelta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.healthDelta[data-tone="positive"] {
+  color: var(--success);
+}
+
+.healthDelta[data-tone="negative"] {
+  color: var(--danger);
+}
+
+.healthSpark {
+  width: 78px;
+  height: 24px;
+  margin-left: auto;
+  overflow: visible;
+}
+
+.healthCaption {
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+/* The shortfall is the point of the paired tile, so it is not quiet. */
+.healthCaption[data-warn="true"] {
+  color: var(--amber-700);
+  font-weight: 600;
+}
+
+/* Band C lost its second panel when the scatter came out. */
+.dimSingle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+/* ---------- movement matrix legend ---------- */
+
+/* Colour on this matrix means movement, not level — which is the opposite of
+   the reader's instinct, so the legend says it rather than implying it. */
+.matrixLegend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.matrixLegendLabel {
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+.matrixLegendSwatch {
+  width: 22px;
+  height: 11px;
+  border-radius: 3px;
+  border: 1px solid var(--hairline);
+}
+
+.matrixLegendSwatch[data-level="0"] { background: var(--neutral-100); }
+.matrixLegendSwatch[data-level="1"] { background: var(--amber-50); }
+.matrixLegendSwatch[data-level="2"] { background: var(--amber-100); }
+.matrixLegendSwatch[data-level="3"] { background: var(--indigo-100); }
+.matrixLegendSwatch[data-level="4"] { background: var(--indigo-200); }
+
+/* ---------- share of shelf, by category ---------- */
+
+/* Small multiples rather than one number: averaging share of shelf across
+   categories describes no shelf anyone can point at. See `sos-panels.tsx`. */
+.sosCard {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  padding: 18px 20px;
+}
+
+.sosHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sosSubtitle {
+  font-size: 11.5px;
+  color: var(--text-caption);
+  margin-top: 3px;
+}
+
+/* Panels share a row and shrink together, so five categories still read as one
+   comparison rather than a scrolling list. */
+.sosGrid {
+  display: grid;
+  grid-template-columns: repeat(var(--sos-cols, 5), minmax(0, 1fr));
+  gap: 14px;
+}
+
+.sosGrid[data-count="1"] { --sos-cols: 1; }
+.sosGrid[data-count="2"] { --sos-cols: 2; }
+.sosGrid[data-count="3"] { --sos-cols: 3; }
+.sosGrid[data-count="4"] { --sos-cols: 4; }
+.sosGrid[data-count="5"] { --sos-cols: 5; }
+
+.sosPanel {
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--surface-sunken, var(--surface-card));
+}
+
+.sosName {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sosValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 6px 0 10px;
+}
+
+.sosValue {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.sosUnit {
+  font-size: 14px;
+  color: var(--text-caption);
+  margin-left: 1px;
+}
+
+.sosTrack {
+  position: relative;
+  height: 8px;
+  background: var(--neutral-200);
+  border-radius: 999px;
+}
+
+.sosFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: var(--indigo-500);
+}
+
+.sosTarget {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--neutral-600);
+}
+
+.sosGhost {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--neutral-400);
+}
+
+.sosScale {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 10.5px;
+  color: var(--text-caption);
+}
+
+/* The blend is a footnote, never a headline. */
+.sosFoot {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hairline);
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+/* The hero grid holds one card since share of shelf moved to its own. */
+.heroGrid[data-single="true"] {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 560px;
+}
