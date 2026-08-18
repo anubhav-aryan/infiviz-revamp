@@ -8,16 +8,24 @@ import { useSidebarCollapsed } from "./use-sidebar-collapsed";
 import styles from "./app-shell.module.css";
 
 /**
- * The primary sidebar. Split out of `AppShell` purely so the collapse toggle
- * can be interactive: the shell itself, and every page inside it, stays a
- * server component.
+ * The primary sidebar, used by both shells. Split out of `AppShell` purely so
+ * the collapse toggle can be interactive: the shell itself, and every page
+ * inside it, stays a server component.
  *
  * Collapsing is one `data-collapsed` attribute driving CSS rather than a second
- * set of markup — labels hide, the rail narrows, and the same links keep their
- * identity, so React never remounts a nav item on toggle.
+ * set of markup — labels hide, the rail narrows into the dark icon rail, and
+ * the same links keep their identity, so React never remounts a nav item on
+ * toggle.
  */
-export function Sidebar({ entries }: { entries: NavEntry[] }) {
-  const [collapsed, toggle] = useSidebarCollapsed();
+export function Sidebar({
+  entries,
+  defaultCollapsed,
+}: {
+  entries: NavEntry[];
+  /** Collapsed until the user says otherwise — see `useSidebarCollapsed`. */
+  defaultCollapsed?: boolean;
+}) {
+  const [collapsed, toggle] = useSidebarCollapsed(defaultCollapsed);
 
   return (
     <nav

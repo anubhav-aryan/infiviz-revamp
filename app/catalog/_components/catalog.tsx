@@ -1,7 +1,13 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { filterSkus, type Ownership, type TriState } from "../_data/catalog";
+import {
+  NO_SKU_FILTERS,
+  filterCategories,
+  filterSkus,
+  type Ownership,
+  type TriState,
+} from "../_data/catalog";
 import { CatalogOverview } from "./catalog-overview";
 import { SkuPanel } from "./sku-panel";
 import { ToothpasteDetail } from "./toothpaste-detail";
@@ -21,6 +27,10 @@ export function Catalog() {
   const [packshot, setPackshot] = useState<TriState>("all");
   const [trained, setTrained] = useState<TriState>("all");
   const [ownership, setOwnership] = useState<"all" | Ownership>("all");
+  const [brands, setBrands] = useState<string[]>([]);
+  const [query, setQuery] = useState("");
+  /** The overview's own search — categories, not SKUs. */
+  const [categoryQuery, setCategoryQuery] = useState("");
 
   const openToothpaste = useCallback(() => setView("detail"), []);
 
@@ -34,14 +44,21 @@ export function Catalog() {
   const closePanel = useCallback(() => setSku(null), []);
 
   const skus = useMemo(
-    () => filterSkus(packshot, trained, ownership),
-    [packshot, trained, ownership],
+    () => filterSkus({ ...NO_SKU_FILTERS, packshot, trained, ownership, brands, query }),
+    [packshot, trained, ownership, brands, query],
   );
+
+  const categories = useMemo(() => filterCategories(categoryQuery), [categoryQuery]);
 
   return (
     <>
       {view === "overview" ? (
-        <CatalogOverview onOpenCategory={openToothpaste} />
+        <CatalogOverview
+          categories={categories}
+          query={categoryQuery}
+          onQueryChange={setCategoryQuery}
+          onOpenCategory={openToothpaste}
+        />
       ) : (
         <ToothpasteDetail
           mode={mode}
@@ -52,6 +69,10 @@ export function Catalog() {
           onTrainedChange={setTrained}
           ownership={ownership}
           onOwnershipChange={setOwnership}
+          brands={brands}
+          onBrandsChange={setBrands}
+          query={query}
+          onQueryChange={setQuery}
           skus={skus}
           onBack={backToOverview}
           onOpenSku={setSku}

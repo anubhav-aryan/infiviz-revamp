@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { Icon } from "@/app/_components/icon";
 import { OWNERSHIP_LABEL, RANGED_EXAMPLES, SKUS, skuAttributes } from "../_data/catalog";
@@ -77,7 +76,6 @@ export function SkuPanel({ index, onClose }: SkuPanelProps) {
 
           <div className={styles.panelTitleRow}>
             <h2 className={styles.panelTitle}>{sku.name}</h2>
-            <AskInfiChatButton label={sku.name} compact />
             <ExcelDownloadButton label={sku.name} compact />
           </div>
 
@@ -141,7 +139,6 @@ export function SkuPanel({ index, onClose }: SkuPanelProps) {
             <div className={styles.rangedTitle}>
               <Icon name="store" aria-hidden="true" />
               Ranged in {sku.ranged} stores
-              <AskInfiChatButton label={`${sku.name} — ranged stores`} compact />
               <ExcelDownloadButton label={`${sku.name} — ranged stores`} compact />
             </div>
             <div className={styles.rangedBody}>{RANGED_EXAMPLES}</div>

@@ -46,24 +46,46 @@ export const CATEGORIES: Category[] = [
     packshot: 79,
     openable: false,
   },
+  /* The remaining three carry the names `analytics/_data/category-sos.ts`
+     publishes, so the catalogue and the dashboards agree on how many
+     categories this account has. Only Toothpaste has a SKU list behind it, so
+     the rest stay inert like Toothbrush. */
+  {
+    name: "Mouthwash",
+    icon: "package",
+    updated: "16 Jul 2026",
+    skus: 31,
+    brands: 4,
+    subs: 2,
+    packshot: 71,
+    openable: false,
+  },
+  {
+    name: "Kids oral care",
+    icon: "package",
+    updated: "14 Jul 2026",
+    skus: 26,
+    brands: 3,
+    subs: 2,
+    packshot: 68,
+    openable: false,
+  },
+  {
+    name: "Whitening",
+    icon: "package",
+    updated: "19 Jul 2026",
+    skus: 34,
+    brands: 5,
+    subs: 3,
+    packshot: 82,
+    openable: false,
+  },
 ];
 
 export const TOOTHPASTE = {
   title: "Toothpaste",
   subtitle: "78 SKUs · 8 brands",
 };
-
-/** Brand filter chips — presentational in the design, one pre-selected. */
-export const BRAND_CHIPS: { name: string; count: number; active: boolean }[] = [
-  { name: "Colgate Total", count: 14, active: true },
-  { name: "CDC", count: 12, active: false },
-  { name: "Max Fresh", count: 11, active: false },
-  { name: "Optic White", count: 10, active: false },
-  { name: "Natural", count: 9, active: false },
-  { name: "Kid", count: 8, active: false },
-  { name: "Salt", count: 8, active: false },
-  { name: "Vitamin C", count: 6, active: false },
-];
 
 export type TriState = "all" | "yes" | "no";
 
@@ -401,16 +423,77 @@ export const SKUS: Sku[] = RAW_SKUS.map((sku, index) => {
   };
 });
 
-export function filterSkus(
-  packshot: TriState,
-  trained: TriState,
-  ownership: "all" | Ownership = "all",
-): Sku[] {
+/**
+ * The brands the SKU list actually holds, with their real counts.
+ *
+ * Replaces a hand-authored chip row whose counts (14, 12, 11 …) were invented
+ * — the SKUs behind them number 3, 2, 2, 1 — and which filtered nothing when
+ * clicked. Derived at module scope so the figures cannot drift from the rows
+ * they describe.
+ *
+ * Thirteen brands, not the eight the chips listed: the catalogue carries
+ * competitor and private-label SKUs too, and a brand filter that hid them
+ * would be unable to answer "what else is on this shelf".
+ */
+export const BRAND_FACETS: { name: string; count: number }[] = (() => {
+  const counts = new Map<string, number>();
+  for (const sku of SKUS) counts.set(sku.brand, (counts.get(sku.brand) ?? 0) + 1);
+  return [...counts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+})();
+
+export type SkuFilters = {
+  packshot: TriState;
+  trained: TriState;
+  ownership: "all" | Ownership;
+  /** Empty means every brand — OR within the dimension, as the filter bar does. */
+  brands: string[];
+  /** Free text over name and brand. */
+  query: string;
+};
+
+export const NO_SKU_FILTERS: SkuFilters = {
+  packshot: "all",
+  trained: "all",
+  ownership: "all",
+  brands: [],
+  query: "",
+};
+
+/**
+ * An options object rather than five positional arguments — two of which would
+ * be optional, which is how a call ends up meaning something nobody intended.
+ */
+export function filterSkus({
+  packshot,
+  trained,
+  ownership,
+  brands,
+  query,
+}: SkuFilters): Sku[] {
+  // Matched against name *and* brand, so "optic" and "colgate" both find
+  // something without the reader having to know which field they are typing at.
+  const needle = query.trim().toLowerCase();
+
   return SKUS.filter(
     (sku) =>
       (packshot === "all" || (packshot === "yes") === sku.packshot) &&
       (trained === "all" || (trained === "yes") === sku.trained) &&
-      (ownership === "all" || ownership === sku.ownership),
+      (ownership === "all" || ownership === sku.ownership) &&
+      (brands.length === 0 || brands.includes(sku.brand)) &&
+      (needle === "" ||
+        sku.name.toLowerCase().includes(needle) ||
+        sku.brand.toLowerCase().includes(needle)),
+  );
+}
+
+/** Categories whose name matches free text — the overview's search. */
+export function filterCategories(query: string): Category[] {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return CATEGORIES;
+  return CATEGORIES.filter((category) =>
+    category.name.toLowerCase().includes(needle),
   );
 }
 

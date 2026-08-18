@@ -9,6 +9,10 @@ import { ExportButton } from "@/app/_export/export-button";
 import styles from "./catalog.module.css";
 
 type CatalogOverviewProps = {
+  /** Already narrowed by the search — this component does not filter. */
+  categories: Category[];
+  query: string;
+  onQueryChange: (query: string) => void;
   onOpenCategory: () => void;
 };
 
@@ -61,7 +65,12 @@ function CategoryCardBody({ category }: { category: Category }) {
   );
 }
 
-export function CatalogOverview({ onOpenCategory }: CatalogOverviewProps) {
+export function CatalogOverview({
+  categories,
+  query,
+  onQueryChange,
+  onOpenCategory,
+}: CatalogOverviewProps) {
   return (
     <div className={styles.overview}>
       <div className={styles.overviewHead}>
@@ -74,6 +83,20 @@ export function CatalogOverview({ onOpenCategory }: CatalogOverviewProps) {
         </div>
 
         <div className={styles.overviewTools}>
+          {/* Same treatment as the SKU search inside a category, so the two
+              searches on this surface do not look like different features. */}
+          <div className={styles.search}>
+            <Icon name="search" aria-hidden="true" />
+            <input
+              type="search"
+              className={styles.searchInput}
+              value={query}
+              onChange={(event) => onQueryChange(event.target.value)}
+              placeholder="Search categories…"
+              aria-label="Search categories"
+            />
+          </div>
+
           {/* The category summary, so export works from this screen too rather
               than only from inside a category. */}
           <ExportButton
@@ -92,8 +115,14 @@ export function CatalogOverview({ onOpenCategory }: CatalogOverviewProps) {
         </div>
       </div>
 
+      {categories.length === 0 ? (
+        <p className={styles.overviewEmpty}>
+          No category matches &ldquo;{query}&rdquo;.
+        </p>
+      ) : null}
+
       <div className={styles.categoryGrid}>
-        {CATEGORIES.map((category) =>
+        {categories.map((category) =>
           category.openable ? (
             <button
               key={category.name}

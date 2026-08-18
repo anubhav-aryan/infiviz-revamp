@@ -157,28 +157,40 @@
   flex: 1;
 }
 
-/* ---------- collapsed sidebar ----------
+/* ---------- collapsed sidebar: the dark icon rail ----------
    One attribute drives the whole rail, so collapsing never swaps markup: the
    nav items keep their identity and React re-renders rather than remounting.
    Deliberately not animated — the maps invalidate on every resize tick, and a
-   width transition would fire that dozens of times per toggle. */
+   width transition would fire that dozens of times per toggle.
+
+   Collapsed, the sidebar is the navy product rail the two-rail screens open
+   with. Same surface either way, so a collapse on one screen and a collapse on
+   another look like the same thing, because they are. */
 
 .sidebar[data-collapsed="true"] {
-  width: 72px;
-  padding-left: 12px;
-  padding-right: 12px;
+  width: 64px;
+  /* 13px each side centres a 38px chip in the 64px rail. */
+  padding: 16px 13px;
+  background: var(--neutral-900);
+  border-right-color: transparent;
 }
 
 .sidebar[data-collapsed="true"] .sidebarHead {
   flex-direction: column;
   gap: 10px;
-  padding-bottom: 14px;
+  padding: 0 0 12px;
 }
 
 .sidebar[data-collapsed="true"] .brand {
   flex: none;
   justify-content: center;
   padding: 0;
+}
+
+.sidebar[data-collapsed="true"] .brandMark {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
 }
 
 .sidebar[data-collapsed="true"] .brandName,
@@ -188,14 +200,53 @@
   display: none;
 }
 
-.sidebar[data-collapsed="true"] .navItem {
-  justify-content: center;
-  padding: 9px 0;
+/* The one control that has to stay findable on the navy — it is the only way
+   back out of the collapsed state. */
+.sidebar[data-collapsed="true"] .collapseButton {
+  border-color: var(--neutral-700);
+  color: var(--neutral-400);
 }
 
+.sidebar[data-collapsed="true"] .collapseButton:hover {
+  background: var(--neutral-800);
+  color: var(--neutral-100);
+}
+
+.sidebar[data-collapsed="true"] .navItem {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 9px;
+  margin-bottom: 6px;
+  color: var(--neutral-400);
+}
+
+.sidebar[data-collapsed="true"] .navItem:hover {
+  background: var(--neutral-800);
+  color: var(--neutral-100);
+}
+
+.sidebar[data-collapsed="true"] .navItem[data-state="active"],
+.sidebar[data-collapsed="true"] .navItem[data-state="active"]:hover {
+  background: var(--indigo-600);
+  color: #fff;
+}
+
+.sidebar[data-collapsed="true"] .navItem[data-state="locked"],
+.sidebar[data-collapsed="true"] .navItem[data-state="locked"]:hover,
+.sidebar[data-collapsed="true"] .navItem[data-state="unavailable"],
+.sidebar[data-collapsed="true"] .navItem[data-state="unavailable"]:hover {
+  background: none;
+  color: var(--neutral-600);
+}
+
+/* Stands in for the labelled divider the expanded sidebar uses — with the
+   heading hidden there is nothing left to separate but the icons. */
 .sidebar[data-collapsed="true"] .otherApps {
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top-color: var(--neutral-700);
 }
 
 .lockPill {
@@ -225,7 +276,7 @@
   min-width: 1100px;
 }
 
-/* ---------- collapsed product rail (Master data's two-rail shell) ---------- */
+/* ---------- two-rail shell (the sidebar plus a section rail) ---------- */
 
 .railShell {
   display: flex;
@@ -233,79 +284,6 @@
   background: var(--surface-page);
   font-family: var(--font-ui);
   color: var(--text-body);
-}
-
-.productRail {
-  width: 64px;
-  flex: none;
-  position: sticky;
-  top: 0;
-  align-self: flex-start;
-  height: 100dvh;
-  background: var(--neutral-900);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px 0;
-  gap: 6px;
-  /* 14 icons now; a short viewport scrolls the rail rather than clipping it. */
-  overflow-y: auto;
-}
-
-.railMark {
-  width: 34px;
-  height: 34px;
-  flex: none;
-  border-radius: 9px;
-  background: var(--indigo-600);
-  color: #fff;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-  text-decoration: none;
-}
-
-.railItem {
-  width: 38px;
-  height: 38px;
-  flex: none;
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--neutral-400);
-  text-decoration: none;
-  transition: background var(--transition-snap), color var(--transition-snap);
-}
-
-.railItem:hover {
-  background: var(--neutral-800);
-  color: var(--neutral-100);
-}
-
-.railItem[data-state="active"],
-.railItem[data-state="active"]:hover {
-  background: var(--indigo-600);
-  color: #fff;
-}
-
-.railItem[data-state="unavailable"],
-.railItem[data-state="unavailable"]:hover {
-  background: none;
-  color: var(--neutral-600);
-  cursor: default;
-}
-
-.railDivider {
-  width: 24px;
-  height: 1px;
-  flex: none;
-  margin: 6px 0;
-  background: var(--neutral-700);
 }
 
 /* section rail */

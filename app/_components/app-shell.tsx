@@ -6,13 +6,7 @@ import { ChatLauncher } from "./chat/chat-launcher";
 import { ChatPaneProvider } from "./chat/chat-pane-context";
 import { Icon } from "./icon";
 import { Sidebar } from "./sidebar";
-import {
-  PRODUCT_NAV,
-  OTHER_APPS,
-  fullNav,
-  type NavEntry,
-  type NavId,
-} from "./nav";
+import { fullNav, type NavEntry, type NavId } from "./nav";
 import styles from "./app-shell.module.css";
 
 type AppShellProps = {
@@ -155,9 +149,13 @@ export function RailGroups({
 }
 
 /**
- * Master data's two-rail shell: a collapsed icon-only product rail plus a
- * section rail for the sub-surfaces inside it. Deliberately different from
- * `AppShell` — this section is the only one with its own sub-navigation.
+ * The two-rail shell: the same primary `Sidebar`, collapsed by default, plus a
+ * section rail for the sub-surfaces inside the active product. Used by the
+ * sections that have their own sub-navigation, where an expanded sidebar and a
+ * section rail would together crowd out the content.
+ *
+ * The sidebar is only *defaulted* collapsed, not forced — the toggle works here
+ * exactly as it does under `AppShell`, and the choice carries across both.
  */
 export function RailShell({
   active,
@@ -171,41 +169,7 @@ export function RailShell({
 }: RailShellProps) {
   return (
     <div className={styles.railShell}>
-      <nav className={styles.productRail} aria-label="Products">
-        <Link href="/" className={styles.railMark} aria-label="InfiViz home">
-          iV
-        </Link>
-        {PRODUCT_NAV.map((item) => (
-          <Link
-            key={item.id}
-            href={item.href}
-            className={styles.railItem}
-            data-state={item.id === active ? "active" : "normal"}
-            title={item.title}
-            aria-label={item.label}
-            aria-current={item.id === active ? "page" : undefined}
-          >
-            <Icon name={item.icon} />
-          </Link>
-        ))}
-
-        {/* Same sibling apps as AppShell's sidebar, so the nav doesn't lose
-            entries on the routes that use this rail. Inert, hence a plain
-            `title` — there is no focusable control here to hint against. */}
-        <span className={styles.railDivider} aria-hidden="true" />
-        {OTHER_APPS.map((app) => (
-          <span
-            key={app.label}
-            className={styles.railItem}
-            data-state="unavailable"
-            title={app.label}
-            aria-label={app.label}
-            aria-disabled="true"
-          >
-            <Icon name={app.icon} />
-          </span>
-        ))}
-      </nav>
+      <Sidebar entries={fullNav(active)} defaultCollapsed />
 
       <nav className={styles.sectionRail} aria-label={section.title}>
         {railHeader ? (

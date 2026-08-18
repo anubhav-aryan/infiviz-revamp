@@ -279,7 +279,6 @@
   font-family: inherit;
   font-size: 12.5px;
   color: var(--text-caption);
-  cursor: not-allowed;
 }
 
 .searchInput::placeholder {
@@ -308,47 +307,6 @@
 .modeButton[data-active="true"] {
   background: var(--indigo-50);
   color: var(--indigo-700);
-}
-
-.brandChips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 9px;
-  margin-bottom: 20px;
-}
-
-.brandChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 7px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-  white-space: nowrap;
-  background: var(--surface-card);
-  color: var(--text-body);
-  border: 1px solid var(--border-strong);
-}
-
-/* The selected chip drops its border rather than recolouring it, exactly as
-   the design has it — the row's stretch alignment keeps the heights level. */
-.brandChip[data-active="true"] {
-  background: var(--indigo-600);
-  color: #fff;
-  border: none;
-}
-
-.brandChipCount {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-caption);
-}
-
-.brandChip[data-active="true"] .brandChipCount {
-  color: rgba(255, 255, 255, 0.7);
 }
 
 .filterRow {
@@ -966,4 +924,182 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+/* ---------- brand filter ---------- */
+
+/* Sits in `.filterRow` beside the tri-state groups, so it borrows their
+   `.filterGroup` / `.filterLabel` treatment and only adds the dropdown. */
+.brandAnchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.brandTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-card);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-body);
+  cursor: pointer;
+}
+
+.brandTrigger:hover {
+  background: var(--surface-hover);
+}
+
+/* Reads as applied without needing a chip beside it. */
+.brandTrigger[data-set="true"] {
+  border-color: var(--indigo-200);
+  background: var(--indigo-50);
+  color: var(--indigo-700);
+}
+
+.brandTriggerValue {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.brandMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  width: 250px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-card);
+  box-shadow: var(--shadow-lg);
+}
+
+.brandSearch {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 6px;
+  padding: 6px 9px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  color: var(--text-caption);
+}
+
+.brandSearch:focus-within {
+  border-color: var(--indigo-600);
+}
+
+.brandSearchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--text-body);
+  outline: none;
+}
+
+/* Thirteen brands scroll rather than growing the popover past the fold. */
+.brandScroll {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.brandOption {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--text-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+.brandOption:hover {
+  background: var(--brand-subtle);
+  color: var(--indigo-700);
+}
+
+.brandCheck {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  flex: none;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface-card);
+  color: var(--neutral-0);
+}
+
+.brandCheck[data-on="true"] {
+  background: var(--indigo-600);
+  border-color: var(--indigo-600);
+}
+
+.brandOptionName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The count is read off the SKU rows, not authored beside them. */
+.brandOptionCount {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-caption);
+  flex: none;
+}
+
+.brandEmpty {
+  padding: 10px 8px;
+  font-size: 11.5px;
+  color: var(--text-caption);
+}
+
+.brandClear {
+  width: 100%;
+  margin-top: 6px;
+  padding: 7px 8px;
+  border: none;
+  border-top: 1px solid var(--hairline);
+  border-radius: 0;
+  background: none;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-caption);
+  cursor: pointer;
+}
+
+.brandClear:hover {
+  color: var(--danger);
+}
+
+/* ---------- overview search ---------- */
+
+.overviewEmpty {
+  margin: 0 0 16px;
+  font-size: 12.5px;
+  color: var(--text-caption);
 }

@@ -1,7 +1,6 @@
 import { Icon } from "@/app/_components/icon";
 import { ExportButton } from "@/app/_export/export-button";
 import {
-  BRAND_CHIPS,
   OWNERSHIP_FILTERS,
   PACKSHOT_FILTERS,
   TOOTHPASTE,
@@ -12,6 +11,7 @@ import {
   type TriState,
 } from "../_data/catalog";
 import { AccuracyTable } from "./accuracy-table";
+import { BrandFilter } from "./brand-filter";
 import { SkuGrid, SkuTable } from "./sku-views";
 import styles from "./catalog.module.css";
 
@@ -26,6 +26,10 @@ type ToothpasteDetailProps = {
   onTrainedChange: (value: TriState) => void;
   ownership: "all" | Ownership;
   onOwnershipChange: (value: "all" | Ownership) => void;
+  brands: string[];
+  onBrandsChange: (brands: string[]) => void;
+  query: string;
+  onQueryChange: (query: string) => void;
   skus: Sku[];
   onBack: () => void;
   onOpenSku: (index: number) => void;
@@ -69,6 +73,10 @@ export function ToothpasteDetail({
   onTrainedChange,
   ownership,
   onOwnershipChange,
+  brands,
+  onBrandsChange,
+  query,
+  onQueryChange,
   skus,
   onBack,
   onOpenSku,
@@ -107,14 +115,15 @@ export function ToothpasteDetail({
 
           <div className={styles.search}>
             <Icon name="search" aria-hidden="true" />
-            {/* Search has no backend behind it yet — the design drew a static
-                field, so this one is present but disabled. */}
+            {/* Matches name and brand, so "optic" and "colgate" both find
+                something without the reader knowing which field they typed at. */}
             <input
               type="search"
               className={styles.searchInput}
+              value={query}
+              onChange={(event) => onQueryChange(event.target.value)}
               placeholder="Search SKUs…"
               aria-label="Search SKUs"
-              disabled
             />
           </div>
 
@@ -153,24 +162,10 @@ export function ToothpasteDetail({
         </div>
       </div>
 
-      {/* Brand chips are presentational in the design — one is pre-selected
-          and none of them filter anything. */}
-      <div className={styles.brandChips}>
-        {BRAND_CHIPS.map((chip) => (
-          <button
-            key={chip.name}
-            type="button"
-            className={styles.brandChip}
-            data-active={chip.active}
-            aria-pressed={chip.active}
-          >
-            {chip.name}
-            <span className={styles.brandChipCount}>{chip.count}</span>
-          </button>
-        ))}
-      </div>
-
       <div className={styles.filterRow}>
+        {/* Where the brand chips used to sit. They looked like a filter,
+            filtered nothing, and counted SKUs that were not there. */}
+        <BrandFilter selected={brands} onChange={onBrandsChange} />
         <FilterGroup
           label="Pack shot"
           options={PACKSHOT_FILTERS}
