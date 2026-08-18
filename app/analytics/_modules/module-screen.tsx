@@ -6,7 +6,6 @@ import { ActionsBlock } from "@/app/_charts/actions-block";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { CreateTicketButton } from "@/app/_components/create-ticket-button";
 import { RecommendationsBlock } from "./recommendations-block";
-import { TicketRaisedMarker } from "@/app/_components/ticket-raised-marker";
 import { ReorderableGrid } from "@/app/_components/reorderable-grid";
 import { DetailTable } from "@/app/_charts/detail-table";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
@@ -136,16 +135,6 @@ export function ModuleScreen({ persona, module, tab }: Props) {
               {scope.caption} · {monthLabel}
               {view ? ` · ${view.measureLabel}` : ` · ${def.blurb}`}
             </p>
-            {/* Says a ticket was already raised against this measure, and — once
-                the next visit has landed — whether the number actually moved. */}
-            <TicketRaisedMarker
-              metric={view ? view.measureLabel : def.label}
-              /* Only narrow by subject when the screen is actually scoped to
-                 one. At national scope every marker for the measure is
-                 relevant, and filtering by the word "National" would hide all
-                 of them. */
-              subject={scope.kind === "national" ? undefined : scope.label}
-            />
           </div>
 
           <div className={styles.headActions}>

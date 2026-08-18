@@ -338,7 +338,11 @@ export const SOS: HeroTile = {
  * surfaces it on the dashboard.
  */
 export const SOS_SPLIT = {
-  label: "Own vs private label vs competition",
+  /* Short because it has to fit on one line beside the ratio in a card that
+     narrows to ~290px with the sidebar open — and because the legend directly
+     under the bar already names all three segments, so spelling them out here
+     was saying it twice. */
+  label: "Share split",
   ratio: "38.3 / 7.4 / 54.3",
   own: 38.3,
   privateLabel: 7.4,

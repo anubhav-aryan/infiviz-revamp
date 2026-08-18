@@ -704,18 +704,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   margin-bottom: 6px;
 }
 
 .splitLabel {
   font-size: 11px;
   color: var(--text-caption);
+  /* Neither half may wrap: three shares broken across two lines read as six
+     numbers, and the phrase beside them broke mid-clause. */
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .splitRatio {
+  flex: none;
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .splitBar {

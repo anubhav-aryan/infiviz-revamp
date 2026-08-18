@@ -113,22 +113,10 @@ function toMarker(instance: IssueInstance): IssueMarker | null {
   };
 }
 
-export const ISSUE_MARKERS: IssueMarker[] = INSTANCES.map(toMarker).filter(
-  (marker): marker is IssueMarker => marker !== null,
-);
-
-/**
- * Markers for one card. Matched on metric and, when the card names a subject,
- * on that too — so a marker only appears against the figure it is actually
- * about rather than on every chart mentioning availability.
- */
-export function markersFor(metric: string, subject?: string): IssueMarker[] {
-  const wanted = metric.toLowerCase();
-  return ISSUE_MARKERS.filter((marker) => {
-    if (!wanted.includes(marker.metric.toLowerCase())) return false;
-    return subject ? subject.toLowerCase().includes(marker.subject.toLowerCase()) : true;
-  });
-}
+/* `ISSUE_MARKERS` and `markersFor` lived here to feed a chip on the analytics
+   module header, saying a ticket had already been raised against the measure.
+   That chip is gone, and with it the only caller — the ticket's own panel
+   reads one instance by key instead. */
 
 export function markerByKey(key: string): IssueMarker | undefined {
   const instance = BY_KEY.get(key);
