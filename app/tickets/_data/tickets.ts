@@ -96,6 +96,8 @@ export type Ticket = {
   period?: string;
   created: string;
   due: string;
+  /** When it was closed. Absent while a ticket is still raised. */
+  closedOn?: string;
   labels: string[];
 };
 
@@ -109,6 +111,31 @@ const MONTH = MONTHS[MONTH_INDEX];
 /** `4` → `"04 Jul"`. Derived from the authored month, never from a clock. */
 const dayLabel = (day: number) =>
   `${String(Math.max(1, Math.min(MONTH.days, day))).padStart(2, "0")} ${MONTH.shortLabel}`;
+
+/**
+ * The day this mockup treats as today — past every authored `created` (the
+ * latest is the 8th) and inside the window the due dates run to.
+ *
+ * Closing a ticket in the UI stamps this rather than reading a clock. A real
+ * `new Date()` would print a date months outside the authored Feb–Jul 2026
+ * window and sit next to "04 Jul" looking like a bug, and the house rule in
+ * `_time/periods.ts` keeps clocks out of this data besides.
+ */
+const TODAY_DAY = 12;
+
+/** What a ticket closed through the UI is stamped with. */
+export const TODAY_LABEL = dayLabel(TODAY_DAY);
+
+/**
+ * When each already-closed ticket was closed. A lookup rather than another
+ * slot in `TICKET_FACTS`, so the nine tickets that are still open do not each
+ * have to carry an `undefined` placeholder for it.
+ */
+const CLOSED_ON: Record<string, number> = {
+  "TIC-108": 8,
+  "TIC-109": 11,
+  "TIC-110": 7,
+};
 
 /* ---------------------------------------------------------------- */
 /* suggestions, read out of the dashboard's own data                 */
@@ -420,6 +447,7 @@ export const TICKETS: Ticket[] = TICKET_FACTS.map(
     source,
     created: dayLabel(created),
     due: dayLabel(due),
+    closedOn: CLOSED_ON[key] === undefined ? undefined : dayLabel(CLOSED_ON[key]),
     labels,
   }),
 );

@@ -38,6 +38,7 @@ export function TicketList({
             <th scope="col">Priority</th>
             <th scope="col">Status</th>
             <th scope="col" className={styles.listRight}>Due</th>
+            <th scope="col" className={styles.listRight}>Closed</th>
           </tr>
         </thead>
         <tbody>
@@ -73,6 +74,11 @@ export function TicketList({
               </td>
               <td className={`${styles.listRight} ${styles.listDue}`}>
                 {ticket.due}
+              </td>
+              <td className={`${styles.listRight} ${styles.listDue}`}>
+                {/* An em dash rather than a blank: a raised ticket has no
+                    closing date, which is different from one we failed to record. */}
+                {ticket.closedOn ?? "—"}
                 <Icon name="chevron-right" size={14} />
               </td>
             </tr>

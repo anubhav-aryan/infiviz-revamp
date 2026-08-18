@@ -7,7 +7,7 @@ import chatStyles from "@/app/_components/chat/chat.module.css";
 import { Icon } from "@/app/_components/icon";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { Avatar, PRIORITY_LABEL, Pill, STATUS_LABEL } from "./bits";
-import { SOURCES, nameFor, type Ticket } from "../_data/tickets";
+import { SOURCES, nameFor, type Ticket, type TicketStatus } from "../_data/tickets";
 import { originHref } from "../_data/ticket-context";
 import { markerByKey } from "../_data/issue-instances";
 import { merchandiserByHandle, personById } from "../_data/people";
@@ -26,10 +26,12 @@ export function TicketPanel({
   ticket,
   onClose,
   onDelete,
+  onSetStatus,
 }: {
   ticket: Ticket;
   onClose: () => void;
   onDelete: (key: string) => void;
+  onSetStatus: (key: string, status: TicketStatus) => void;
 }) {
   const [confirming, setConfirming] = useState(false);
   const marker = markerByKey(ticket.key);
@@ -86,6 +88,9 @@ export function TicketPanel({
     ["Subject", ticket.subject],
     ["Created", ticket.created],
     ["Due", ticket.due],
+    ...(ticket.closedOn
+      ? ([["Closed", ticket.closedOn]] as [string, React.ReactNode][])
+      : []),
   ];
 
   return (
@@ -211,10 +216,25 @@ export function TicketPanel({
             ))}
           </div>
 
-          {/* The only manual action on a ticket. Closure is derived from the
-              next visit's IR output, so deleting is the sole way to retract one
-              raised in error — which is exactly why it asks first. */}
+          {/* Close is reversible, so it does not ask; delete is not, so it
+              does. Closing by hand sits alongside the derived route — the next
+              visit's IR output closing it — rather than replacing it. */}
           <div className={styles.panelFoot}>
+            <button
+              type="button"
+              className={styles.statusButton}
+              data-status={ticket.status}
+              onClick={() =>
+                onSetStatus(
+                  ticket.key,
+                  ticket.status === "closed" ? "raised" : "closed",
+                )
+              }
+            >
+              <Icon name={ticket.status === "closed" ? "arrow-left" : "check"} size={13} />
+              {ticket.status === "closed" ? "Reopen ticket" : "Close ticket"}
+            </button>
+
             {confirming ? (
               <div className={styles.confirmRow}>
                 <span className={styles.confirmText}>

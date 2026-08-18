@@ -6,14 +6,17 @@ import { Icon } from "@/app/_components/icon";
 import { Segmented } from "@/app/_charts/segmented";
 import charts from "@/app/_charts/charts.module.css";
 import { ComposePanel } from "./compose-panel";
+import { TicketBoard } from "./ticket-board";
 import { TicketFilters, type TicketFilterState, EMPTY_FILTERS } from "./ticket-filters";
 import { TicketList } from "./ticket-list";
 import { TicketPanel } from "./ticket-panel";
 import {
+  TODAY_LABEL,
   nameFor,
   ticketsForPersona,
   type Suggestion,
   type Ticket,
+  type TicketStatus,
 } from "../_data/tickets";
 import { ticketContextFromParams, type TicketContext } from "../_data/ticket-context";
 import { PERSONA_ACTOR } from "../_data/people";
@@ -22,18 +25,24 @@ import styles from "./tickets.module.css";
 /**
  * The Tickets screen.
  *
- * A flat list of every raised ticket, and nothing else. The Kanban board that
- * used to lead this screen is gone: a board implies people drag work between
- * stages, and in this model nobody does — a ticket closes when the next visit's
- * IR output shows the problem resolved. Keeping the board would have advertised
- * an interaction that does not exist.
+ * The list is the default and the visibility layer: raising a ticket without
+ * being able to see the ones already raised is assignment into a void. The
+ * board is the second view, for reading the raised/closed split at a glance and
+ * for dragging a card across to close it.
  *
- * The list is the visibility layer. Raising a ticket without being able to see
- * the ones already raised is assignment into a void, which is what this answers.
+ * Closure has two routes now. It still follows from the next visit's IR output
+ * showing the problem resolved — that is the one that matters at scale — but a
+ * person can also close by hand, which is what a ticket resolved out of band,
+ * or raised in error, needs.
  *
  * All state is local and nothing persists — this is a mockup of the workflow,
  * not a ticket store.
  */
+
+const VIEWS = [
+  { id: "list", label: "List" },
+  { id: "board", label: "Board" },
+] as const;
 
 const PERSONAS = [
   { id: "exec", label: "Executive" },
@@ -48,7 +57,12 @@ export function Tickets() {
      list is populated on arrival. Switching down to a field supervisor then
      visibly narrows it, which is the point of the control. */
   const [persona, setPersona] = useState<string>("exec");
+  const [view, setView] = useState<"list" | "board">("list");
   const [openKey, setOpenKey] = useState<string | null>(null);
+  /** Status changed by hand this session, over the authored fixture. */
+  const [moved, setMoved] = useState<
+    Record<string, { status: TicketStatus; closedOn?: string }>
+  >({});
   const [filters, setFilters] = useState<TicketFilterState>(EMPTY_FILTERS);
   /** Deleted keys. Deletion is the only manual action on a ticket — see below. */
   const [deleted, setDeleted] = useState<ReadonlySet<string>>(() => new Set());
@@ -65,8 +79,14 @@ export function Tickets() {
   const forPersona = useMemo(() => ticketsForPersona(persona), [persona]);
 
   const visible = useMemo(
-    () => forPersona.filter((ticket) => !deleted.has(ticket.key)),
-    [forPersona, deleted],
+    () =>
+      forPersona
+        .filter((ticket) => !deleted.has(ticket.key))
+        .map((ticket) => {
+          const change = moved[ticket.key];
+          return change ? { ...ticket, ...change } : ticket;
+        }),
+    [forPersona, deleted, moved],
   );
 
   const filtered = useMemo(
@@ -74,7 +94,10 @@ export function Tickets() {
     [visible, filters],
   );
 
-  const open = filtered.find((ticket) => ticket.key === openKey) ?? null;
+  /* Looked up from `visible`, not `filtered`: closing a ticket from the panel
+     while the list is filtered to Raised would otherwise drop it out of scope
+     and yank the panel shut on the action the user just took. */
+  const open = visible.find((ticket) => ticket.key === openKey) ?? null;
   const actor = PERSONA_ACTOR[persona];
 
   /**
@@ -85,6 +108,21 @@ export function Tickets() {
   const remove = useCallback((key: string) => {
     setDeleted((current) => new Set(current).add(key));
     setOpenKey((current) => (current === key ? null : current));
+  }, []);
+
+  /**
+   * Closing stamps the date; reopening clears it, so a ticket never carries a
+   * closed date it is not closed on. `TODAY_LABEL` rather than a clock — see
+   * the note beside it in `_data/tickets.ts`.
+   */
+  const setStatus = useCallback((key: string, status: TicketStatus) => {
+    setMoved((current) => ({
+      ...current,
+      [key]: {
+        status,
+        closedOn: status === "closed" ? TODAY_LABEL : undefined,
+      },
+    }));
   }, []);
 
   const raised = visible.filter((ticket) => ticket.status === "raised").length;
@@ -102,6 +140,7 @@ export function Tickets() {
           </div>
 
           <div className={styles.headActions}>
+            <Segmented options={VIEWS} value={view} onChange={setView} label="View" />
             <button
               type="button"
               className={styles.primaryButton}
@@ -142,9 +181,17 @@ export function Tickets() {
             still derived in `_data/tickets.ts`, and this is where the lane
             returns once the recommendation logic behind it exists. */}
 
-        <div className={`${charts.card} ${charts.tableCard}`}>
-          <TicketList tickets={filtered} onOpen={setOpenKey} />
-        </div>
+        {view === "list" ? (
+          <div className={`${charts.card} ${charts.tableCard}`}>
+            <TicketList tickets={filtered} onOpen={setOpenKey} />
+          </div>
+        ) : (
+          <TicketBoard
+            tickets={filtered}
+            onOpen={setOpenKey}
+            onMove={setStatus}
+          />
+        )}
       </div>
 
       {open ? (
@@ -152,6 +199,7 @@ export function Tickets() {
           ticket={open}
           onClose={() => setOpenKey(null)}
           onDelete={remove}
+          onSetStatus={setStatus}
         />
       ) : null}
 
