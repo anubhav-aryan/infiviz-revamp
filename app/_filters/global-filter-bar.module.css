@@ -13,12 +13,19 @@
   display: contents;
 }
 
+/* No `overflow: hidden` here, deliberately. It would clip every dropdown in the
+   bar: the menus are absolutely positioned below the row, so a clipping
+   ancestor removes them entirely. `overflow-x: hidden` is not a way out either —
+   CSS computes the other axis to `auto`, which still clips.
+
+   The row stays on one line because every flexible item can shrink instead:
+   the chips ellipsis down (see `.chip`), and everything else is `flex: none`
+   at a bounded width. */
 .bar {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: nowrap;
-  overflow: hidden;
   padding: 10px 28px;
   background: var(--surface-card);
   border-bottom: 1px solid var(--hairline);
@@ -99,8 +106,11 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  /* `min-width: 0` is what actually makes "chips shrink rather than push"
+     true. With a floor here the row could not fit three chips beside the
+     fixed controls, and the bar would overflow. */
   flex: 0 1 auto;
-  min-width: 70px;
+  min-width: 0;
   overflow: hidden;
   background: var(--indigo-50);
   border: 1px solid var(--indigo-200);
@@ -119,6 +129,7 @@
 }
 
 .chipValue {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -212,6 +223,13 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   padding: var(--space-2);
+}
+
+/* The trailing controls sit at the right edge, so their menus open leftwards
+   rather than running off the viewport. */
+.barEnd .menu {
+  left: auto;
+  right: 0;
 }
 
 .menuHead {
