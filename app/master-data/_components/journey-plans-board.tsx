@@ -9,11 +9,13 @@ import { DatePresetPicker } from "@/app/_time/date-preset-picker";
 import { type MonthKey, stepMonth } from "@/app/_time/periods";
 import {
   JOURNEY_PLANS,
+  PLAN_COLUMNS,
   WEEKDAYS,
   adherenceTier,
   type CalendarCell,
   type PlanRow,
 } from "../_data/journey-plans";
+import { GridRow, ResizableGrid } from "./resizable-grid";
 import styles from "./master-data.module.css";
 
 /** Serialized here, from the same rows the table renders below. */
@@ -186,42 +188,26 @@ export function JourneyPlansBoard({ month }: { month: MonthKey }) {
           <ExcelDownloadButton label="Plans by merchandiser" compact />
         </div>
 
-        <div className={`${styles.plansGrid} ${styles.columnHead}`}>
-          <span>Merchandiser</span>
-          <span>Region</span>
-          <span>Stores</span>
-          <span>Frequency</span>
-          <span className={styles.right}>Planned</span>
-          <span className={styles.right}>Done</span>
-          <span className={styles.right}>Adherence</span>
-        </div>
-
-        {view.planRows.map((plan) => (
-          <div key={plan.mrch} className={`${styles.plansGrid} ${styles.row}`}>
-            <span className={styles.cellMrch}>{plan.mrch}</span>
-            <span className={styles.cell}>{plan.region}</span>
-            <span className={styles.cellNum}>{plan.stores}</span>
-            <span className={styles.cell}>{plan.freq}</span>
-            <span className={`${styles.cellNum} ${styles.right}`}>
-              {plan.planned}
-            </span>
-            <span className={`${styles.cellNum} ${styles.right}`}>{plan.done}</span>
-            <span className={styles.adherence}>
-              <span className={styles.adhTrack}>
-                <span
-                  className={styles.adhFill}
-                  style={{ width: `${plan.adh}%` }}
-                />
+        <ResizableGrid tableKey="plans" columns={PLAN_COLUMNS}>
+          {view.planRows.map((plan) => (
+            <GridRow key={plan.mrch}>
+              <span className={styles.cellMrch}>{plan.mrch}</span>
+              <span className={styles.cell}>{plan.region}</span>
+              <span className={styles.cellNum}>{plan.stores}</span>
+              <span className={styles.cell}>{plan.freq}</span>
+              <span className={styles.cellNum} data-align="right">{plan.planned}</span>
+              <span className={styles.cellNum} data-align="right">{plan.done}</span>
+              <span className={styles.adherence} data-align="right">
+                <span className={styles.adhTrack}>
+                  <span className={styles.adhFill} style={{ width: `${plan.adh}%` }} />
+                </span>
+                <span className={styles.adhValue} data-tier={adherenceTier(plan.adh)}>
+                  {plan.adh}%
+                </span>
               </span>
-              <span
-                className={styles.adhValue}
-                data-tier={adherenceTier(plan.adh)}
-              >
-                {plan.adh}%
-              </span>
-            </span>
-          </div>
-        ))}
+            </GridRow>
+          ))}
+        </ResizableGrid>
       </div>
     </div>
   );

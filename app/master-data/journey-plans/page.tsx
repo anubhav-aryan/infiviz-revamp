@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { RailShell } from "@/app/_components/app-shell";
 import { CURRENT_MONTH } from "@/app/_time/periods";
 import { SECTION, SECTION_GROUPS } from "../_data/section-nav";
-import { MasterDataTabs } from "../_components/master-data-tabs";
 import { JourneyPlansBoard } from "../_components/journey-plans-board";
 
 export const metadata: Metadata = {
@@ -19,7 +18,6 @@ export default function JourneyPlansPage() {
       groups={SECTION_GROUPS}
       activeSection="journey-plans"
     >
-      <MasterDataTabs active="journey-plans" />
       <JourneyPlansBoard month={CURRENT_MONTH} />
     </RailShell>
   );

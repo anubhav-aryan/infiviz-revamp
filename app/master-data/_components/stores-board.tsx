@@ -6,41 +6,14 @@ import {
   REGION_MINI,
   RETAILER_MINI,
   STORES_TABLE,
+  STORE_COLUMNS,
   STORE_ROWS,
   STORE_TOTALS,
   TYPE_MINI,
-  type MiniBar,
 } from "../_data/stores";
+import { BreakdownTile } from "./breakdown-tile";
+import { GridRow, ResizableGrid } from "./resizable-grid";
 import styles from "./master-data.module.css";
-
-/** The three breakdown tiles differ only in their label, data and bar tint. */
-function BreakdownTile({
-  label,
-  bars,
-  tone,
-}: {
-  label: string;
-  bars: MiniBar[];
-  tone?: "light";
-}) {
-  return (
-    <div className={styles.tile}>
-      <div className={`${styles.tileLabel} ${styles.tileLabelBars}`}>{label}</div>
-      {bars.map((bar) => (
-        <div key={bar.name} className={styles.miniRow}>
-          <span className={styles.miniName}>{bar.name}</span>
-          <span className={styles.miniTrack}>
-            <span
-              className={styles.miniFill}
-              data-tone={tone}
-              style={{ width: `${bar.w}%` }}
-            />
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export function StoresBoard() {
   return (
@@ -94,32 +67,23 @@ export function StoresBoard() {
           </span>
         </div>
 
-        <div className={`${styles.storesGrid} ${styles.columnHead}`}>
-          <span>Store code</span>
-          <span>Store name</span>
-          <span>Retailer</span>
-          <span>Type</span>
-          <span>Region</span>
-          <span>Merchandiser</span>
-          <span>Status</span>
-          <span>Added</span>
-        </div>
-
-        {STORE_ROWS.map((store) => (
-          <div key={store.code} className={`${styles.storesGrid} ${styles.row}`}>
-            <span className={styles.cellMono}>{store.code}</span>
-            <span className={styles.cellName}>{store.name}</span>
-            <span className={styles.cell}>{store.retailer}</span>
-            <span className={styles.cell}>{store.type}</span>
-            <span className={styles.cell}>{store.region}</span>
-            <span className={styles.cellMono}>{store.mrch}</span>
-            <span className={styles.status} data-status={store.status}>
-              <span className={styles.statusDot} aria-hidden="true" />
-              {store.status}
-            </span>
-            <span className={styles.cellMuted}>{store.added}</span>
-          </div>
-        ))}
+        <ResizableGrid tableKey="stores" columns={STORE_COLUMNS}>
+          {STORE_ROWS.map((store) => (
+            <GridRow key={store.code}>
+              <span className={styles.cellMono}>{store.code}</span>
+              <span className={styles.cellName}>{store.name}</span>
+              <span className={styles.cell}>{store.retailer}</span>
+              <span className={styles.cell}>{store.type}</span>
+              <span className={styles.cell}>{store.region}</span>
+              <span className={styles.cellMono}>{store.mrch}</span>
+              <span className={styles.status} data-status={store.status}>
+                <span className={styles.statusDot} aria-hidden="true" />
+                {store.status}
+              </span>
+              <span className={styles.cellMuted}>{store.added}</span>
+            </GridRow>
+          ))}
+        </ResizableGrid>
       </div>
     </div>
   );

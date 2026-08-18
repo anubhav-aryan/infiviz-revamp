@@ -6,6 +6,7 @@ import {
   isWeekend,
 } from "@/app/_time/periods";
 import { lcg, shiftFor } from "@/app/_time/variants";
+import type { GridColumn } from "../_components/grid-columns";
 
 /**
  * Journey plans fixtures. July 2026 is the month the design authored, with
@@ -94,6 +95,17 @@ export function adherenceTier(adh: number): AdherenceTier {
   return "low";
 }
 
+/** Track widths, previously the `.plansGrid` declaration in the CSS module. */
+export const PLAN_COLUMNS: GridColumn[] = [
+  { key: "mrch", label: "Merchandiser", width: 150 },
+  { key: "region", label: "Region", width: 160 },
+  { key: "stores", label: "Stores", width: 100 },
+  { key: "freq", label: "Frequency", width: 110 },
+  { key: "planned", label: "Planned", width: 90, align: "right" },
+  { key: "done", label: "Done", width: 90, align: "right" },
+  { key: "adh", label: "Adherence", width: 160, align: "right", flex: true },
+];
+
 export type PlanRow = {
   mrch: string;
   region: string;
@@ -105,7 +117,7 @@ export type PlanRow = {
 };
 
 /** The designer's figures. July reads these unmodified. */
-const CURRENT_PLAN_ROWS: PlanRow[] = [
+export const CURRENT_PLAN_ROWS: PlanRow[] = [
   { mrch: "khang_nguyen", region: "Ho Chi Minh City", stores: 42, freq: "Weekly", planned: 168, done: 152, adh: 90 },
   { mrch: "linh_pham", region: "South East", stores: 38, freq: "Weekly", planned: 152, done: 141, adh: 93 },
   { mrch: "minh_tran", region: "Ho Chi Minh City", stores: 45, freq: "Weekly", planned: 180, done: 149, adh: 83 },

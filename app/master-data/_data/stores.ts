@@ -4,6 +4,8 @@
  * Vietnam as the design authored it.
  */
 
+import type { GridColumn } from "../_components/grid-columns";
+
 export type MiniBar = { name: string; w: number };
 
 /** Widths are authored as a percentage of the largest slice, not as raw counts. */
@@ -33,6 +35,18 @@ export const STORE_TOTALS = {
   active: "1,835",
   inactive: "12 inactive",
 };
+
+/** Track widths, previously the `.storesGrid` declaration in the CSS module. */
+export const STORE_COLUMNS: GridColumn[] = [
+  { key: "code", label: "Store code", width: 120 },
+  { key: "name", label: "Store name", width: 220 },
+  { key: "retailer", label: "Retailer", width: 120 },
+  { key: "type", label: "Type", width: 105 },
+  { key: "region", label: "Region", width: 140 },
+  { key: "mrch", label: "Merchandiser", width: 130 },
+  { key: "status", label: "Status", width: 92 },
+  { key: "added", label: "Added", width: 100, flex: true },
+];
 
 export const STORES_TABLE = {
   count: "1,847 stores",

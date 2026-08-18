@@ -1,0 +1,113 @@
+/* One `--cols` track list, set on the wrapper by `ResizableGrid`, laid out by
+   the header row and every body row alike — so a dragged width lands in both
+   and a cell can never slip under the wrong heading. */
+
+.row {
+  display: grid;
+  grid-template-columns: var(--cols);
+}
+
+/* Dragging a column wide enough is allowed to outgrow the card; the header and
+   the body sit in one scroller, so they never slide out of step. */
+.grid {
+  overflow-x: auto;
+}
+
+.head {
+  padding: 10px 18px;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-caption);
+}
+
+.body {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--hairline);
+  align-items: center;
+  font-size: 12.5px;
+}
+
+/* Columns are draggable down to 64px, so every cell has to clip rather than
+   push its neighbour out of the track. The gutter is padding rather than a
+   `column-gap` on purpose: padding lives inside the track, so a column stays
+   exactly as wide as it was dragged. */
+.body > * {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-right: 14px;
+}
+
+/* Driven by the same `data-align` the header cell uses, so a value and its
+   heading cannot disagree about which way they read. The gutter stays on the
+   right for these too — that is the edge a right-aligned number sits against,
+   and therefore the only side that needs keeping clear of the next column. */
+.body > [data-align="right"] {
+  text-align: right;
+}
+
+.headCell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding-right: 14px;
+}
+
+.headCell[data-align="right"] {
+  justify-content: flex-end;
+}
+
+.headLabel {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Straddles the column boundary — the hit area is wider than the visible
+   hairline so the grab does not demand pixel accuracy. Half of it therefore
+   overhangs the next header cell, whose label would otherwise swallow the
+   pointerdown, so it is lifted above its siblings. */
+.handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 2;
+  width: 11px;
+  transform: translateX(50%);
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+  border-radius: 2px;
+}
+
+.handle::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 5px;
+  width: 1px;
+  background: var(--border-strong);
+  opacity: 0;
+  transition: opacity var(--transition-snap);
+}
+
+.handle:hover::after,
+.handle:focus-visible::after,
+.handle:active::after {
+  opacity: 1;
+  background: var(--indigo-500);
+}
+
+.handle:focus-visible {
+  outline: 2px solid var(--indigo-600);
+  outline-offset: 0;
+}

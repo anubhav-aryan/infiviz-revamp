@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { RailShell } from "@/app/_components/app-shell";
 import { MONTH_BY_KEY, MONTH_KEYS, isMonthKey } from "@/app/_time/periods";
 import { SECTION, SECTION_GROUPS } from "../../_data/section-nav";
-import { MasterDataTabs } from "../../_components/master-data-tabs";
 import { JourneyPlansBoard } from "../../_components/journey-plans-board";
 
 /**
@@ -41,7 +40,6 @@ export default async function JourneyPlansMonthPage(
       groups={SECTION_GROUPS}
       activeSection="journey-plans"
     >
-      <MasterDataTabs active="journey-plans" />
       <JourneyPlansBoard month={month} />
     </RailShell>
   );

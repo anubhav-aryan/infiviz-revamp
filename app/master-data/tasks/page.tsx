@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
 import { RailShell } from "@/app/_components/app-shell";
 import { SECTION, SECTION_GROUPS } from "../_data/section-nav";
-import { UsersBoard } from "../_components/users-board";
+import { TasksBoard } from "../_components/tasks-board";
 
 export const metadata: Metadata = {
-  title: "Users",
-  description: "Merchandisers and supervisors configured on the account.",
+  title: "Tasks",
+  description: "The visit tasks pushed to the InfiShots app, by store group.",
 };
 
-export default function UsersPage() {
+export default function TasksPage() {
   return (
     <RailShell
       active="master-data"
       section={SECTION}
       groups={SECTION_GROUPS}
-      activeSection="users"
+      activeSection="tasks"
     >
-      <UsersBoard />
+      <TasksBoard />
     </RailShell>
   );
 }

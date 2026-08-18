@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { RailShell } from "@/app/_components/app-shell";
 import { SECTION, SECTION_GROUPS } from "./_data/section-nav";
-import { MasterDataTabs } from "./_components/master-data-tabs";
 import { StoresBoard } from "./_components/stores-board";
 
 export const metadata: Metadata = {
@@ -17,7 +16,6 @@ export default function StoresPage() {
       groups={SECTION_GROUPS}
       activeSection="stores"
     >
-      <MasterDataTabs active="stores" />
       <StoresBoard />
     </RailShell>
   );
