@@ -56,6 +56,17 @@
   padding: 6px 12px;
 }
 
+/* The onboarding header's right-hand cluster: the sync pill and the
+   analytics-locked pill. Referenced by `onboarding-screen.tsx` but never
+   defined, so the two pills had no row to sit in. */
+.headActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .lockedPill {
   display: inline-flex;
   white-space: nowrap;
@@ -884,6 +895,9 @@
 /* Not part of the design. This is a demo affordance for flipping between the
    onboarding and live phases, deliberately styled as a dev tool
    rather than product chrome. */
+/* `right`/`bottom` are the resting position. Once dragged the component sets
+   `left`/`top` inline and clears these, so the first render never depends on
+   `window` and server and client agree. */
 .statePicker {
   position: fixed;
   right: 16px;
@@ -898,6 +912,40 @@
   padding: 6px 8px 6px 14px;
   box-shadow: var(--shadow-lg);
   backdrop-filter: blur(4px);
+}
+
+/* The only draggable part. Keeping the grip separate from the two buttons
+   means a drag never has to be told apart from a press. `touch-action: none`
+   stops the browser scrolling the page instead of moving the pill. */
+.stateGrip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 2px 2px 0;
+  color: var(--neutral-400);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  border-radius: 999px;
+}
+
+.stateGrip:hover {
+  color: var(--neutral-100);
+}
+
+.stateGrip:active {
+  cursor: grabbing;
+}
+
+.stateGrip:focus-visible {
+  outline: 2px solid var(--indigo-400, var(--indigo-600));
+  outline-offset: 2px;
+}
+
+/* While parked somewhere custom, the pill sits above everything including the
+   filter bar — it is the control you reach for to get it out of the way. */
+.statePicker[data-moved="true"] {
+  z-index: 60;
 }
 
 .statePickerLabel {

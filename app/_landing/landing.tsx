@@ -4,9 +4,9 @@ import { useState, type ReactElement } from "react";
 import { AppShell } from "@/app/_components/app-shell";
 import { NAV_CAPTURING, fullNav, type NavEntry } from "@/app/_components/nav";
 import type { LandingStateId } from "./_data/landing";
+import { DemoStatePicker } from "./demo-state-picker";
 import { OnboardingScreen } from "./onboarding-screen";
 import { LiveScreen } from "./live-screen";
-import styles from "./landing.module.css";
 
 /**
  * Two phases of the same screen. Each changes the nav as well as the main
@@ -43,30 +43,15 @@ export function Landing() {
       </AppShell>
 
       {/* Not in the design — a demo affordance for stepping between the
-          onboarding and live phases. */}
-      <div className={styles.statePicker}>
-        <span className={styles.statePickerLabel} id="landing-state-picker">
-          Demo state
-        </span>
-        <div
-          className={styles.statePickerOptions}
-          role="group"
-          aria-labelledby="landing-state-picker"
-        >
-          {STATE_IDS.map((id) => (
-            <button
-              key={id}
-              type="button"
-              className={styles.statePickerOption}
-              aria-pressed={id === stateId}
-              aria-label={`Show the ${STATES[id].label.toLowerCase()} state`}
-              onClick={() => setStateId(id)}
-            >
-              {STATES[id].label}
-            </button>
-          ))}
-        </div>
-      </div>
+          onboarding and live phases. Draggable, because it sits over the
+          bottom-right of the page and that is somewhere a reader wants to
+          look during a walkthrough. */}
+      <DemoStatePicker
+        states={STATES}
+        order={STATE_IDS}
+        active={stateId}
+        onChange={setStateId}
+      />
     </>
   );
 }
