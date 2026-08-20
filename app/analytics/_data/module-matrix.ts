@@ -266,6 +266,21 @@ export const modulePath = (persona: PersonaId, module: ModuleId, tab: TabId) =>
   `/analytics/${persona}/${module}/${tab}`;
 
 /**
+ * Back to the curated overview, in the persona you were reading as.
+ *
+ * `/analytics` reads persona from `?persona=`, omitted for the exec default —
+ * the same rule `analytics.tsx`'s own `toQuery` follows, so this link lands
+ * exactly where the "Detailed Dashboard" link on that page would have sent you
+ * back from.
+ *
+ * Lives here rather than in the route because the module screen's breadcrumb
+ * needs it too, and two copies of a routing rule is how they drift.
+ */
+export function overviewPath(persona: PersonaId): string {
+  return persona === "exec" ? "/analytics" : `/analytics?persona=${persona}`;
+}
+
+/**
  * Every prerenderable combination. `generateStaticParams` reads this, so the
  * built route list is exactly the matrix — nothing reachable is unbuilt, and
  * nothing built is unreachable.

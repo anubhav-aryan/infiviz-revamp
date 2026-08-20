@@ -494,8 +494,12 @@ export const CATEGORY_BRANDS: Partial<Record<CategoryScopeId, ScopeRow[]>> = {
  * fixture breaks them down.
  */
 export const CATEGORY_SEGMENTS: Record<CategoryScopeId, ScopeRow[]> = {
+  /* Divided by toothpaste's own canonical OSA rather than a hard-coded copy of
+     it — that copy was left at 65.1 when the category was rebalanced to 69.9,
+     which made every toothpaste skew here ~7% hot. */
   toothpaste: DIM_SOURCE["Sub-category"].map(
-    ([name, osa, delta]) => [name, +(osa / 65.1).toFixed(4), delta] as ScopeRow,
+    ([name, osa, delta]) =>
+      [name, +(osa / SOS_BY_ID.get("toothpaste")!.osa).toFixed(4), delta] as ScopeRow,
   ),
   toothbrush: [
     ["Soft bristle", 1.09, 1.2],

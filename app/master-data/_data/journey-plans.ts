@@ -103,6 +103,10 @@ export const PLAN_COLUMNS: GridColumn[] = [
   { key: "freq", label: "Frequency", width: 110 },
   { key: "planned", label: "Planned", width: 90, align: "right" },
   { key: "done", label: "Done", width: 90, align: "right" },
+  /* The column the board was missing. Nobody reads a plan board to find out
+     who turned up; they read it to find the visits that did not happen, and
+     that number was only obtainable by subtracting two others in your head. */
+  { key: "missed", label: "Missed", width: 90, align: "right" },
   { key: "adh", label: "Adherence", width: 160, align: "right", flex: true },
 ];
 
@@ -131,8 +135,17 @@ export const CURRENT_PLAN_ROWS: PlanRow[] = [
 /** Adherence was a little weaker earlier in the window. */
 const PER_MONTH = { scale: 1, bias: -1.4, spread: 1.1 };
 
+/**
+ * Least adherent first — the board's job is the visits that did not happen.
+ *
+ * A copy, never a sort in place: `CURRENT_PLAN_ROWS` is the seed every other
+ * month derives from, and its authored order is load-bearing there.
+ */
+const worstFirst = (rows: PlanRow[]): PlanRow[] =>
+  [...rows].sort((a, b) => a.adh - b.adh);
+
 function buildPlanRows(key: MonthKey, month: Month): PlanRow[] {
-  if (key === CURRENT_MONTH) return CURRENT_PLAN_ROWS;
+  if (key === CURRENT_MONTH) return worstFirst(CURRENT_PLAN_ROWS);
 
   const shift = shiftFor(key, PER_MONTH, 4100);
   const rand = lcg(shift.seed);
@@ -143,13 +156,15 @@ function buildPlanRows(key: MonthKey, month: Month): PlanRow[] {
     MONTHS[MONTHS.length - 1],
   );
 
-  return CURRENT_PLAN_ROWS.map((row) => {
+  const rows = CURRENT_PLAN_ROWS.map((row) => {
     const planned = Math.round((row.planned / currentWeekdays) * weekdays);
     const adh = Math.round(
       Math.min(99, Math.max(35, row.adh + shift.bias + (rand() - 0.5) * 2 * shift.spread)),
     );
     return { ...row, planned, done: Math.round((planned * adh) / 100), adh };
   });
+
+  return worstFirst(rows);
 }
 
 function countWeekdays(month: Month): number {

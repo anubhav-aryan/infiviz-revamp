@@ -27,6 +27,36 @@ export function FieldBody({
 }) {
   return (
     <div className={styles.body}>
+      {/* The fix list, first. This is the artefact a supervisor carries into
+          the morning — it should not be below four bands of context. */}
+      <div className={styles.band}>
+        <h2 className={styles.bandTitle} data-gap="4">
+          Today&apos;s priorities
+        </h2>
+        <div className={styles.bandCaption}>Where to push · fix list</div>
+        <div className={styles.tableCard}>
+          {FIX_LIST.map((fix) => (
+            <div key={fix.store} className={styles.fixRow}>
+              <span className={styles.fixDot} aria-hidden="true" />
+              <div className={styles.fixBody}>
+                <div className={styles.fixStore}>{fix.store}</div>
+                <div className={styles.fixIssue}>
+                  {fix.issue} ·{" "}
+                  <b className={styles.inlineMono}>{fix.skus}</b> SKUs affected
+                </div>
+              </div>
+              <Link
+                href="/session-viewer"
+                className={`${styles.reset} ${styles.inlineLink}`}
+                aria-label={`Open Session Viewer for ${fix.store}`}
+              >
+                Open Session Viewer
+                <Icon name="arrow-right" size={14} />
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
       <StatStrip items={view.fieldBandA} />
 
       {/* Band B — today's cluster, plus progress against the visit plan */}
@@ -74,8 +104,9 @@ export function FieldBody({
         </div>
       </div>
 
-      {/* Band D — one store: what is ranged against what is facing out */}
-      <div className={styles.band}>
+      {/* Band D — one store: what is ranged against what is facing out.
+          Closes the page now that the fix list opens it. */}
+      <div className={styles.bandEnd}>
         <h2 className={styles.bandTitle} data-gap="4">
           What moved · store detail
         </h2>
@@ -120,35 +151,6 @@ export function FieldBody({
               variant="store"
             />
           </div>
-        </div>
-      </div>
-
-      {/* Band E */}
-      <div className={styles.bandEnd}>
-        <h2 className={styles.bandTitle} data-gap="14">
-          Where to push · fix list
-        </h2>
-        <div className={styles.tableCard}>
-          {FIX_LIST.map((fix) => (
-            <div key={fix.store} className={styles.fixRow}>
-              <span className={styles.fixDot} aria-hidden="true" />
-              <div className={styles.fixBody}>
-                <div className={styles.fixStore}>{fix.store}</div>
-                <div className={styles.fixIssue}>
-                  {fix.issue} ·{" "}
-                  <b className={styles.inlineMono}>{fix.skus}</b> SKUs affected
-                </div>
-              </div>
-              <Link
-                href="/session-viewer"
-                className={`${styles.reset} ${styles.inlineLink}`}
-                aria-label={`Open Session Viewer for ${fix.store}`}
-              >
-                Open Session Viewer
-                <Icon name="arrow-right" size={14} />
-              </Link>
-            </div>
-          ))}
         </div>
       </div>
     </div>

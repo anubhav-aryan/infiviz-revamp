@@ -26,10 +26,46 @@ export function ExecBody({
 
   return (
     <div className={styles.body}>
+      {/* `:v2` because a stored order wins over the authored one and unknown
+          ids append at the end — so a reader who ever dragged a card would
+          otherwise keep the old sequence, with the priorities band pinned last.
+          A new key reads as "no save" and hands everyone the new default. */}
       <ReorderableGrid
-        pageKey="analytics:exec"
+        pageKey="analytics:exec:v2"
         gap={0}
         items={[
+          {
+            id: "band-e",
+            node: (
+      /* The day's work, first. This band used to close the page, four bands
+         below the fold — the one thing a reader could act on, last. */
+      <div className={styles.band}>
+        <h2 className={styles.bandTitle} data-gap="4">
+          Today&apos;s priorities
+        </h2>
+        <div className={styles.bandCaption}>Where to push — this month&apos;s actions</div>
+        <div className={styles.insightGrid}>
+          {INSIGHTS.map((insight) => (
+            <div key={insight.link} className={styles.insightCard}>
+              <span className={styles.insightIcon} aria-hidden="true">
+                <Icon name={insight.icon} />
+              </span>
+              <div className={styles.insightBody}>
+                <div className={styles.insightText}>{insight.text}</div>
+                <button
+                  type="button"
+                  className={`${styles.inlineLink} ${styles.insightLink}`}
+                >
+                  {insight.link}
+                  <Icon name="arrow-right" size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+            ),
+          },
           { id: "stat-strip", node: <StatStrip items={view.bandA} /> },
           {
             id: "sos-panels",
@@ -289,36 +325,6 @@ export function ExecBody({
               ))}
             </svg>
           </div>
-        </div>
-      </div>
-            ),
-          },
-          {
-            id: "band-e",
-            node: (
-      /* Band E — what to do about it */
-      <div className={styles.bandEnd}>
-        <h2 className={styles.bandTitle} data-gap="14">
-          Where to push
-        </h2>
-        <div className={styles.insightGrid}>
-          {INSIGHTS.map((insight) => (
-            <div key={insight.link} className={styles.insightCard}>
-              <span className={styles.insightIcon} aria-hidden="true">
-                <Icon name={insight.icon} />
-              </span>
-              <div className={styles.insightBody}>
-                <div className={styles.insightText}>{insight.text}</div>
-                <button
-                  type="button"
-                  className={`${styles.inlineLink} ${styles.insightLink}`}
-                >
-                  {insight.link}
-                  <Icon name="arrow-right" size={14} />
-                </button>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
             ),

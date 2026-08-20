@@ -83,7 +83,10 @@ export const PERSONAS: { key: Persona; label: string }[] = [
  * instead — otherwise the designer's headline figures never appear — so they
  * lead the Add-filter menu as suggestions.
  */
-const DESIGN_FILTERS = ["Store type: Hypermarket"];
+/* Presently unconsumed — the suggestion row went when the global bar replaced
+   the inline menus — but it documents which cut leads, so it names one that
+   matters rather than the one that was demoted. */
+const DESIGN_FILTERS = ["Brand: Colgate Total"];
 
 /* ---------------------------------------------------------------- */
 /* dimensions — shared by every persona's band C                    */
@@ -166,10 +169,22 @@ function buildDims(i: number): Dims {
   ) as Dims;
 }
 
+/**
+ * Order is priority, not taxonomy: the strip is read left to right and the
+ * first option is the one most readers stay on.
+ *
+ * Brands and accounts (retailers) lead — they are what a commercial
+ * conversation is actually about. Store type is kept but demoted to last
+ * wherever it appears: it is a useful cut occasionally and never the one
+ * someone opens with.
+ */
 export const DIM_OPTIONS: Record<Persona, DimKey[]> = {
-  exec: ["Region", "Retailer", "Store type", "Category", "Brand"],
-  regional: ["City", "Retailer", "Store type", "Store"],
+  exec: ["Region", "Retailer", "Brand", "Category", "Store type"],
+  regional: ["City", "Retailer", "Store", "Store type"],
+  /* Already brand-led; a category manager's own vocabulary (sub-category, SKU)
+     outranks the account cut for them. */
   category: ["Brand", "Sub-category", "SKU", "Retailer", "Region"],
+  /* No store type to demote — the field cuts are operational. */
   field: ["Store", "Merchandiser", "Retailer"],
 };
 
@@ -1362,8 +1377,22 @@ export function buildView(period: MonthKey, filters: ActiveFilter[]): AnalyticsV
     coverage: Math.round(CURRENT_BAND_A.coverage * availLevel(i)),
     bandA: bandA(i, fraction),
     fieldBandA: fieldBandA(i, fraction),
+    /* Worst first, and the six kept are the worst six. The band is titled
+       "Where it's worst" but the spine authors its rows best-first, so the
+       ranked lists were opening on the strongest performer — and for a
+       dimension with more than six rows (Brand has eight) the weakest two were
+       being sliced off the end entirely.
+
+       Sorted here rather than in `DIM_SOURCE`: the spine's authored order is
+       read by other derivations, and this is a presentation rule belonging to
+       one band. `w` is a rounded bar width, so the sort reads `osa`. */
     ranked: Object.fromEntries(
-      DIM_KEYS.map((k) => [k, shown[k].slice(0, 6)]),
+      DIM_KEYS.map((k) => [
+        k,
+        [...shown[k]]
+          .sort((a, b) => parseFloat(a.osa) - parseFloat(b.osa))
+          .slice(0, 6),
+      ]),
     ) as Record<DimKey, RankRow[]>,
     heroes: buildHeroes(i),
     ownComp: buildOwnComp(i),

@@ -268,9 +268,14 @@ const CATEGORY_FACET: FilterDimension = {
   ],
 };
 
+/**
+ * Menu order is priority order. Retailer leads; store type is kept but sits
+ * last, which `catalogueFor` achieves by appending it after the extras rather
+ * than by listing it among the dims.
+ */
 export const CATALOGUE: FilterDimension[] = catalogueFor(
-  ["retailer", "region", "storeType", "placement", "store"],
-  [CATEGORY_FACET],
+  ["retailer", "region", "placement", "store"],
+  [CATEGORY_FACET, ...catalogueFor(["storeType"])],
 );
 
 /**

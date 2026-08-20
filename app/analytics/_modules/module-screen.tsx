@@ -42,10 +42,12 @@ import {
   StoreManagementBody,
 } from "./bespoke-bodies";
 import { defaultMeasureId, type MetricModuleView } from "../_data/metric-module";
+import Link from "next/link";
 import {
   MODULES,
   TAB_LABELS,
   modulePath,
+  overviewPath,
   type ModuleId,
   type PersonaId,
   type TabId,
@@ -155,6 +157,27 @@ export function ModuleScreen({ persona, module, tab }: Props) {
   return (
     <div className={styles.screen}>
       <header className={styles.head}>
+        {/* Three levels down, the screen said only which module you were in.
+            With the sidebar collapsed to icons there was nothing naming the
+            section either, so readers lost the way back to the overview — the
+            single most common complaint in the demo. */}
+        <nav className={styles.crumbs} aria-label="Breadcrumb">
+          <Link href={overviewPath(persona)} className={styles.crumbLink}>
+            Analytics
+          </Link>
+          <span className={styles.crumbSep} aria-hidden="true">
+            /
+          </span>
+          {/* Groups have no route of their own — this names where you are. */}
+          <span className={styles.crumb}>{def.group}</span>
+          <span className={styles.crumbSep} aria-hidden="true">
+            /
+          </span>
+          <span className={styles.crumbCurrent} aria-current="page">
+            {def.label}
+          </span>
+        </nav>
+
         <div className={styles.headTop}>
           <div>
             <h1 className={styles.title}>{def.label}</h1>

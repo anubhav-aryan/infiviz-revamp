@@ -436,7 +436,9 @@ export function MerchandiserBody({
                   columns={view.timeTable.columns}
                   rows={view.timeTable.rows}
                   emptyLabel="No merchandiser activity this month."
-                  defaultSort={{ index: 3, dir: "desc" }}
+                  /* Ascending on PJP adherence: the table opens on whoever is
+                     furthest off plan, not whoever topped it. */
+                  defaultSort={{ index: 3, dir: "asc" }}
                 />
               </Card>
               <Card title="Outlets not covered this month" pad={false}>

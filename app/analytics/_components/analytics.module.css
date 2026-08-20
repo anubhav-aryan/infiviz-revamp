@@ -1623,11 +1623,43 @@
 
 /* Sits above every other figure because it qualifies all of them: how much of
    the period's capture actually arrived, finished, and is safe to analyse. */
+/* The band sits at the foot of the dashboard as supporting reference, so the
+   section owns the page padding and the rule that separates it from the body. */
+.healthSection {
+  margin-top: 26px;
+  padding: 0 28px 24px;
+  border-top: 1px solid var(--hairline);
+}
+
+.healthSectionCaption {
+  padding: 14px 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-caption);
+}
+
 .healthBand {
   display: grid;
   grid-template-columns: 1.4fr 1fr 1.2fr;
   gap: 14px;
   padding: 0 28px 16px;
+}
+
+/* Compact: same content, quieter chrome. It is read after the figures it
+   qualifies, not before them, so it does not need headline weight. */
+.healthBand[data-compact="true"] {
+  padding: 0;
+}
+
+.healthBand[data-compact="true"] .healthTile {
+  padding: 12px 14px;
+  box-shadow: none;
+}
+
+.healthBand[data-compact="true"] .healthValue {
+  font-size: 18px;
 }
 
 .healthTile {

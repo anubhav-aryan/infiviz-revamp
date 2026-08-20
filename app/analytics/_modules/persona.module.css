@@ -1,19 +1,29 @@
 /* The persona switcher in the analytics rail header. */
 
+/* The way up. As 12px grey text it was the quietest thing in a rail whose
+   loudest element was the persona switcher below it — so readers three levels
+   deep could not find it. It is now the affordance it always needed to be. */
 .backLink {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   margin-bottom: 14px;
-  font-size: 12px;
+  padding: 7px 10px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--brand);
+  background: var(--brand-subtle);
+  border: 1px solid var(--brand-border);
+  border-radius: 8px;
   text-decoration: none;
-  transition: color var(--transition-snap);
+  transition:
+    background var(--transition-snap),
+    color var(--transition-snap);
 }
 
 .backLink:hover {
-  color: var(--text-body);
+  background: var(--brand-subtle-hover);
+  color: var(--brand-hover);
 }
 
 .switcherLabel {

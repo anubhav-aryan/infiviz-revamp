@@ -84,7 +84,6 @@ const adherenceOf = (team: MerchFact[]) =>
   team.reduce((sum, [, adherence, visits]) => sum + adherence * visits, 0) /
   team.reduce((sum, [, , visits]) => sum + visits, 0);
 
-const PJP_ADHERENCE = adherenceOf(MERCHANDISERS);
 
 /**
  * A region's own team, and with it its own adherence.
@@ -99,14 +98,21 @@ function teamFor(scope: Scope): MerchFact[] {
   return team.length > 0 ? team : MERCHANDISERS;
 }
 
-/** Stores with no recent visit. Each is filed under the region that owns it. */
+/**
+ * Stores with no recent visit, longest-stale first — the table is a list of
+ * failures, so the worst one leads.
+ *
+ * Authored in order rather than sorted at build: `last` is a display string,
+ * and parsing "31 days" back into a number to sort by would be a second
+ * encoding of a fact the row already states.
+ */
 const NOT_COVERED: [region: string, outlet: string, code: string, last: string][] = [
-  ["Ho Chi Minh City", "MM Mega Market An Phú", "0123555", "18 days"],
-  ["North Highlands", "Winmart Hà Giang", "0448120", "26 days"],
   ["Central", "Co.opmart Quy Nhơn", "0392044", "31 days"],
+  ["North Highlands", "Winmart Hà Giang", "0448120", "26 days"],
+  ["South East", "Lotte Mart Biên Hòa", "0731064", "24 days"],
   ["Red River Delta", "Aeon Hải Phòng", "0517783", "22 days"],
   ["Mekong Delta", "BHX Cần Thơ Ninh Kiều", "0664901", "19 days"],
-  ["South East", "Lotte Mart Biên Hòa", "0731064", "24 days"],
+  ["Ho Chi Minh City", "MM Mega Market An Phú", "0123555", "18 days"],
 ];
 
 export type MerchandiserView = {

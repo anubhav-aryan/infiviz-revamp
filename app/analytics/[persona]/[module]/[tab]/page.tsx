@@ -17,6 +17,7 @@ import {
   PERSONAS,
   allRoutes,
   modulePath,
+  overviewPath,
   railGroupsFor,
   type ModuleId,
   type PersonaId,
@@ -49,18 +50,6 @@ export const dynamicParams = false;
  * boundary. Switching persona stays on the current module when the target
  * persona owns it, and otherwise lands on the module they open on.
  */
-/**
- * Back to the curated overview, in the persona you were reading as.
- *
- * `/analytics` reads persona from `?persona=`, omitted for the exec default —
- * the same rule `analytics.tsx`'s own `toQuery` follows, so this link lands
- * exactly where the "Detailed Dashboard" link on that page would have sent you
- * back from.
- */
-function overviewPath(persona: PersonaId): string {
-  return persona === "exec" ? "/analytics" : `/analytics?persona=${persona}`;
-}
-
 /* Every persona sees every module now, so switching keeps your place instead of
    bouncing you to the next persona's landing screen — what changes is the scope
    the numbers are read at, which is the point of the switch. */
@@ -81,12 +70,13 @@ export default async function AnalyticsModulePage(
   const moduleId = moduleParam as ModuleId;
   const tabId = tab as TabId;
 
-  /* Grouped but unlabelled: the grouping still orders the rail and spaces the
-     clusters, while the names, the section heading and the per-module blurbs
-     are gone — at 210px they were more explanation than navigation, and the
-     switcher above already says what this persona is for. */
+  /* Labelled again. Unlabelled clusters read as arbitrary spacing once you are
+     three levels in, and a reader who could not name the section they were in
+     could not find their way back out of it — which is what the demo surfaced.
+     The per-module blurbs stay gone; at 210px those were explanation rather
+     than navigation. */
   const groups: SectionGroup[] = railGroupsFor(personaId).map((group) => ({
-    label: "",
+    label: group.label,
     items: group.items.map((entry) => ({
       id: entry.id,
       label: entry.label,
@@ -112,7 +102,7 @@ export default async function AnalyticsModulePage(
               no query dependency, so it renders outside the Suspense boundary
               below rather than waiting on the client. */}
           <Link href={overviewPath(personaId)} className={styles.backLink}>
-            <Icon name="arrow-left" size={13} />
+            <Icon name="arrow-left" size={14} />
             Back to overview
           </Link>
 

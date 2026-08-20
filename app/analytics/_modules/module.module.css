@@ -358,3 +358,41 @@
   font-weight: 600;
   color: var(--success);
 }
+
+/* ---------- breadcrumb ---------- */
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--text-caption);
+}
+
+.crumbLink {
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-snap);
+}
+
+.crumbLink:hover {
+  color: var(--indigo-600);
+  text-decoration: underline;
+}
+
+.crumb {
+  color: var(--text-caption);
+}
+
+.crumbSep {
+  color: var(--text-caption);
+  opacity: 0.6;
+  user-select: none;
+}
+
+.crumbCurrent {
+  font-weight: 600;
+  color: var(--text-body);
+}

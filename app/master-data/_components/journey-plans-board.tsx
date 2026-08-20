@@ -28,6 +28,7 @@ function planCsv(rows: PlanRow[]): CsvTable {
       "Frequency",
       "Planned",
       "Done",
+      "Missed",
       "Adherence %",
     ],
     rows: rows.map((r) => [
@@ -37,6 +38,7 @@ function planCsv(rows: PlanRow[]): CsvTable {
       r.freq,
       r.planned,
       r.done,
+      r.planned - r.done,
       r.adh,
     ]),
   };
@@ -183,7 +185,7 @@ export function JourneyPlansBoard({ month }: { month: MonthKey }) {
 
       <div className={styles.tableCard}>
         <div className={styles.plansTitle}>
-          Plans by merchandiser
+          Plans by merchandiser · most missed first
           <CardActions>
             <AskInfiChatButton label="Plans by merchandiser" compact />
             <ExcelDownloadButton label="Plans by merchandiser" compact />
@@ -199,6 +201,10 @@ export function JourneyPlansBoard({ month }: { month: MonthKey }) {
               <span className={styles.cell}>{plan.freq}</span>
               <span className={styles.cellNum} data-align="right">{plan.planned}</span>
               <span className={styles.cellNum} data-align="right">{plan.done}</span>
+              {/* Derived, not stored — one fewer number that can drift. */}
+              <span className={styles.cellNum} data-align="right">
+                {plan.planned - plan.done}
+              </span>
               <span className={styles.adherence} data-align="right">
                 <span className={styles.adhTrack}>
                   <span className={styles.adhFill} style={{ width: `${plan.adh}%` }} />

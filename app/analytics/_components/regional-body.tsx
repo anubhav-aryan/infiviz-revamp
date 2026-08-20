@@ -27,6 +27,59 @@ export function RegionalBody({
 }) {
   return (
     <div className={styles.body}>
+      {/* The stores to visit, first — this closed the page before, which put
+          the one actionable table below four bands of diagnosis. */}
+      <div className={styles.band}>
+        <div className={styles.bandHead}>
+          <div>
+            <h2 className={styles.bandTitle}>Today&apos;s priorities</h2>
+            <div className={styles.bandCaption}>
+              Where to push · bottom 20 stores — start here
+            </div>
+          </div>
+          <span className={styles.chip}>Bottom 20</span>
+        </div>
+
+        <div className={styles.tableCard}>
+          <div className={`${styles.leagueGrid} ${styles.leagueHead}`}>
+            <span>Store</span>
+            <span>Retailer</span>
+            <span>Type</span>
+            <span className={styles.right}>OSA</span>
+            <span className={styles.right}>SOS</span>
+            <span className={styles.right}>Sessions</span>
+            <span>Last visit</span>
+            <span>Trend</span>
+          </div>
+
+          {view.league.length === 0 ? (
+            <EmptyState>No store matches the filters.</EmptyState>
+          ) : (
+            view.league.map((row) => (
+              <Link
+                key={row.store}
+                href="/session-viewer"
+                className={`${styles.reset} ${styles.leagueGrid} ${styles.leagueRow}`}
+                aria-label={`${row.store} — OSA ${row.osa}%`}
+              >
+                <span className={styles.leagueStore}>{row.store}</span>
+                <span className={styles.leagueCell}>{row.retailer}</span>
+                <span className={styles.leagueCell}>{row.type}</span>
+                <span className={styles.leagueMono}>{row.osa}</span>
+                <span className={styles.leagueMonoDim}>{row.sos}</span>
+                <span className={styles.leagueMonoDim}>{row.sessions}</span>
+                <span className={styles.leagueVisit}>{row.lastVisit}</span>
+                <Sparkline
+                  points={row.spark}
+                  viewBox="0 0 60 20"
+                  className={styles.leagueSpark}
+                  strokeWidth={1.6}
+                />
+              </Link>
+            ))
+          )}
+        </div>
+      </div>
       <StatStrip items={view.bandA} />
 
       {/* Band B — the region measured against the national ghost */}
@@ -96,8 +149,9 @@ export function RegionalBody({
         </div>
       </div>
 
-      {/* Band D — is a weak cell under-audited or genuinely bad? */}
-      <div className={styles.band}>
+      {/* Band D — is a weak cell under-audited or genuinely bad? Closes the
+          page now that the league table opens it. */}
+      <div className={styles.bandEnd}>
         <h2 className={styles.bandTitle} data-gap="6">
           What moved
         </h2>
@@ -149,54 +203,6 @@ export function RegionalBody({
             </span>
             <GroupedColumns data={view.coverageColumns} />
           </div>
-        </div>
-      </div>
-
-      {/* Band E — the store league table */}
-      <div className={styles.bandEnd}>
-        <div className={styles.bandHead}>
-          <h2 className={styles.bandTitle}>Where to push</h2>
-          <span className={styles.chip}>Bottom 20</span>
-        </div>
-
-        <div className={styles.tableCard}>
-          <div className={`${styles.leagueGrid} ${styles.leagueHead}`}>
-            <span>Store</span>
-            <span>Retailer</span>
-            <span>Type</span>
-            <span className={styles.right}>OSA</span>
-            <span className={styles.right}>SOS</span>
-            <span className={styles.right}>Sessions</span>
-            <span>Last visit</span>
-            <span>Trend</span>
-          </div>
-
-          {view.league.length === 0 ? (
-            <EmptyState>No store matches the filters.</EmptyState>
-          ) : (
-            view.league.map((row) => (
-              <Link
-                key={row.store}
-                href="/session-viewer"
-                className={`${styles.reset} ${styles.leagueGrid} ${styles.leagueRow}`}
-                aria-label={`${row.store} — OSA ${row.osa}%`}
-              >
-                <span className={styles.leagueStore}>{row.store}</span>
-                <span className={styles.leagueCell}>{row.retailer}</span>
-                <span className={styles.leagueCell}>{row.type}</span>
-                <span className={styles.leagueMono}>{row.osa}</span>
-                <span className={styles.leagueMonoDim}>{row.sos}</span>
-                <span className={styles.leagueMonoDim}>{row.sessions}</span>
-                <span className={styles.leagueVisit}>{row.lastVisit}</span>
-                <Sparkline
-                  points={row.spark}
-                  viewBox="0 0 60 20"
-                  className={styles.leagueSpark}
-                  strokeWidth={1.6}
-                />
-              </Link>
-            ))
-          )}
         </div>
       </div>
     </div>

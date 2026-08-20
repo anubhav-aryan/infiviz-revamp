@@ -43,17 +43,19 @@ export const FILTER_SCOPES: Record<FilterScopeId, DimId[]> = {
    * open on and vice versa. Its own list, not `DEFAULTS`: a visit has no photo
    * type, and `placement` is the one dimension only this screen can answer for.
    */
-  "store-explorer": ["retailer", "region", "storeType", "placement", "category", "store"],
+  "store-explorer": ["retailer", "region", "placement", "category", "store", "storeType"],
+  /* Menu order is this array's order (`catalogueFor` preserves it), so this is
+     a priority list: brand sits with the defaults at the top, store type last. */
   analytics: [
     ...DEFAULTS,
+    "brand",
     "region",
-    "storeType",
     "store",
     "merchandiser",
-    "brand",
     "subCategory",
     "city",
     "sku",
+    "storeType",
   ],
 };
 

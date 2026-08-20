@@ -193,9 +193,6 @@ export function Analytics() {
         exportFilename={exportFilename(persona, dim, period)}
       />
 
-      {/* Top of funnel, above every other figure — it qualifies all of them. */}
-      <DataHealthBand month={period} />
-
       {persona === "exec" ? (
         <ExecBody view={view} dim={dim} dimPicker={dimPicker} compare={compare} />
       ) : null}
@@ -219,6 +216,11 @@ export function Analytics() {
       {persona === "field" ? (
         <FieldBody view={view} dim={dim} dimPicker={dimPicker} compare={compare} />
       ) : null}
+
+      {/* Supporting data, at the foot. The capture funnel qualifies every figure
+          above it, but it is not what anyone opens the dashboard to see — it
+          answers "how much data is behind this?", which is a second question. */}
+      <DataHealthBand month={period} />
     </>
   );
 }

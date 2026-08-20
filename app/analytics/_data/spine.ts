@@ -102,6 +102,9 @@ export const DIM_SOURCE: Record<DimKey, DimFacts[]> = {
     ["Emart", 53.6, -1.4, 44, 36],
     ["MM Mega Market", 51.0, -1.9, 35, 34],
   ],
+  /* Four rows, while `registry.ts` offers five store types — a Wholesale filter
+     finds nothing here. Noted rather than fixed: adding a row means authoring a
+     coherent OSA/SOS pair for it across the spine. */
   "Store type": [
     ["Hypermarket", 70.2, 2.4, 141, 43],
     ["Supermarket", 65.1, 1.0, 372, 40],
@@ -157,11 +160,15 @@ export const DIM_SOURCE: Record<DimKey, DimFacts[]> = {
     ["huy_le", 56.0, -1.0, 40, 35],
     ["nam_hoang", 51.0, -2.1, 29, 32],
   ],
+  /* Toothpaste's four sub-categories. Like `Category` above, these repeat
+     `category-metrics.ts` — `SUBCATEGORY_METRICS` — and its assertions keep the
+     copy honest: share-weighted they must blend back to toothpaste's own
+     46.7 SOS / 69.9 OSA. Edit there first. */
   "Sub-category": [
-    ["Cavity protection", 70.0, 1.4, 40, 42],
-    ["Whitening", 62.0, 0.5, 28, 38],
-    ["Herbal", 58.0, -0.3, 18, 36],
-    ["Kids", 54.0, -1.1, 14, 34],
+    ["Cavity protection", 77.2, 1.4, 40, 50.7],
+    ["Whitening", 68.4, 0.5, 28, 45.9],
+    ["Herbal", 64.0, -0.3, 18, 43.5],
+    ["Kids", 59.6, -1.1, 14, 41.0],
   ],
   SKU: [
     ["COL TP CDC 225G", 78.0, 1.9, 1, 44],

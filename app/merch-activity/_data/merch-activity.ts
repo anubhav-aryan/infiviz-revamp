@@ -450,13 +450,30 @@ export type MerchActivityView = {
   overdue: OverdueRow[];
 };
 
+/**
+ * Worst coverage first. Every one of these rows is below the 90% target, so a
+ * list that opens on the best one buries the reason the reader came.
+ *
+ * Sorted here rather than in the authored facts: the derived months apply a
+ * per-row spread, which can cross two neighbouring rows, so only sorting the
+ * view guarantees the order holds in all six.
+ */
+const worstFirst = (rows: CoverageFact[]): CoverageFact[] =>
+  [...rows].sort((a, b) => a.pct - b.pct);
+
 function buildView(month: Month, facts: Facts): MerchActivityView {
   return {
     monthLabel: month.label,
     tiles: buildTiles(facts),
     notSeen: facts.notSeen,
-    activityRows: facts.activity.map(
-      ([mrch, region, stores, visits, adherence, photos, pass, lastActive]) => ({
+    /* Worst adherence leads. Nobody scans this table for who did their job —
+       and the two who did not were sitting at the bottom of it. The people
+       missing entirely are still ahead of the table as the `notSeen` chips, so
+       the section reads top-down as: absent, then underperforming, then the
+       rest. */
+    activityRows: [...facts.activity]
+      .sort((a, b) => a[4] - b[4])
+      .map(([mrch, region, stores, visits, adherence, photos, pass, lastActive]) => ({
         mrch,
         region,
         stores,
@@ -466,14 +483,15 @@ function buildView(month: Month, facts: Facts): MerchActivityView {
         photos,
         pass,
         lastActive,
-      }),
-    ),
+      })),
     coverageHero: buildCoverageHero(facts),
     // Coverage bars are already percentages of their own row's estate, so the
     // domain is a fixed 0–100 — the same domain the dashed 90% rule rides.
-    coverageRegions: facts.coverageRegions,
-    coverageRetailers: facts.coverageRetailers,
-    coverageTypes: facts.coverageTypes,
+    // That rule is positioned as a fraction of the track, so reordering rows
+    // cannot move it.
+    coverageRegions: worstFirst(facts.coverageRegions),
+    coverageRetailers: worstFirst(facts.coverageRetailers),
+    coverageTypes: worstFirst(facts.coverageTypes),
     overdue: buildOverdue(facts),
   };
 }

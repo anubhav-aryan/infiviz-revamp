@@ -5,7 +5,7 @@ import { Icon } from "@/app/_components/icon";
 import { DimensionMenu } from "./dimension-menu";
 import { dateLabel, isDefaultDate, type DateToken } from "./date-token";
 import { useGlobalFilters } from "./global-filter-context";
-import { filterKey, type ActiveFilter } from "./model";
+import { filterKey, type ActiveFilter, type FilterDimension } from "./model";
 import { describeFilter, REGISTRY, valueLabel, type DimId } from "./registry";
 import { useFilterMenu } from "./use-filter-menu";
 import {
@@ -21,7 +21,7 @@ import styles from "./global-filter-bar.module.css";
 /**
  * The global filter bar: one row, on every session-scoped screen.
  *
- * **How the row stays one line.** The four defaults are fixed in number, so
+ * **How the row stays one line.** The defaults are a fixed priority list, so
  * they can never overflow — they stay visible as dropdowns showing their
  * current value, which is where most applied state lives. Only ad-hoc filters
  * are unbounded, and they are the minority case: those collapse past
@@ -40,10 +40,31 @@ import styles from "./global-filter-bar.module.css";
 
 const CHIP_BUDGET = 3;
 
-/** The four session-defining defaults, in row order. Fixed count by design. */
-export const DEFAULT_DIMS: DimId[] = ["photoType", "category", "retailer"];
+/**
+ * The session-defining defaults, in priority order — bounded by design, so the
+ * row cannot overflow.
+ *
+ * Brand joins them because brands and accounts are what the commercial
+ * conversation is about, and burying brand in the Add-filter menu made it the
+ * hardest cut to reach on the screen that most needs it.
+ *
+ * A scope that cannot answer one of these simply draws fewer dropdowns — see
+ * `defaultsFor`. Activity has no brand dimension, so it keeps three.
+ */
+export const DEFAULT_DIMS: DimId[] = ["photoType", "category", "retailer", "brand"];
 
-const DEFAULT_DIM_SET = new Set<string>(DEFAULT_DIMS);
+/**
+ * The defaults this scope can actually answer, in priority order.
+ *
+ * Intersected with the live catalogue rather than listed per scope: the bar
+ * does not know its scope, but the catalogue it is handed was built from one,
+ * and a dropdown for a dimension the screen abstains from would be a control
+ * that does nothing. Deterministic from props, so server and client agree.
+ */
+function defaultsFor(catalogue: FilterDimension[]): DimId[] {
+  const known = new Set(catalogue.map((entry) => entry.key));
+  return DEFAULT_DIMS.filter((dim) => known.has(dim));
+}
 
 /* ---------- one default dropdown ---------- */
 
@@ -322,7 +343,11 @@ export function GlobalFilterBar() {
   const { filters, date, catalogue, add, remove, clear, setDate } = api;
 
   // Defaults render as their own controls, so they never appear as chips.
-  const adhoc = filters.filter((f) => !DEFAULT_DIM_SET.has(f.dim));
+  const defaults = defaultsFor(catalogue);
+  const defaultSet = new Set<string>(defaults);
+  /* A filter on a dimension this scope draws no dropdown for still has to be
+     visible and removable, so it falls through to the chips. */
+  const adhoc = filters.filter((f) => !defaultSet.has(f.dim));
   const shown = adhoc.slice(0, CHIP_BUDGET);
   const hidden = adhoc.slice(CHIP_BUDGET);
   const anything = filters.length > 0 || !isDefaultDate(date);
@@ -333,7 +358,7 @@ export function GlobalFilterBar() {
 
       <span className={styles.divider} aria-hidden="true" />
 
-      {DEFAULT_DIMS.map((dim) => (
+      {defaults.map((dim) => (
         <DefaultPicker
           key={dim}
           dim={dim}

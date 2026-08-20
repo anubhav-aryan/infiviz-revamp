@@ -140,3 +140,72 @@ export function categorySosAt(row: CategoryMetrics, level: number): number {
 export function categoryOsaAt(row: CategoryMetrics, level: number): number {
   return +(row.osa * level).toFixed(1);
 }
+
+/* ================= Toothpaste sub-categories ================= */
+
+/**
+ * The one category the fixtures break down a level further. Same contract as
+ * `CATEGORY_METRICS` one level up: share-weighted rows must blend back to
+ * toothpaste's own canonical figures, so the sub-category panels and the
+ * toothpaste panel are one measurement at two levels of aggregation.
+ *
+ * The spine's authored rows had the same defect the category rows once did —
+ * they blended to 38.7 SOS / 63.4 OSA against toothpaste's 46.7 / 69.9 — so
+ * every row is scaled by the same set-wide factor (SOS ×1.20734, OSA ×1.10322):
+ * the error came from the set, so the set absorbs it, and the ordering and
+ * spread survive.
+ *
+ * `countShare` here is the sub-category's share of toothpaste's audited stores
+ * (the spine's `stores` column over 100), not a national share.
+ */
+export const SUBCATEGORY_METRICS: CategoryMetrics[] = [
+  { id: "cavity-protection", label: "Cavity protection", sos: 50.7, osa: 77.2, countShare: 0.4, delta: -2.6, osaDelta: 1.4 },
+  { id: "whitening", label: "Whitening", sos: 45.9, osa: 68.4, countShare: 0.28, delta: -2.1, osaDelta: 0.5 },
+  { id: "herbal", label: "Herbal", sos: 43.5, osa: 64.0, countShare: 0.18, delta: -1.6, osaDelta: -0.3 },
+  { id: "kids", label: "Kids", sos: 41.0, osa: 59.6, countShare: 0.14, delta: -1.0, osaDelta: -1.1 },
+];
+
+/** The parent row the sub-category blend must reproduce. */
+export const TOOTHPASTE = SOS_BY_ID.get("toothpaste")!;
+
+const subBlended = (pick: (row: CategoryMetrics) => number) =>
+  +SUBCATEGORY_METRICS.reduce((total, row) => total + pick(row) * row.countShare, 0).toFixed(1);
+
+/* The two identities this table exists to hold. */
+if (Math.abs(subBlended((row) => row.sos) - TOOTHPASTE.sos) > 0.1) {
+  throw new Error(
+    `Sub-category SOS weights to ${subBlended((row) => row.sos)} but toothpaste ` +
+      `is ${TOOTHPASTE.sos}. Rebalance SUBCATEGORY_METRICS — see category-metrics.ts.`,
+  );
+}
+
+if (Math.abs(subBlended((row) => row.osa) - TOOTHPASTE.osa) > 0.1) {
+  throw new Error(
+    `Sub-category OSA weights to ${subBlended((row) => row.osa)} but toothpaste ` +
+      `is ${TOOTHPASTE.osa}. Rebalance SUBCATEGORY_METRICS — see category-metrics.ts.`,
+  );
+}
+
+/* The same keep-the-copy-honest check `DIM_SOURCE.Category` gets. */
+const SUB_BY_LABEL = new Map(SUBCATEGORY_METRICS.map((row) => [row.label, row]));
+for (const [label, osa, , , sos] of DIM_SOURCE["Sub-category"]) {
+  const canonical = SUB_BY_LABEL.get(label);
+  if (!canonical) continue;
+  if (Math.abs(canonical.sos - sos) > 0.05 || Math.abs(canonical.osa - osa) > 0.05) {
+    throw new Error(
+      `DIM_SOURCE["Sub-category"] has ${label} at osa ${osa} / sos ${sos} but ` +
+        `SUBCATEGORY_METRICS says ${canonical.osa} / ${canonical.sos}. Update spine.ts to match.`,
+    );
+  }
+}
+
+/** Sub-category spreads, for the same refuse-to-average footnote. */
+export const SUB_SOS_RANGE = {
+  low: SUBCATEGORY_METRICS.reduce((a, b) => (a.sos <= b.sos ? a : b)),
+  high: SUBCATEGORY_METRICS.reduce((a, b) => (a.sos >= b.sos ? a : b)),
+};
+
+export const SUB_OSA_RANGE = {
+  low: SUBCATEGORY_METRICS.reduce((a, b) => (a.osa <= b.osa ? a : b)),
+  high: SUBCATEGORY_METRICS.reduce((a, b) => (a.osa >= b.osa ? a : b)),
+};

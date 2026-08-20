@@ -25,6 +25,35 @@ export function CategoryBody({
 
   return (
     <div className={styles.body}>
+      {/* The gaps to chase, first — they were closing the page. */}
+      <div className={styles.band}>
+        <h2 className={styles.bandTitle} data-gap="4">
+          Today&apos;s priorities
+        </h2>
+        <div className={styles.bandCaption}>Where to push · MSL gaps to chase</div>
+        {view.mslGap.length === 0 ? (
+          <div className={styles.tableCard}>
+            <EmptyState>No MSL gap matches the filters.</EmptyState>
+          </div>
+        ) : (
+          <div className={styles.insightGrid}>
+            {view.mslGap.map((gap) => (
+              <div key={gap.name} className={styles.mslGapCard}>
+                <span className={styles.mslGapIcon} aria-hidden="true">
+                  <Icon name="package-x" />
+                </span>
+                <div className={styles.insightBody}>
+                  <div className={styles.mslGapName}>{gap.name}</div>
+                  <div className={styles.mslGapSub}>
+                    Absent in <b className={styles.inlineMono}>{gap.stores}</b>{" "}
+                    ranged stores · {gap.brand}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       <StatStrip items={view.bandA} />
 
       {/* Band B — the category's two numbers, visibility shown as a ribbon */}
@@ -111,8 +140,9 @@ export function CategoryBody({
         </div>
       </div>
 
-      {/* Band D — who holds the shelf, and which SKUs are simply not there */}
-      <div className={styles.band}>
+      {/* Band D — who holds the shelf, and which SKUs are simply not there.
+          Closes the page now that the gap list opens it. */}
+      <div className={styles.bandEnd}>
         <h2 className={styles.bandTitle} data-gap="14">
           What moved
         </h2>
@@ -186,35 +216,6 @@ export function CategoryBody({
             )}
           </div>
         </div>
-      </div>
-
-      {/* Band E */}
-      <div className={styles.bandEnd}>
-        <h2 className={styles.bandTitle} data-gap="14">
-          Where to push · MSL gaps to chase
-        </h2>
-        {view.mslGap.length === 0 ? (
-          <div className={styles.tableCard}>
-            <EmptyState>No MSL gap matches the filters.</EmptyState>
-          </div>
-        ) : (
-          <div className={styles.insightGrid}>
-            {view.mslGap.map((gap) => (
-              <div key={gap.name} className={styles.mslGapCard}>
-                <span className={styles.mslGapIcon} aria-hidden="true">
-                  <Icon name="package-x" />
-                </span>
-                <div className={styles.insightBody}>
-                  <div className={styles.mslGapName}>{gap.name}</div>
-                  <div className={styles.mslGapSub}>
-                    Absent in <b className={styles.inlineMono}>{gap.stores}</b>{" "}
-                    ranged stores · {gap.brand}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

@@ -8,10 +8,13 @@ import styles from "./analytics.module.css";
 import { CardActions } from "@/app/_components/card-actions";
 
 /**
- * Top-of-funnel data health, directly under the filter bar and above every
- * other figure — because it qualifies all of them. A dashboard that opens with
- * shelf metrics invites you to read them before knowing how much of the month's
- * capture is behind them.
+ * Top-of-funnel data health, at the foot of the dashboard as supporting data.
+ *
+ * It qualifies every figure above it — how much of the month's capture is
+ * actually behind them — but it is reference, not the reason anyone opens the
+ * page. It led the dashboard until a demo made the cost obvious: the first
+ * thing a reader saw was a processing funnel, and nothing above the fold was
+ * something they could act on.
  *
  * The first tile is a *pair*: captured on the left, processed on the right,
  * with the shortfall spelled out. Splitting them into two tiles would hide the
@@ -22,72 +25,77 @@ export function DataHealthBand({ month }: { month: MonthKey }) {
   const tiles = dataHealthTiles(health);
 
   return (
-    <div className={styles.healthBand}>
-      {/* captured → processed */}
-      <div className={styles.healthTile}>
-        <div className={styles.healthLabel}>
-          {tiles.captured.label}
-          <Hint
-            text="Photos that reached the platform, and the subset that finished stitching and recognition."
-            className={styles.healthInfo}
-          >
-            <Icon name="info" size={12} />
-          </Hint>
-        </div>
-        <div className={styles.healthPair}>
-          <span className={styles.healthValue}>{tiles.captured.value}</span>
-          <Icon name="arrow-right" size={15} />
-          <span className={styles.healthValue} data-muted="true">
-            {tiles.captured.secondary}
-          </span>
-        </div>
-        <div className={styles.healthCaption} data-warn={health.stalledPhotos > 0}>
-          {tiles.captured.caption}
-        </div>
+    <section className={styles.healthSection} aria-label="Supporting data">
+      <div className={styles.healthSectionCaption}>
+        Supporting data · capture funnel
       </div>
+      <div className={styles.healthBand} data-compact="true">
+        {/* captured → processed */}
+        <div className={styles.healthTile}>
+          <div className={styles.healthLabel}>
+            {tiles.captured.label}
+            <Hint
+              text="Photos that reached the platform, and the subset that finished stitching and recognition."
+              className={styles.healthInfo}
+            >
+              <Icon name="info" size={12} />
+            </Hint>
+          </div>
+          <div className={styles.healthPair}>
+            <span className={styles.healthValue}>{tiles.captured.value}</span>
+            <Icon name="arrow-right" size={15} />
+            <span className={styles.healthValue} data-muted="true">
+              {tiles.captured.secondary}
+            </span>
+          </div>
+          <div className={styles.healthCaption} data-warn={health.stalledPhotos > 0}>
+            {tiles.captured.caption}
+          </div>
+        </div>
 
-      {/* auditable */}
-      <div className={styles.healthTile}>
-        <div className={styles.healthLabel}>
-          {tiles.auditable.label}
-          <Hint
-            text="Sessions that finished the pipeline and cleared quality gating — the ones an analysis can rest on."
-            className={styles.healthInfo}
-          >
-            <Icon name="info" size={12} />
-          </Hint>
+        {/* auditable */}
+        <div className={styles.healthTile}>
+          <div className={styles.healthLabel}>
+            {tiles.auditable.label}
+            <Hint
+              text="Sessions that finished the pipeline and cleared quality gating — the ones an analysis can rest on."
+              className={styles.healthInfo}
+            >
+              <Icon name="info" size={12} />
+            </Hint>
+          </div>
+          <div className={styles.healthPair}>
+            <span className={styles.healthValue}>{tiles.auditable.value}</span>
+          </div>
+          <div className={styles.healthCaption}>{tiles.auditable.caption}</div>
         </div>
-        <div className={styles.healthPair}>
-          <span className={styles.healthValue}>{tiles.auditable.value}</span>
-        </div>
-        <div className={styles.healthCaption}>{tiles.auditable.caption}</div>
-      </div>
 
-      {/* auditable share, trended */}
-      <div className={styles.healthTile}>
-        <div className={styles.healthLabel}>
-          {tiles.trend.label}
-          <CardActions>
-            <AskInfiChatButton label="Auditable share" compact />
-          </CardActions>
+        {/* auditable share, trended */}
+        <div className={styles.healthTile}>
+          <div className={styles.healthLabel}>
+            {tiles.trend.label}
+            <CardActions>
+              <AskInfiChatButton label="Auditable share" compact />
+            </CardActions>
+          </div>
+          <div className={styles.healthPair}>
+            <span className={styles.healthValue}>{tiles.trend.value}</span>
+            <span
+              className={styles.healthDelta}
+              data-tone={health.shareDelta >= 0 ? "positive" : "negative"}
+            >
+              <Icon
+                name={health.shareDelta >= 0 ? "arrow-up-right" : "arrow-down-right"}
+                size={13}
+              />
+              {Math.abs(health.shareDelta)} pts
+            </span>
+            <ShareSpark series={health.shareSeries} />
+          </div>
+          <div className={styles.healthCaption}>{tiles.trend.caption}</div>
         </div>
-        <div className={styles.healthPair}>
-          <span className={styles.healthValue}>{tiles.trend.value}</span>
-          <span
-            className={styles.healthDelta}
-            data-tone={health.shareDelta >= 0 ? "positive" : "negative"}
-          >
-            <Icon
-              name={health.shareDelta >= 0 ? "arrow-up-right" : "arrow-down-right"}
-              size={13}
-            />
-            {Math.abs(health.shareDelta)} pts
-          </span>
-          <ShareSpark series={health.shareSeries} />
-        </div>
-        <div className={styles.healthCaption}>{tiles.trend.caption}</div>
       </div>
-    </div>
+    </section>
   );
 }
 
