@@ -5,6 +5,7 @@ import { useState } from "react";
 import { isDefaultDate, serializeDate } from "@/app/_filters/date-token";
 import { useGlobalFilters } from "@/app/_filters/global-filter-context";
 import { serializeFilters } from "@/app/_filters/model";
+import { useRole } from "@/app/_identity/use-role";
 import { ComposePanel } from "@/app/tickets/_components/compose-panel";
 import type { TicketContext } from "@/app/tickets/_data/ticket-context";
 import { createTicket } from "@/app/tickets/_data/use-created-tickets";
@@ -41,11 +42,14 @@ export function CreateTicketButton({
 }: {
   context: TicketContext;
   /** Who is raising it, which decides who can be assigned. Analytics passes its
-   *  route persona; elsewhere the compose panel's own default stands. */
+   *  route persona; everywhere else falls back to the reader's role. */
   persona?: string;
   compact?: boolean;
 }) {
   const pathname = usePathname();
+  /* Screens outside Analytics used to raise everything as the compose panel's
+     hardcoded executive, whoever was reading. The role is the honest answer. */
+  const { role } = useRole();
   const api = useGlobalFilters();
   const toast = useToast();
   const [composing, setComposing] = useState(false);
@@ -76,7 +80,7 @@ export function CreateTicketButton({
 
       {composing ? (
         <ComposePanel
-          persona={persona}
+          persona={persona ?? role}
           context={scoped}
           onCreate={(draft) => {
             const ticket = createTicket(draft);

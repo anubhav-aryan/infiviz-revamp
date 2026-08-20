@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { Icon } from "@/app/_components/icon";
 import { Segmented } from "@/app/_charts/segmented";
+import { ROLE_LABEL, useRole } from "@/app/_identity/use-role";
 import charts from "@/app/_charts/charts.module.css";
 import { ComposePanel } from "./compose-panel";
 import { TicketBoard } from "./ticket-board";
@@ -47,19 +48,14 @@ const VIEWS = [
   { id: "board", label: "Board" },
 ] as const;
 
-const PERSONAS = [
-  { id: "exec", label: "Executive" },
-  { id: "regional", label: "Regional" },
-  { id: "category", label: "Category" },
-  { id: "field", label: "Field supervisor" },
-] as const;
-
 export function Tickets() {
   const params = useSearchParams();
-  /* Opens on the executive — the top of the hierarchy sees every ticket, so the
-     list is populated on arrival. Switching down to a field supervisor then
-     visibly narrows it, which is the point of the control. */
-  const [persona, setPersona] = useState<string>("exec");
+  /* Who the reader is decides which tickets exist for them and who they can
+     assign to — the same role that decides which dashboard they get. It used to
+     be a local "Viewing as" control on this screen alone, which meant the
+     hierarchy this page is built around stopped at its own edge. */
+  const { role } = useRole();
+  const persona: string = role;
   const [view, setView] = useState<"list" | "board">("list");
   /* `?ticket=TIC-118` opens straight onto one — how the toast raised by a
      "Create ticket" button elsewhere hands the new ticket over, and what the
@@ -167,12 +163,10 @@ export function Tickets() {
 
         <div className={styles.personaRow}>
           <span className={styles.personaLabel}>Viewing as</span>
-          <Segmented
-            options={PERSONAS}
-            value={persona}
-            onChange={setPersona}
-            label="Persona"
-          />
+          {/* Switching happens on the role pill, which follows the reader from
+              here to Analytics — so this states the role rather than offering a
+              second, page-local way to change it. */}
+          <span className={styles.personaValue}>{ROLE_LABEL[role]}</span>
           {actor ? (
             <span className={styles.actor}>
               {actor.name} · {actor.role}

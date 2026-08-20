@@ -1,9 +1,10 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CsvTable } from "@/app/_export/csv";
 import { useGlobalFilters } from "@/app/_filters/global-filter-context";
+import { useRole } from "@/app/_identity/use-role";
 import type { ActiveFilter } from "@/app/_filters/model";
 import { CURRENT_MONTH, previousMonth, type MonthKey } from "@/app/_time/periods";
 import { presetToMonth } from "@/app/_time/presets";
@@ -74,9 +75,18 @@ export function Analytics() {
   const params = useSearchParams();
 
   const rawPersona = params.get("persona");
-  const persona: Persona = isPersona(rawPersona) ? rawPersona : "exec";
-  const dim = readDim(persona, params.get("dim"));
+  const urlPersona: Persona = isPersona(rawPersona) ? rawPersona : "exec";
 
+  /* The reader's role decides which dashboard they get. Only "internal" — the
+     operator view — still picks its persona from the URL.
+
+     Until `ready`, the URL persona is what renders: the role arrives from
+     localStorage one pass after hydration, and anything that diverged from the
+     prerendered markup before then would be a mismatch. */
+  const { role, ready } = useRole();
+  const locked = ready && role !== "internal";
+  const persona: Persona = locked ? role : urlPersona;
+  const dim = readDim(persona, params.get("dim"));
 
   const compare = params.get("compare") === "1";
 
@@ -125,6 +135,18 @@ export function Analytics() {
   // handlers that close over it would only ever produce a fresh closure anyway.
   const scope: Scope = { persona, dim, period, compare, filters };
 
+  /* A shared link carrying someone else's persona is rewritten to the reader's
+     own, so the URL keeps saying what is actually on screen. Only a
+     *disagreeing* param is touched: a bare `/analytics` renders as the role
+     without acquiring one. */
+  useEffect(() => {
+    if (!locked || !rawPersona || rawPersona === role) return;
+    navigate({ ...scope, persona: role, dim: readDim(role, params.get("dim")) });
+    // `scope` is rebuilt every render by design; the identity that matters is
+    // the mismatch itself.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locked, rawPersona, role, navigate]);
+
   // Each persona slices by a different set of dimensions, so the picker cannot
   // carry a selection the incoming persona has no option for.
   const changePersona = (next: Persona) =>
@@ -158,6 +180,7 @@ export function Analytics() {
     <>
       <AnalyticsHeader
         persona={persona}
+        personaLocked={locked}
         onPersonaChange={changePersona}
         period={period}
         compare={compare}

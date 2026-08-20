@@ -139,6 +139,27 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* Stands in for the persona switcher when the reader's role fixes it. Sized to
+   the control it replaces — 3px of padding plus a 6px/14px button — so row one
+   keeps its height and the "Detailed Dashboard" link beside it does not shift. */
+.personaStatic {
+  display: flex;
+  align-items: center;
+  padding: 9px 17px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--surface-sunken);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.personaStatic strong {
+  margin-left: 5px;
+  font-weight: 600;
+  color: var(--indigo-700);
+}
+
 .ghostButton {
   display: inline-flex;
   align-items: center;

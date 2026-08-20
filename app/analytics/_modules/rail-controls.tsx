@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { RailGroups, type SectionGroup } from "@/app/_components/app-shell";
 import { useGlobalFilters } from "@/app/_filters/global-filter-context";
+import { ROLE_LABEL, useRole } from "@/app/_identity/use-role";
 import {
   PERSONA_SCOPES,
   SCOPES,
@@ -77,9 +78,14 @@ export type PersonaTarget = {
 /**
  * The switcher's markup, with whatever hrefs it is handed.
  *
- * Hook-free, so it is what the Suspense fallback renders — a fallback that
- * called `useSearchParams` would suspend too, and the page could not prerender
- * at all.
+ * Suspense-safe: it is what the fallback renders, so it must never call
+ * `useSearchParams` — that would suspend the fallback too and the page could
+ * not prerender at all. `useRole` reads an external store and never suspends,
+ * and its server snapshot matches the prerendered markup, so it is admissible
+ * here where the query hooks are not.
+ *
+ * Gating lives in this component rather than in `PersonaSwitcher` so the
+ * fallback and the hydrated switcher agree — one is the other's prerender.
  */
 export function PersonaSwitcherView({
   active,
@@ -88,6 +94,19 @@ export function PersonaSwitcherView({
   active: PersonaId;
   targets: PersonaTarget[];
 }) {
+  const { role, ready } = useRole();
+
+  /* Nothing to switch to: the reader has one persona, and the label says which
+     rather than offering four links that all lead back here. */
+  if (ready && role !== "internal") {
+    return (
+      <div>
+        <div className={styles.switcherLabel}>Viewing as</div>
+        <div className={styles.switcherStatic}>{ROLE_LABEL[role]}</div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className={styles.switcherLabel}>Viewing as</div>

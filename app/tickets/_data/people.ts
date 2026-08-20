@@ -122,7 +122,27 @@ export const EXEC: Person = {
   role: "Country head",
 };
 
-export const PEOPLE: Person[] = [EXEC, ...LEADS, ...SUPERVISORS, ...MERCHANDISERS];
+/**
+ * The operator behind the "internal" role — Infilect's own view of the account,
+ * not the client's org chart. Ranked `exec` so it sits above the whole chain;
+ * since only the internal role can assign to that rank, it never appears in a
+ * client persona's assignee picker.
+ */
+export const INTERNAL_OPERATOR: Person = {
+  id: "internal_ops",
+  name: "InfiViz Operations",
+  rank: "exec",
+  region: "National",
+  role: "Internal operator",
+};
+
+export const PEOPLE: Person[] = [
+  EXEC,
+  INTERNAL_OPERATOR,
+  ...LEADS,
+  ...SUPERVISORS,
+  ...MERCHANDISERS,
+];
 
 const BY_ID = new Map(PEOPLE.map((person) => [person.id, person]));
 const BY_NAME = new Map(PEOPLE.map((person) => [person.name, person]));
@@ -159,6 +179,9 @@ const ASSIGNABLE_RANKS: Record<string, Rank[]> = {
   regional: ["supervisor", "merchandiser"],
   category: ["supervisor", "merchandiser"],
   field: ["merchandiser"],
+  /* The operator view sits outside the chain rather than at the top of it, so
+     it can raise work against anyone — including the country head. */
+  internal: ["exec", "lead", "supervisor", "merchandiser"],
 };
 
 /** Who the logged-in persona is acting as, for the Reporter field. */
@@ -167,6 +190,7 @@ export const PERSONA_ACTOR: Record<string, Person> = {
   regional: LEADS[0],
   category: LEADS[1],
   field: SUPERVISORS[0],
+  internal: INTERNAL_OPERATOR,
 };
 
 /** Seniority order, for grouping an assignee picker top-down. */
@@ -181,5 +205,9 @@ export const RANK_LABEL: Record<Rank, string> = {
 
 export function assignableTo(persona: string): Person[] {
   const ranks = ASSIGNABLE_RANKS[persona] ?? ["merchandiser"];
-  return PEOPLE.filter((person) => ranks.includes(person.rank));
+  return PEOPLE.filter(
+    // Nobody assigns to themselves, and the operator is the one actor who would
+    // otherwise appear in its own picker (it is the only assignable `exec`).
+    (person) => ranks.includes(person.rank) && person.id !== INTERNAL_OPERATOR.id,
+  );
 }

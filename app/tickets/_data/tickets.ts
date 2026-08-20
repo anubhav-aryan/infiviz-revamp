@@ -472,7 +472,9 @@ export function ticketsForPersona(
    *  those plus anything raised through the UI. */
   pool: Ticket[] = TICKETS,
 ): Ticket[] {
-  if (persona === "exec") return pool;
+  /* The country head already sees the whole account; the internal operator view
+     sees it for the same reason from outside the chain. */
+  if (persona === "exec" || persona === "internal") return pool;
 
   if (persona === "field") {
     const supervisor = SUPERVISORS[0];

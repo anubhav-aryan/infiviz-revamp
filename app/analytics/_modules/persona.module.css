@@ -58,6 +58,20 @@
   color: var(--neutral-0);
 }
 
+/* Replaces the four buttons when the reader's role fixes the persona. Carries
+   the active button's treatment, not a disabled one — it is a statement of who
+   you are, not a control that has been switched off. */
+.switcherStatic {
+  padding: 7px 8px;
+  border: 1px solid var(--indigo-600);
+  border-radius: 8px;
+  background: var(--indigo-600);
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--neutral-0);
+}
+
 /* The scope picker, directly under the switcher: persona decides which modules
    the rail lists, scope decides whose numbers they show. */
 .scopeBlock {

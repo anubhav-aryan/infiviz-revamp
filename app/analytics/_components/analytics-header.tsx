@@ -31,6 +31,11 @@ const NO_DIMENSIONS: FilterDimension[] = [];
 
 type AnalyticsHeaderProps = {
   persona: Persona;
+  /**
+   * True when the reader's role fixes the persona — the switcher becomes a
+   * label saying which dashboard this is. Only the internal role still chooses.
+   */
+  personaLocked?: boolean;
   onPersonaChange: (persona: Persona) => void;
   period: MonthKey;
   compare: boolean;
@@ -62,6 +67,7 @@ const MODULE_ENTRY: Record<Persona, string> = Object.fromEntries(
 /** The three header rows are identical across all four personas. */
 export function AnalyticsHeader({
   persona,
+  personaLocked = false,
   onPersonaChange,
   period,
   compare,
@@ -101,20 +107,29 @@ export function AnalyticsHeader({
             <div className={styles.pageSubtitle}>Colgate-Palmolive Vietnam</div>
           </div>
 
-          <div className={styles.segmented} role="group" aria-label="Persona">
-            {PERSONAS.map((p) => (
-              <button
-                key={p.key}
-                type="button"
-                className={styles.segButton}
-                data-active={p.key === persona}
-                aria-pressed={p.key === persona}
-                onClick={() => onPersonaChange(p.key)}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
+          {personaLocked ? (
+            /* Not a disabled switcher: there is nothing to switch to, so the
+               control becomes a statement of which dashboard this is. */
+            <div className={styles.personaStatic}>
+              Viewing as{" "}
+              <strong>{PERSONAS.find((p) => p.key === persona)?.label}</strong>
+            </div>
+          ) : (
+            <div className={styles.segmented} role="group" aria-label="Persona">
+              {PERSONAS.map((p) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  className={styles.segButton}
+                  data-active={p.key === persona}
+                  aria-pressed={p.key === persona}
+                  onClick={() => onPersonaChange(p.key)}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* The way down from the curated overview into the full modules.
               Lands on the module that persona's rail opens on, so the role you

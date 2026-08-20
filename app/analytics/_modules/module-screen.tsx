@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { ActionsBlock } from "@/app/_charts/actions-block";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { CreateTicketButton } from "@/app/_components/create-ticket-button";
@@ -26,6 +26,7 @@ import { CURRENT_MONTH, MONTHS, MONTH_KEYS, type MonthKey } from "@/app/_time/pe
 import { presetToMonth } from "@/app/_time/presets";
 import { monthToDate } from "@/app/_filters/date-token";
 import { useGlobalFilters } from "@/app/_filters/global-filter-context";
+import { useRole } from "@/app/_identity/use-role";
 import { METRIC_MODULES, metricViewFor } from "../_data/module-registry";
 import { merchandiserView } from "../_data/merchandiser";
 import { perfectStoreView } from "../_data/perfect-store";
@@ -69,6 +70,31 @@ export function ModuleScreen({ persona, module, tab }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+
+  /* Every persona's copy of this module is prerendered, so a link to someone
+     else's is a real page — it just isn't this reader's. Send them to their own
+     copy of the same module and tab rather than 404ing a working URL.
+
+     `ready` gates the whole thing: the prerendered HTML is the route persona's,
+     the hydration render must match it, and only the pass after that can know
+     the role. */
+  const { role, ready } = useRole();
+  const misroled = ready && role !== "internal" && role !== persona;
+
+  useEffect(() => {
+    if (!misroled) return;
+    /* The measure and the date travel; scope filters do not — the same rule the
+       persona switcher follows, because persona vocabularies differ and
+       `scopeForFilters` would coerce a foreign scope to the default anyway. */
+    const next = new URLSearchParams();
+    for (const key of ["measure", "d"] as const) {
+      const value = params.get(key);
+      if (value) next.set(key, value);
+    }
+    const query = next.toString();
+    const href = modulePath(role as PersonaId, module, tab);
+    router.replace(query ? `${href}?${query}` : href, { scroll: false });
+  }, [misroled, role, module, tab, params, router]);
 
   const def = MODULES[module];
   const entry = METRIC_MODULES[module];
@@ -120,6 +146,11 @@ export function ModuleScreen({ persona, module, tab }: Props) {
     ? { value: view.headline, delta: view.headlineDelta }
     : headlineFor(module, period, scope);
   const monthLabel = view?.monthLabel ?? MONTHS[MONTH_KEYS.indexOf(period)].label;
+
+  /* After every hook, so the order never changes. The redirect above is already
+     queued; blanking here means the frame in between shows nothing rather than
+     another persona's numbers. */
+  if (misroled) return null;
 
   return (
     <div className={styles.screen}>
