@@ -2,9 +2,14 @@ import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { Icon } from "@/app/_components/icon";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import type { AnalyticsView } from "../_data/analytics";
+import type { PersonaId } from "../_data/module-matrix";
+import { DrillLink } from "./drill-link";
 import { EmptyState, Ribbon, RibbonLegend, Sparkline, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
 import { CardActions } from "@/app/_components/card-actions";
+
+/* See the note in `exec-body.tsx` — this body is the category view. */
+const PERSONA: PersonaId = "category";
 
 export function CategoryBody({
   view,
@@ -27,10 +32,15 @@ export function CategoryBody({
     <div className={styles.body}>
       {/* The gaps to chase, first — they were closing the page. */}
       <div className={styles.band}>
-        <h2 className={styles.bandTitle} data-gap="4">
-          Today&apos;s priorities
-        </h2>
-        <div className={styles.bandCaption}>Where to push · MSL gaps to chase</div>
+        <div className={styles.bandHeadStack}>
+          <div>
+            <h2 className={styles.bandTitle} data-gap="4">
+              Today&apos;s priorities
+            </h2>
+            <div className={styles.bandCaption}>Where to push · MSL gaps to chase</div>
+          </div>
+          <DrillLink persona={PERSONA} to="priorities-category" what="MSL gaps to chase" />
+        </div>
         {view.mslGap.length === 0 ? (
           <div className={styles.tableCard}>
             <EmptyState>No MSL gap matches the filters.</EmptyState>
@@ -131,6 +141,14 @@ export function CategoryBody({
           <span className={styles.panelTitle} data-gap="14">
             All toothpaste facings · 100% share
             <CardActions>
+              {/* On the card rather than the band head: unlike the other three
+                  "Where it's worst" bands, this one's head already carries two
+                  controls and the destination depends on neither. */}
+              <DrillLink
+                persona={PERSONA}
+                to="facings-ribbon"
+                what="the toothpaste shelf split"
+              />
               <AskInfiChatButton label="All toothpaste facings" compact />
               <ExcelDownloadButton label="All toothpaste facings" compact />
             </CardActions>
@@ -151,6 +169,7 @@ export function CategoryBody({
             <span className={styles.panelTitle} data-gap="14">
               Who has the shelf
               <CardActions>
+                <DrillLink persona={PERSONA} to="who-has-shelf" what="who has the shelf" />
                 <AskInfiChatButton label="Who has the shelf" compact />
                 <ExcelDownloadButton label="Who has the shelf" compact />
               </CardActions>
@@ -181,7 +200,10 @@ export function CategoryBody({
           </div>
 
           <div className={styles.tableCard}>
-            <div className={styles.missingTitle}>What&apos;s missing</div>
+            <div className={styles.missingTitle}>
+              <span>What&apos;s missing</span>
+              <DrillLink persona={PERSONA} to="whats-missing" what="the missing SKUs" />
+            </div>
             <div className={`${styles.missingGrid} ${styles.missingHead}`}>
               <span>SKU</span>
               <span className={styles.right}>Ranged</span>

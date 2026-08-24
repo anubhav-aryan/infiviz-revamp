@@ -10,9 +10,15 @@ import {
   type AnalyticsView,
   type DimKey,
 } from "../_data/analytics";
+import { rankedDrill } from "../_data/drill";
+import type { PersonaId } from "../_data/module-matrix";
+import { DrillLink } from "./drill-link";
 import { RankedList, Ribbon, RibbonLegend, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
 import { CardActions } from "@/app/_components/card-actions";
+
+/* See the note in `exec-body.tsx` — this body is the field view. */
+const PERSONA: PersonaId = "field";
 
 export function FieldBody({
   view,
@@ -30,10 +36,17 @@ export function FieldBody({
       {/* The fix list, first. This is the artefact a supervisor carries into
           the morning — it should not be below four bands of context. */}
       <div className={styles.band}>
-        <h2 className={styles.bandTitle} data-gap="4">
-          Today&apos;s priorities
-        </h2>
-        <div className={styles.bandCaption}>Where to push · fix list</div>
+        <div className={styles.bandHeadStack}>
+          <div>
+            <h2 className={styles.bandTitle} data-gap="4">
+              Today&apos;s priorities
+            </h2>
+            <div className={styles.bandCaption}>Where to push · fix list</div>
+          </div>
+          {/* The per-row "Open Session Viewer" links stay as they are — a
+              different question, and a different destination. */}
+          <DrillLink persona={PERSONA} to="priorities-field" what="the fix list" />
+        </div>
         <div className={styles.tableCard}>
           {FIX_LIST.map((fix) => (
             <div key={fix.store} className={styles.fixRow}>
@@ -85,7 +98,14 @@ export function FieldBody({
       <div className={styles.band}>
         <div className={styles.bandHead}>
           <h2 className={styles.bandTitle}>Where it&apos;s worst</h2>
-          {dimPicker}
+          <div className={styles.bandHeadActions}>
+            {dimPicker}
+            <DrillLink
+              persona={PERSONA}
+              to={rankedDrill(dim)}
+              what={`OSA by ${dim.toLowerCase()}`}
+            />
+          </div>
         </div>
         <div className={styles.panel}>
           <span className={styles.panelTitle} data-gap="12">
@@ -117,7 +137,8 @@ export function FieldBody({
             <span className={styles.panelTitle} data-gap="12">
               MSL checklist · absent first
               <CardActions>
-                <AskInfiChatButton label="MSL checklist" compact />
+                <DrillLink persona={PERSONA} to="msl-checklist" what="the MSL checklist" />
+              <AskInfiChatButton label="MSL checklist" compact />
                 <ExcelDownloadButton label="MSL checklist" compact />
               </CardActions>
             </span>
@@ -140,7 +161,8 @@ export function FieldBody({
             <span className={styles.panelTitle} data-gap="14">
               Shelf ribbon · what&apos;s facing out
               <CardActions>
-                <AskInfiChatButton label="Shelf ribbon" compact />
+                <DrillLink persona={PERSONA} to="shelf-ribbon" what="the shelf ribbon" />
+              <AskInfiChatButton label="Shelf ribbon" compact />
                 <ExcelDownloadButton label="Shelf ribbon" compact />
               </CardActions>
             </span>

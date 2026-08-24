@@ -10,9 +10,15 @@ import {
   type AnalyticsView,
   type DimKey,
 } from "../_data/analytics";
+import { rankedDrill } from "../_data/drill";
+import type { PersonaId } from "../_data/module-matrix";
+import { DrillLink } from "./drill-link";
 import { EmptyState, RankedList, Sparkline, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
 import { CardActions } from "@/app/_components/card-actions";
+
+/* See the note in `exec-body.tsx` — this body is the regional view. */
+const PERSONA: PersonaId = "regional";
 
 export function RegionalBody({
   view,
@@ -37,7 +43,14 @@ export function RegionalBody({
               Where to push · bottom 20 stores — start here
             </div>
           </div>
-          <span className={styles.chip}>Bottom 20</span>
+          <div className={styles.bandHeadActions}>
+            <span className={styles.chip}>Bottom 20</span>
+            <DrillLink
+              persona={PERSONA}
+              to="priorities-regional"
+              what="the bottom 20 stores"
+            />
+          </div>
         </div>
 
         <div className={styles.tableCard}>
@@ -130,7 +143,14 @@ export function RegionalBody({
       <div className={styles.band}>
         <div className={styles.bandHead}>
           <h2 className={styles.bandTitle}>Where it&apos;s worst</h2>
-          {dimPicker}
+          <div className={styles.bandHeadActions}>
+            {dimPicker}
+            <DrillLink
+              persona={PERSONA}
+              to={rankedDrill(dim)}
+              what={`OSA by ${dim.toLowerCase()}`}
+            />
+          </div>
         </div>
         <div className={styles.panel}>
           <span className={styles.panelTitle} data-gap="12">
@@ -164,6 +184,11 @@ export function RegionalBody({
             <span className={styles.panelTitle} data-gap="14">
               OSA · city × retailer
               <CardActions>
+                <DrillLink
+                  persona={PERSONA}
+                  to="heat-city-retailer"
+                  what="OSA by city and retailer"
+                />
                 <AskInfiChatButton label="OSA · city × retailer" compact />
                 <ExcelDownloadButton label="OSA · city × retailer" compact />
               </CardActions>
@@ -197,6 +222,14 @@ export function RegionalBody({
             <span className={styles.panelTitle} data-gap="6">
               Audit coverage vs availability
               <CardActions>
+                {/* Lands on the same route Merch Activity's "Audit State"
+                    section points at — the two screens agree on where
+                    coverage is explained. */}
+                <DrillLink
+                  persona={PERSONA}
+                  to="audit-coverage"
+                  what="audit coverage vs availability"
+                />
                 <AskInfiChatButton label="Audit coverage vs availability" compact />
                 <ExcelDownloadButton label="Audit coverage vs availability" compact />
               </CardActions>

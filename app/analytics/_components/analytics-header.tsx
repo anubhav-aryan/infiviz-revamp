@@ -19,6 +19,8 @@ import {
   modulePath,
   railGroupsFor,
 } from "../_data/module-matrix";
+import { carriedHref } from "../_data/drill";
+import { useCarriedState } from "./drill-link";
 import styles from "./analytics.module.css";
 
 /**
@@ -89,6 +91,9 @@ export function AnalyticsHeader({
   } = useFilterMenu(NO_DIMENSIONS);
 
   const savedViews = useSavedViews("analytics");
+  /* The page-level door carries the same state the per-card ones do —
+     small links behaving better than the big button is worse than either. */
+  const carried = useCarriedState();
   const [viewName, setViewName] = useState("");
 
   const saveView = () => {
@@ -134,7 +139,7 @@ export function AnalyticsHeader({
           {/* The way down from the curated overview into the full modules.
               Lands on the module that persona's rail opens on, so the role you
               are reading as carries across. */}
-          <Link href={MODULE_ENTRY[persona]} className={styles.detailLink}>
+          <Link href={carriedHref(MODULE_ENTRY[persona], carried)} className={styles.detailLink}>
             Detailed Dashboard
             <Icon name="arrow-right" size={14} />
           </Link>

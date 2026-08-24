@@ -6,6 +6,7 @@ import { ActionsBlock } from "@/app/_charts/actions-block";
 import { AskInfiChatButton } from "@/app/_components/chat/ask-infichat-button";
 import { CreateTicketButton } from "@/app/_components/create-ticket-button";
 import { RecommendationsBlock } from "./recommendations-block";
+import { ScopeGapMark } from "./scope-gap-mark";
 import { ReorderableGrid } from "@/app/_components/reorderable-grid";
 import { DetailTable } from "@/app/_charts/detail-table";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
@@ -188,6 +189,10 @@ export function ModuleScreen({ persona, module, tab }: Props) {
             <p className={styles.subtitle}>
               {scope.caption} · {monthLabel}
               {view ? ` · ${view.measureLabel}` : ` · ${def.blurb}`}
+              {/* Beside the scope line, because it is the same statement:
+                  here is what these figures are of, and here is what they
+                  are not of despite the chips in the bar. */}
+              <ScopeGapMark />
             </p>
           </div>
 

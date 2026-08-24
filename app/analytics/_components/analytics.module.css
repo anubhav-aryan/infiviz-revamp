@@ -1328,7 +1328,13 @@
   color: var(--text-heading);
 }
 
+/* A row now, so the drill link can sit opposite the title. With one child
+   this renders exactly as the plain block did. */
 .missingTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: 14px 18px;
   border-bottom: 1px solid var(--hairline);
   font-size: 13px;
@@ -1597,6 +1603,42 @@
   font-size: 12px;
   color: var(--text-secondary);
   margin-top: 2px;
+}
+
+/* The per-card way down into the module that substantiates it. Deliberately
+   the same treatment as Merch Activity's `.sectionLink` — this is the second
+   instance of one pattern, not a new one. Quieter than the header's
+   `.detailLink` pill: that is the main door, this is a door per card.
+
+   No `margin-left: auto`: every placement is either the trailing item of a
+   two-child `space-between` row or a member of an already-right-aligned group,
+   so it would do nothing but get copied onward. */
+.drillLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--indigo-600);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.drillLink:hover {
+  text-decoration: underline;
+}
+
+/* A head row for bands whose title carries a caption beneath it. It exists only
+   to hang the drill link beside the title, so it adds no margin of its own —
+   the `.bandCaption` inside already carries the band's bottom rhythm, and a
+   second margin here would open a 28px gap where every other band has 14.
+   Baseline rather than centre, so a 12px link sits on the title's baseline
+   instead of floating against a two-line block. */
+.bandHeadStack {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 /* Entry point from the curated overview into the detailed modules. */

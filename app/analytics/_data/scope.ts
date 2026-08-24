@@ -305,6 +305,27 @@ export function scopeFromFilters(
 }
 
 /**
+ * The filters a module screen cannot answer for.
+ *
+ * A scope is one region or one category — that is the whole of what
+ * `scopeFromFilters` reads. Everything else in the bar (retailer, store type,
+ * brand, city, merchandiser, store, SKU, sub-category) travels with the reader
+ * and shows as a chip, but narrows nothing once they arrive. This is the list
+ * of what did not apply, so the screen can say so instead of implying it did.
+ *
+ * Lives here rather than in the component that renders it: which dimensions
+ * form a scope is this file's knowledge, and a copy of that rule elsewhere is a
+ * copy that will one day disagree.
+ */
+export function unscopedFilters(
+  filters: readonly ActiveFilter[],
+): ActiveFilter[] {
+  return filters.filter(
+    (filter) => filter.dim !== "region" && filter.dim !== "category",
+  );
+}
+
+/**
  * The filter set that says "look at this scope" — one region *or* one category,
  * never both, because a scope is a single statement about what you are reading.
  * `national` is the absence of either.

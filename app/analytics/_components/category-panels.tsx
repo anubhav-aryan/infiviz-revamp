@@ -24,6 +24,8 @@ import {
 import type { MonthKey } from "@/app/_time/periods";
 import { Segmented } from "./shared";
 import styles from "./analytics.module.css";
+import type { PersonaId } from "../_data/module-matrix";
+import { DrillLink } from "./drill-link";
 import { CardActions } from "@/app/_components/card-actions";
 
 /**
@@ -138,10 +140,13 @@ const MODE_BY_LABEL = Object.fromEntries(
 ) as Record<ModeLabel, PanelMode>;
 
 export function CategoryPanels({
+  persona,
   metric,
   period,
   compare,
 }: {
+  /** Which persona's copy of the module the drill link should land on. */
+  persona: PersonaId;
   metric: CategoryMetricId;
   period: MonthKey;
   compare: boolean;
@@ -210,6 +215,14 @@ export function CategoryPanels({
           </div>
         </div>
         <CardActions>
+          {/* Share of shelf is explained by Category Management, availability by
+              Availability — the two cards are one component that parts company
+              here, at the only place their subjects differ. */}
+          <DrillLink
+            persona={persona}
+            to={metric === "sos" ? "sos-panels" : "osa-panels"}
+            what={spec.title.toLowerCase()}
+          />
           <Segmented
             options={MODE_LABELS}
             value={modeSpec.label}

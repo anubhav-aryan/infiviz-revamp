@@ -4,11 +4,19 @@ import { ReorderableGrid } from "@/app/_components/reorderable-grid";
 import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import { MonthMatrix } from "@/app/_charts/month-matrix";
 import { INSIGHTS, type AnalyticsView, type DimKey } from "../_data/analytics";
+import { rankedDrill } from "../_data/drill";
+import type { PersonaId } from "../_data/module-matrix";
+import { DrillLink } from "./drill-link";
 import { movementMatrix } from "../_data/movement-matrix";
 import { CategoryPanels } from "./category-panels";
 import { RankedList, StatStrip } from "./shared";
 import styles from "./analytics.module.css";
 import { CardActions } from "@/app/_components/card-actions";
+
+/* This body *is* the executive view — `analytics.tsx` renders it only for that
+   persona. A module-scope constant rather than a prop, so a passed persona
+   cannot disagree with the body rendering it. */
+const PERSONA: PersonaId = "exec";
 
 export function ExecBody({
   view,
@@ -40,10 +48,17 @@ export function ExecBody({
       /* The day's work, first. This band used to close the page, four bands
          below the fold — the one thing a reader could act on, last. */
       <div className={styles.band}>
-        <h2 className={styles.bandTitle} data-gap="4">
-          Today&apos;s priorities
-        </h2>
-        <div className={styles.bandCaption}>Where to push — this month&apos;s actions</div>
+        <div className={styles.bandHeadStack}>
+          <div>
+            <h2 className={styles.bandTitle} data-gap="4">
+              Today&apos;s priorities
+            </h2>
+            <div className={styles.bandCaption}>
+              Where to push — this month&apos;s actions
+            </div>
+          </div>
+          <DrillLink persona={PERSONA} to="priorities-exec" what="today's priorities" />
+        </div>
         <div className={styles.insightGrid}>
           {INSIGHTS.map((insight) => (
             <div key={insight.link} className={styles.insightCard}>
@@ -70,13 +85,23 @@ export function ExecBody({
           {
             id: "sos-panels",
             node: (
-              <CategoryPanels metric="sos" period={view.period} compare={compare} />
+              <CategoryPanels
+                persona={PERSONA}
+                metric="sos"
+                period={view.period}
+                compare={compare}
+              />
             ),
           },
           {
             id: "osa-panels",
             node: (
-              <CategoryPanels metric="osa" period={view.period} compare={compare} />
+              <CategoryPanels
+                persona={PERSONA}
+                metric="osa"
+                period={view.period}
+                compare={compare}
+              />
             ),
           },
           {
@@ -91,7 +116,17 @@ export function ExecBody({
               Slice by one dimension — this band re-renders only
             </div>
           </div>
-          {dimPicker}
+          {/* The link sits beside the picker that decides where it goes: a
+              Brand or Category cut lands on the measure tab, every other cut on
+              the raw extract that is the only place those rows exist. */}
+          <div className={styles.bandHeadActions}>
+            {dimPicker}
+            <DrillLink
+              persona={PERSONA}
+              to={rankedDrill(dim)}
+              what={`OSA by ${dim.toLowerCase()}`}
+            />
+          </div>
         </div>
 
         <div className={styles.dimSingle}>
@@ -139,6 +174,11 @@ export function ExecBody({
             </div>
           </div>
           <CardActions>
+            <DrillLink
+              persona={PERSONA}
+              to="band-movement"
+              what="share of shelf by store and brand"
+            />
             <AskInfiChatButton label="Share of shelf by store and brand" compact />
             <ExcelDownloadButton label="Share of shelf by store and brand" compact />
           </CardActions>
@@ -182,6 +222,11 @@ export function ExecBody({
             <span className={styles.panelTitle} data-gap="14">
               Biggest moves vs last month
               <CardActions>
+                <DrillLink
+                  persona={PERSONA}
+                  to="dumbbell"
+                  what="biggest moves vs last month"
+                />
                 <AskInfiChatButton label="Biggest moves vs last month" compact />
                 <ExcelDownloadButton label="Biggest moves vs last month" compact />
               </CardActions>
@@ -212,6 +257,7 @@ export function ExecBody({
             <div className={styles.lineHead}>
               <span className={styles.panelTitle}>Six-month trend</span>
               <CardActions>
+                <DrillLink persona={PERSONA} to="line-trend" what="the six-month trend" />
                 <div className={styles.legendRow}>
                   <span className={styles.legendItem}>
                     <span
