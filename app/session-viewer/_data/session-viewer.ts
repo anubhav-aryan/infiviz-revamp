@@ -3,7 +3,7 @@ import {
   VISITS,
   type Visit,
   type VisitStatus,
-} from "@/app/store-explorer/_data/store-explorer";
+} from "@/app/_data/visits";
 import { BRAND_SHELF, TOTALS } from "./shelf-facts";
 
 /**

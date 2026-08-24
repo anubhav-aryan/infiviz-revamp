@@ -25,7 +25,7 @@ import type { DimId } from "./registry";
  * Putting the bar on those was offering a control that belonged to a different
  * question.
  */
-export type FilterScopeId = "activity" | "analytics" | "store-explorer";
+export type FilterScopeId = "activity" | "analytics" | "session-viewer";
 
 /**
  * The three session-defining defaults the bar always draws, in row order.
@@ -37,15 +37,14 @@ const DEFAULTS: DimId[] = ["photoType", "category", "retailer"];
 
 export const FILTER_SCOPES: Record<FilterScopeId, DimId[]> = {
   activity: [...DEFAULTS, "region", "storeType"],
-  /**
-   * Store Explorer keeps its own chip row and draws no bar — see `FilterRegion`
-   * — but shares the state, so a slice chosen there is the slice the dashboards
-   * open on and vice versa. Its own list, not `DEFAULTS`: a visit has no photo
-   * type, and `placement` is the one dimension only this screen can answer for.
-   */
-  "store-explorer": ["retailer", "region", "placement", "category", "store", "storeType"],
   /* Menu order is this array's order (`catalogueFor` preserves it), so this is
      a priority list: brand sits with the defaults at the top, store type last. */
+  /**
+   * The Session Viewer index draws its own chip row rather than the bar — see
+   * `BARLESS_SCOPES` — but shares the state, so a slice chosen while browsing
+   * visits is the slice the dashboards open on.
+   */
+  "session-viewer": ["retailer", "region", "placement", "category", "store", "storeType"],
   analytics: [
     ...DEFAULTS,
     "brand",
@@ -75,8 +74,6 @@ export const FILTER_SCOPES: Record<FilterScopeId, DimId[]> = {
 export const SCOPE_SEEDS: Partial<Record<FilterScopeId, ActiveFilter[]>> = {
   analytics: [{ dim: "category", value: "toothpaste" }],
   activity: [{ dim: "category", value: "toothpaste" }],
-  /* No seed: this screen is a store list, and opening it pre-narrowed to one
-     category would hide visits rather than focus them. */
 };
 
 export function isFilterScope(value: string): value is FilterScopeId {
@@ -99,6 +96,9 @@ export const DATE_IN_PATH: ReadonlySet<FilterScopeId> = new Set<FilterScopeId>()
  * It joins the shared state so a slice chosen there is the slice the dashboards
  * open on — the sharing is the point, not the chrome.
  */
+/* Empty since Store Explorer was retired — it was the one scope that shared
+   the filter state without drawing a bar. Kept because the rule it encodes
+   (a scope may opt out of the bar) is still how `FilterRegion` decides. */
 export const BARLESS_SCOPES: ReadonlySet<FilterScopeId> = new Set<FilterScopeId>([
-  "store-explorer",
+  "session-viewer",
 ]);

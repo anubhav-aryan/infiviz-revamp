@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import type { Visit } from "@/app/store-explorer/_data/store-explorer";
+import type { Visit } from "@/app/_data/visits";
 import { EXCEPTION_BY_BOX, type Exception } from "../_data/session-compliance";
 import { sessionHistoryFor } from "../_data/session-history";
 import {

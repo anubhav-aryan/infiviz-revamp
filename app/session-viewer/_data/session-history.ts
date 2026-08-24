@@ -1,5 +1,5 @@
 import { hashStoreId } from "@/app/_format/num";
-import { VISITS, type Visit, type VisitStatus } from "@/app/store-explorer/_data/store-explorer";
+import { VISITS, type Visit, type VisitStatus } from "@/app/_data/visits";
 
 /**
  * The store's recent capture history, and the timeline of one capture.
