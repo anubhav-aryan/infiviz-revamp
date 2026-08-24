@@ -15,7 +15,7 @@ import {
   periodLabel,
   periodPhrase,
   serializePeriod,
-} from "./period";
+} from "./visit-period";
 import { STORES, storeById, type GeoStore } from "@/app/_data/stores-geo";
 
 /**

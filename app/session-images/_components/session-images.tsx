@@ -3,12 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/app/_components/icon";
-import { PhotoLightbox } from "@/app/store-explorer/_components/photo-lightbox";
+import { PhotoLightbox } from "@/app/_components/photo-lightbox";
 import {
   ILLUSTRATIVE_PHOTOS,
   ILLUSTRATIVE_PHOTO_GROUPS,
   ILLUSTRATIVE_VISIT,
-} from "@/app/store-explorer/_data/store-explorer";
+} from "@/app/_data/visits";
 import styles from "./session-images.module.css";
 
 /**

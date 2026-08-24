@@ -1,4 +1,4 @@
-import { VISITS } from "@/app/store-explorer/_data/store-explorer";
+import { VISITS } from "@/app/_data/visits";
 import { slugifyStore } from "@/app/session-viewer/_data/session-viewer";
 
 /**
@@ -15,7 +15,7 @@ import { slugifyStore } from "@/app/session-viewer/_data/session-viewer";
  * the whole reason this file exists rather than each screen slugifying its own
  * names — the two would drift and the drift would only show as a 404.
  *
- * Deliberately not imported by `store-explorer` or `photo-quality` in the other
+ * Deliberately not imported by `photo-quality` in the other
  * direction: this module depends on them, never the reverse, so there is no
  * cycle.
  */

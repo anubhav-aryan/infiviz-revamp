@@ -20,7 +20,7 @@
 //
 // INVARIANTS, all asserted by the generator that emitted this file:
 //   • 124 stores. Region totals 56/22/17/15/9/5 and retailer totals
-//     50/27/18/11/7/6/5 are the facet tables in store-explorer.ts scaled to 124.
+//     50/27/18/11/7/6/5 are the facet tables in _data/visits.ts scaled to 124.
 //   • Store type falls out of retailer (Winmart splits 18 Winlife minimarts /
 //     9 Winmart supermarkets), giving 68/27/24/5 — within 0.5 of the
 //     `storeTypes` facet scaled the same way.

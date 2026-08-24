@@ -7,7 +7,7 @@ import type { IconName } from "./icon";
 export type NavId =
   | "activity"
   | "analytics"
-  | "store-explorer"
+  | "session-viewer"
   | "master-data"
   | "catalog"
   | "photo-quality"
@@ -34,7 +34,7 @@ export type NavItem = {
 export const NAV: NavItem[] = [
   { id: "activity", label: "Activity", title: "Activity", icon: "activity", href: "/" },
   { id: "analytics", label: "Analytics", title: "Analytics", icon: "bar-chart-3", href: "/analytics" },
-  { id: "store-explorer", label: "Store Explorer", title: "Store Explorer", icon: "map", href: "/store-explorer" },
+  { id: "session-viewer", label: "Session Viewer", title: "Session Viewer", icon: "image", href: "/session-viewer" },
   { id: "master-data", label: "Master data", title: "Master data", icon: "database", href: "/master-data" },
   { id: "catalog", label: "Catalog", title: "Catalog", icon: "package", href: "/catalog" },
   { id: "photo-quality", label: "Photo quality", title: "Photo quality", icon: "camera", href: "/photo-quality" },
@@ -86,7 +86,7 @@ export const UNLOCK = {
 /** Onboarding — master data configured, captures beginning, no analytics yet. */
 export const NAV_CAPTURING: NavEntry[] = [
   { id: "activity", state: "active" },
-  { id: "store-explorer", state: "normal" },
+  { id: "session-viewer", state: "normal" },
   { id: "master-data", state: "normal" },
   { id: "photo-quality", state: "normal" },
   { id: "merch-activity", state: "normal" },

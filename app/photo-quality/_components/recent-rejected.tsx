@@ -8,7 +8,7 @@ import { ExcelDownloadButton } from "@/app/_export/excel-download-button";
 import type { RejectedSession } from "../_data/photo-quality";
 import shared from "@/app/_reports/reports.module.css";
 import { sessionImageHref } from "@/app/session-images/_data/session-images";
-import { ILLUSTRATIVE_PHOTOS } from "@/app/store-explorer/_data/store-explorer";
+import { ILLUSTRATIVE_PHOTOS } from "@/app/_data/visits";
 import styles from "./photo-quality.module.css";
 import { CardActions } from "@/app/_components/card-actions";
 
@@ -22,7 +22,7 @@ type RejectedView = "gallery" | "table";
 
 /**
  * Opens the store's captures on `/session-images`. Previously this pointed at
- * `/store-explorer` with no store at all, which dropped the reader on a landing
+ * a screen with no store at all, which dropped the reader on a landing
  * screen and made them find the visit again.
  *
  * A store with no capture set renders inert rather than linking to a page that

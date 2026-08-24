@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { Icon } from "@/app/_components/icon";
-import { photoMetadata, type Photo } from "../_data/store-explorer";
-import styles from "./store-explorer.module.css";
+import { photoMetadata, type Photo } from "@/app/_data/visits";
+import styles from "./photo-lightbox.module.css";
 
 type PhotoLightboxProps = {
   photos: Photo[];

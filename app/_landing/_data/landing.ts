@@ -384,10 +384,10 @@ export const ACTIONS = {
     href: "/analytics",
   },
   explorer: {
-    icon: "map" as IconName,
-    title: "Open Store Explorer",
-    desc: "See which stores were visited, on a map and in a list.",
-    href: "/store-explorer",
+    icon: "image" as IconName,
+    title: "Open Session Viewer",
+    desc: "The stitched shelf, its recognition boxes and the numbers behind them.",
+    href: "/session-viewer",
   },
   /** `desc` is left out — the live screen fills it in from ticket counts. */
   tickets: {

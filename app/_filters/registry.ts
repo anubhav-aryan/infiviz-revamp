@@ -15,7 +15,7 @@ import type { ActiveFilter, FilterDimension } from "./model";
  * than an edge case, so the vocabulary has to be unified first.
  *
  * **Why aliases rather than renaming the fixtures.** Those spellings are
- * load-bearing *keys*, not display strings: `TYPE_MIX` in `store-explorer.ts`
+ * load-bearing *keys*, not display strings: `TYPE_MIX` in `_data/visits.ts`
  * keys on `Minimart`, `StoreType` in `stores-geo.ts` is a union over 124 pins,
  * `merch-activity.ts`'s `coverageTypes` keys on `Mini mart`, and Analytics'
  * `DIM_SOURCE` rows are label-indexed tuples. Renaming at source would silently
@@ -64,7 +64,7 @@ export type CanonicalDim = {
  * Search appears in a dimension menu above this many values.
  *
  * Ten, because that is where the existing menu stops being scannable rather
- * than because ten is a round number: `.menu` in `store-explorer.module.css` is
+ * than because ten is a round number: the filter menu's own stylesheet is
  * `max-height: 340px` and `.menuItem` is ~31px tall, so the eleventh value is
  * the first one a reader has to scroll to find. Settled — do not re-litigate.
  */

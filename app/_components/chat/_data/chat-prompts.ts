@@ -74,16 +74,16 @@ export const CHAT_CONTEXT: Partial<Record<NavId, ChatContext>> = {
     ],
     hint: { text: INSIGHTS[0].text, label: "Analytics", href: SOURCES.availability.href },
   },
-  "store-explorer": {
+  "session-viewer": {
     prompts: [
-      { title: "Bach Hoa Xanh today", question: "How many Bach Hoa Xanh visits happened today?" },
-      { title: "South East region", question: "Show me every visit in the South East region." },
-      { title: "Still processing", question: "Which sessions are still processing?" },
+      { title: "What was found", question: "Which SKUs did recognition find on this shelf?" },
+      { title: "Missing must-stock", question: "Which must-stock SKUs are absent from this bay?" },
+      { title: "Planogram breaks", question: "Where does this bay depart from its planogram?" },
     ],
     hint: {
-      text: "Store Explorer filters by retailer, region, store type, placement, category, store and session — the list and the map narrow together.",
-      label: "Store Explorer",
-      href: "/store-explorer",
+      text: "Session Viewer shows one capture: the stitched shelf, the recognition boxes over it, and the availability, share and accuracy numbers they produce.",
+      label: "Session Viewer",
+      href: "/session-viewer",
     },
   },
   "master-data": {

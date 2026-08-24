@@ -1,4 +1,5 @@
 import { STORES } from "@/app/_data/stores-geo";
+import { SESSION_STORES, slugifyStore } from "@/app/session-viewer/_data/session-viewer";
 import { lcg } from "@/app/_time/variants";
 import type { MatrixCell, MatrixGroup } from "@/app/_charts/month-matrix";
 import { MONTH_INDEX, VIS_SERIES } from "./spine";
@@ -84,7 +85,11 @@ function cellFor(
   };
 }
 
-function rowCells(storeId: string, monthIndex: number, href: (b: string) => string) {
+function rowCells(
+  storeId: string,
+  monthIndex: number,
+  href: (b: string) => string | undefined,
+) {
   return BRANDS.map<MatrixCell>((brand) => {
     const { value, move } = cellFor(storeId, brand, monthIndex);
     return {
@@ -133,9 +138,11 @@ export function movementMatrix(month: MonthKey): MovementMatrix {
       children: stores.map((store) => ({
         id: store.id,
         label: store.name,
-        cells: rowCells(store.id, monthIndex, (brand) =>
-          `/store-explorer?f=store~${store.id}|brand~${slugBrand(brand)}`,
-        ),
+        /* Store Explorer is gone; the capture behind the cell is the honest
+           destination, and Session Viewer routes by store slug. The brand the
+           cell describes is not addressable there, so it is dropped rather
+           than encoded into a parameter nothing reads. */
+        cells: rowCells(store.id, monthIndex, () => sessionHrefFor(store.name)),
       })),
     };
   });
@@ -144,6 +151,17 @@ export function movementMatrix(month: MonthKey): MovementMatrix {
 }
 
 /** Matches the canonical brand ids in `_filters/registry.ts`. */
-function slugBrand(brand: string): string {
-  return brand.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+/**
+ * The capture behind a matrix cell.
+ *
+ * Only the eight stores with an authored visit have a Session Viewer route —
+ * `dynamicParams` is off there, so a slug that was never prerendered is a hard
+ * 404. Cells for any other store carry no link rather than a broken one.
+ */
+const SESSION_SLUGS = new Set(SESSION_STORES.map((entry) => entry.slug));
+
+function sessionHrefFor(storeName: string): string | undefined {
+  const slug = slugifyStore(storeName);
+  return SESSION_SLUGS.has(slug) ? `/session-viewer/${slug}` : undefined;
 }
+
