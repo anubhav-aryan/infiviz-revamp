@@ -2,10 +2,18 @@
 
 import { Icon } from "@/app/_components/icon";
 import {
+  BOX_LEGEND,
+  BOX_PAINT,
+  COMPLIANCE_LEGEND,
+  COMPLIANCE_PAINT,
   COUNTED_FACINGS,
+  DETECTED_BRANDS,
   EXTRA_COUNTS,
+  MSL_FILTER_OPTIONS,
   SHELF_TOGGLES,
   type ExtraKind,
+  type MslFilter,
+  type ShelfView,
 } from "../_data/session-viewer";
 import styles from "./session-viewer.module.css";
 
@@ -25,11 +33,65 @@ import styles from "./session-viewer.module.css";
 type ShelfTogglesProps = {
   shown: Set<ExtraKind>;
   onToggle: (kind: ExtraKind) => void;
+  view: ShelfView;
+  brandFilter: string;
+  onBrandFilter: (brand: string) => void;
+  mslFilter: MslFilter;
+  onMslFilter: (filter: MslFilter) => void;
 };
 
-export function ShelfToggles({ shown, onToggle }: ShelfTogglesProps) {
+export function ShelfToggles({
+  shown,
+  onToggle,
+  view,
+  brandFilter,
+  onBrandFilter,
+  mslFilter,
+  onMslFilter,
+}: ShelfTogglesProps) {
+  const legend =
+    view === "store"
+      ? BOX_LEGEND.map((entry) => ({ label: entry.label, paint: BOX_PAINT[entry.kind] }))
+      : COMPLIANCE_LEGEND.map((entry) => ({
+          label: entry.label,
+          paint: COMPLIANCE_PAINT[entry.kind],
+        }));
+
   return (
-    <div className={styles.toggleRow}>
+    <div className={styles.filterRow}>
+      <label className={styles.headField}>
+        Brand
+        <select
+          className={styles.filterSelect}
+          value={brandFilter}
+          onChange={(event) => onBrandFilter(event.target.value)}
+        >
+          <option value="all">All</option>
+          {DETECTED_BRANDS.map((brand) => (
+            <option key={brand} value={brand}>
+              {brand}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className={styles.headField}>
+        MSL
+        <select
+          className={styles.filterSelect}
+          value={mslFilter}
+          onChange={(event) => onMslFilter(event.target.value as MslFilter)}
+        >
+          {MSL_FILTER_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <span className={styles.divider} aria-hidden="true" />
+
       {SHELF_TOGGLES.map((toggle) => {
         const on = shown.has(toggle.kind);
         return (
@@ -48,6 +110,20 @@ export function ShelfToggles({ shown, onToggle }: ShelfTogglesProps) {
           </button>
         );
       })}
+
+      <span className={styles.divider} aria-hidden="true" />
+
+      <span className={styles.legend}>
+        {legend.map((entry) => (
+          <span key={entry.label} className={styles.legendItem}>
+            <span
+              className={styles.legendSwatch}
+              style={{ background: entry.paint.fill, borderColor: entry.paint.stroke }}
+            />
+            {entry.label}
+          </span>
+        ))}
+      </span>
 
       <span className={styles.toggleCaption}>
         {COUNTED_FACINGS} counted facings

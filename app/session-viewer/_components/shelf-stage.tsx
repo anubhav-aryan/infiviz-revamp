@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   BOX_LEGEND,
   BOX_PAINT,
@@ -9,8 +9,8 @@ import {
   EXTRA_BOXES,
   EXTRA_PAINT,
   RECOGNITION_BOXES,
+  type RecognitionBox,
   SHELF_IMAGE,
-  STITCH_PANELS,
   type ExtraKind,
   type ShelfView,
 } from "../_data/session-viewer";
@@ -30,6 +30,15 @@ type ShelfStageProps = {
   zoom: number;
   /** Which `ExtraBox` kinds the toggles are currently revealing. */
   shown: Set<ExtraKind>;
+  /** Owned by the page, so the rail can scroll a box into view. */
+  viewportRef: React.RefObject<HTMLDivElement | null>;
+  hovered: number | null;
+  onHover: (index: number | null) => void;
+  selected: number | null;
+  onSelect: (index: number) => void;
+  /** False for a box the Brand/MSL filters have ruled out. */
+  isVisible: (box: RecognitionBox) => boolean;
+  onArrow: (direction: 1 | -1) => void;
 };
 
 /**
@@ -47,9 +56,18 @@ type ShelfStageProps = {
  * child reports the wrong `scrollWidth`, so panning would need manual translate
  * maths instead of native scrolling.
  */
-export function ShelfStage({ view, zoom, shown }: ShelfStageProps) {
-  const [hovered, setHovered] = useState<number | null>(null);
-  const viewportRef = useRef<HTMLDivElement>(null);
+export function ShelfStage({
+  view,
+  zoom,
+  shown,
+  viewportRef,
+  hovered,
+  onHover,
+  selected,
+  onSelect,
+  isVisible,
+  onArrow,
+}: ShelfStageProps) {
   /** Visible fraction of the stitch, for the minimap rect. `1` before any
    *  scroll, which is what zoom 1 shows — so server and client agree. */
   const [viewWindow, setViewWindow] = useState({ left: 0, width: 1 });
@@ -61,13 +79,12 @@ export function ShelfStage({ view, zoom, shown }: ShelfStageProps) {
       left: node.scrollLeft / node.scrollWidth,
       width: node.clientWidth / node.scrollWidth,
     });
-  }, []);
+  }, [viewportRef]);
 
   // Zoom changes the scrollable width without firing a scroll event.
   useEffect(measure, [measure, zoom]);
 
   const hoveredBox = hovered !== null ? RECOGNITION_BOXES[hovered] : null;
-  const legend = view === "store" ? BOX_LEGEND : COMPLIANCE_LEGEND;
   const extras = EXTRA_BOXES.filter((box) => shown.has(box.kind));
 
   /** Clicking the minimap recentres the viewport on that point. */
@@ -80,7 +97,7 @@ export function ShelfStage({ view, zoom, shown }: ShelfStageProps) {
   };
 
   return (
-    <div className={`${styles.card} ${styles.stageCard}`}>
+    <div className={styles.stageCard}>
       <div
         ref={viewportRef}
         className={styles.stageViewport}
@@ -88,7 +105,13 @@ export function ShelfStage({ view, zoom, shown }: ShelfStageProps) {
         // Scrollable regions need to be reachable and operable by keyboard.
         tabIndex={0}
         role="group"
-        aria-label="Stitched shelf capture"
+        aria-label="Stitched shelf capture. Use the left and right arrow keys to move between detections."
+        onKeyDown={(event) => {
+          if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+          /* Otherwise the scroll container pans as well as stepping. */
+          event.preventDefault();
+          onArrow(event.key === "ArrowRight" ? 1 : -1);
+        }}
       >
         <div className={styles.stage} style={{ "--zoom": zoom } as React.CSSProperties}>
           <img
@@ -106,23 +129,26 @@ export function ShelfStage({ view, zoom, shown }: ShelfStageProps) {
             className={styles.shelfOverlay}
             aria-label="Recognition boxes over the stitched shelf"
           >
-            {RECOGNITION_BOXES.map((box) => {
+            {RECOGNITION_BOXES.map((box, index) => {
               const paint =
                 view === "store"
                   ? BOX_PAINT[box.kind]
                   : COMPLIANCE_PAINT[box.compliance];
+              const dimmed = !isVisible(box);
+              const pinned = selected === index;
               return (
                 <rect
-                  key={`${box.kind}-${box.x}-${box.y}`}
+                  key={box.id}
                   x={box.x}
                   y={box.y}
                   width={box.w}
                   height={box.h}
                   rx="0.6"
                   fill={paint.fill}
-                  stroke={paint.stroke}
-                  strokeWidth="0.6"
-                  strokeDasharray={paint.dash}
+                  stroke={pinned ? "var(--indigo-600)" : paint.stroke}
+                  strokeWidth={pinned ? 1.1 : 0.6}
+                  strokeDasharray={pinned ? undefined : paint.dash}
+                  opacity={dimmed ? 0.16 : 1}
                 />
               );
             })}
@@ -153,27 +179,27 @@ export function ShelfStage({ view, zoom, shown }: ShelfStageProps) {
           <div className={styles.shelfHitLayer}>
             {RECOGNITION_BOXES.map((box, index) => (
               <button
-                key={`${box.kind}-${box.x}-${box.y}`}
+                key={box.id}
                 type="button"
                 className={styles.shelfHitTarget}
+                data-dimmed={!isVisible(box) || undefined}
+                tabIndex={isVisible(box) ? 0 : -1}
+                onClick={() => onSelect(index)}
                 style={{
                   left: `${box.x}%`,
                   top: `${(box.y / CANVAS_H) * 100}%`,
                   width: `${box.w}%`,
                   height: `${(box.h / CANVAS_H) * 100}%`,
                 }}
-                onMouseEnter={() => setHovered(index)}
-                onMouseLeave={() =>
-                  setHovered((current) => (current === index ? null : current))
-                }
-                onFocus={() => setHovered(index)}
-                onBlur={() =>
-                  setHovered((current) => (current === index ? null : current))
-                }
+                onMouseEnter={() => onHover(index)}
+                onMouseLeave={() => onHover(null)}
+                onFocus={() => onHover(index)}
+                onBlur={() => onHover(null)}
+                aria-pressed={selected === index}
                 aria-label={
                   view === "store"
-                    ? `${kindLabel(box.kind)} · ${Math.round(box.confidence * 100)}% confidence`
-                    : `${complianceLabel(box.compliance)} · ${kindLabel(box.kind)}`
+                    ? `${box.brand ?? kindLabel(box.kind)} · ${Math.round(box.confidence * 100)}% confidence`
+                    : `${complianceLabel(box.compliance)} · ${box.brand ?? kindLabel(box.kind)}`
                 }
               />
             ))}
@@ -187,25 +213,15 @@ export function ShelfStage({ view, zoom, shown }: ShelfStageProps) {
                 }}
               >
                 {view === "store"
-                  ? `${kindLabel(hoveredBox.kind)} · ${Math.round(hoveredBox.confidence * 100)}%`
-                  : `${complianceLabel(hoveredBox.compliance)} · ${kindLabel(hoveredBox.kind)}`}
+                  ? `${hoveredBox.brand ?? kindLabel(hoveredBox.kind)} · ${Math.round(hoveredBox.confidence * 100)}%`
+                  : `${complianceLabel(hoveredBox.compliance)} · ${hoveredBox.brand ?? kindLabel(hoveredBox.kind)}`}
               </span>
             ) : null}
           </div>
         </div>
       </div>
 
-      {/* The panels the stitch was assembled from, labelled under their span. */}
-      <div className={styles.panelStrip}>
-        {STITCH_PANELS.map((panel, index) => (
-          <span key={index} className={styles.panelTag}>
-            <span>Shelf: {panel.shelf}</span>
-            <span>Brand: {panel.brand}</span>
-          </span>
-        ))}
-      </div>
-
-      <div
+            <div
         className={styles.minimap}
         onClick={recentre}
         role="presentation"
@@ -221,18 +237,6 @@ export function ShelfStage({ view, zoom, shown }: ShelfStageProps) {
         />
       </div>
 
-      <div className={styles.legend}>
-        {legend.map((entry) => (
-          <span key={entry.kind} className={styles.legendItem}>
-            <span
-              className={styles.legendSwatch}
-              data-kind={entry.kind}
-              aria-hidden="true"
-            />
-            {entry.label}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }

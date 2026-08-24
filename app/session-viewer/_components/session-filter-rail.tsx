@@ -51,11 +51,9 @@ type SessionFilterRailProps = {
   /** Slug of the store being viewed, so the picker opens on it. Absent on the
    *  bare `/session-viewer`, which shows the authored default session. */
   activeSlug?: string;
-  /** The current session's id, shown as the last picker's only value. */
-  sessionId: string;
 };
 
-export function SessionFilterRail({ activeSlug, sessionId }: SessionFilterRailProps) {
+export function SessionFilterRail({ activeSlug }: SessionFilterRailProps) {
   const router = useRouter();
 
   const storeOptions = SESSION_STORES.map(({ visit }) => visit.store);
@@ -75,14 +73,12 @@ export function SessionFilterRail({ activeSlug, sessionId }: SessionFilterRailPr
           if (match) router.push(`/session-viewer/${match.slug}`);
         }}
       />
-      <Picker
-        id="sv-session"
-        label="Session ID"
-        value={sessionId}
-        options={[sessionId]}
-        onChange={() => {}}
-        caption="One session per store visit"
-      />
+      {/* Visit date and session moved into the page header, where they are
+          real controls. A read-only copy of the id here would go stale the
+          moment the header's picker moved off the store's newest session. */}
+      <p className={styles.railCaption}>
+        Visit date and session are picked in the page header.
+      </p>
     </div>
   );
 }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { RailShell } from "@/app/_components/app-shell";
 import { SessionFilterRail } from "./_components/session-filter-rail";
 import { SessionViewer } from "./_components/session-viewer";
-import { DEFAULT_SESSION_ID, SECTION } from "./_data/session-viewer";
+import { SECTION } from "./_data/session-viewer";
 
 export const metadata: Metadata = {
   title: "Session Viewer",
@@ -21,7 +21,7 @@ export default function SessionViewerPage() {
       section={SECTION}
       groups={[]}
       activeSection=""
-      railItems={<SessionFilterRail sessionId={DEFAULT_SESSION_ID} />}
+      railItems={<SessionFilterRail />}
     >
       <SessionViewer />
     </RailShell>

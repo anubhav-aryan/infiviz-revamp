@@ -53,7 +53,7 @@ export default async function StoreSessionPage(
       groups={[]}
       activeSection=""
       railItems={
-        <SessionFilterRail activeSlug={store} sessionId={visit.sessionId} />
+        <SessionFilterRail activeSlug={store} />
       }
     >
       <SessionViewer session={sessionFor(visit)} visit={visit} />

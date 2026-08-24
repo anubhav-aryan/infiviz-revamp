@@ -1,6 +1,10 @@
-import { hashStoreId } from "@/app/_format/num";
 import { storeById } from "@/app/_data/stores-geo";
-import { VISITS, type Visit } from "@/app/store-explorer/_data/store-explorer";
+import {
+  VISITS,
+  type Visit,
+  type VisitStatus,
+} from "@/app/store-explorer/_data/store-explorer";
+import { BRAND_SHELF, TOTALS } from "./shelf-facts";
 
 /**
  * Demo content for the Session Viewer screen, transcribed verbatim from the
@@ -9,11 +13,6 @@ import { VISITS, type Visit } from "@/app/store-explorer/_data/store-explorer";
  */
 
 /** Why the user landed here; the headline is the Analytics figure being audited. */
-export const CONTEXT = {
-  eyebrow: "You're here because",
-  headline: "Optic White OSA was 33% in this session",
-};
-
 export type SessionHeaderRow = { key: string; value: string };
 
 /** The section rail's heading, above the six session filters. */
@@ -28,12 +27,19 @@ export const SESSION_TITLE = "3742 · Winlife HCM 94/54 - 56";
  *  `/session-viewer` route, which has no `Visit` to read one from. */
 export const DEFAULT_SESSION_ID = "a3f5c9e1-6b42-4d8a-9c17-2e5f8a1b3d47";
 
+/** The visit the transcribed session belongs to — the source for anything the
+ *  store fixture already records, so nothing here restates it. */
+export const FLAGSHIP_VISIT = VISITS.find(
+  (visit) => visit.sessionId === DEFAULT_SESSION_ID,
+)!;
+
 export const SESSION_HEADER: SessionHeaderRow[] = [
   { key: "Retailer", value: "Winmart" },
   { key: "Category", value: "Toothpaste" },
   { key: "Merchandiser", value: "minh_tran" },
   { key: "Visit", value: "04 Aug 09:31" },
-  { key: "Photos", value: "5" },
+  /* Was "5", while the store fixture recorded seven for this visit. */
+  { key: "Photos", value: String(FLAGSHIP_VISIT.photos) },
   { key: "Capture quality", value: "Good" },
 ];
 
@@ -49,6 +55,11 @@ export const SESSION_HEADER: SessionHeaderRow[] = [
  */
 export type SessionIdentity = {
   title: string;
+  /** The shop. The page's `<h1>` — a reader off a deep link needs this first. */
+  store: string;
+  /** How many photographs the capture produced, from the visit itself. */
+  photos: number;
+  status: VisitStatus;
   header: SessionHeaderRow[];
   date: string;
   retailer: string;
@@ -60,8 +71,17 @@ export type SessionIdentity = {
 };
 
 /** `/session-viewer` with no store is still the design's transcribed session. */
+/**
+ * `/session-viewer` with no store still shows the design's transcribed
+ * session. `photos` and `status` come from the flagship visit rather than
+ * being retyped — the header used to claim five photographs for a visit the
+ * store fixture records as seven.
+ */
 export const DEFAULT_SESSION: SessionIdentity = {
   title: SESSION_TITLE,
+  store: SESSION_TITLE,
+  photos: FLAGSHIP_VISIT.photos,
+  status: FLAGSHIP_VISIT.status,
   header: SESSION_HEADER,
   date: "04 Aug 2026",
   retailer: "Winmart",
@@ -119,6 +139,9 @@ export function sessionFor(visit: Visit): SessionIdentity {
   const store = storeById(visit.storeId);
   return {
     title: visit.store,
+    store: visit.store,
+    photos: visit.photos,
+    status: visit.status,
     header: [
       { key: "Retailer", value: visit.retailer },
       { key: "Category", value: visit.category },
@@ -169,15 +192,23 @@ export type ComplianceKind = "compliant" | "misplaced" | "missing";
  *  from exactly these — which is why `compliance` is required here and absent
  *  from `ExtraBox` below. */
 export type RecognitionBox = {
+  /**
+   * Stable shelf address, `s{shelf}p{position}`. Exceptions and absent SKUs
+   * are filed under this rather than an array index, so a box can be inserted
+   * without silently re-pointing every reference to the ones after it.
+   */
+  id: string;
   x: number;
   y: number;
   w: number;
   h: number;
   kind: BoxKind;
-  /** Model confidence for this box, 0–1. Lower for `unrecognised` boxes by
-   *  construction — that's the same signal that kept them unrecognised. */
+  /**
+   * The recognised brand. Undefined exactly when `kind` is `"unrecognised"` —
+   * that is what unrecognised means, and the assertion below holds them to it.
+   */
+  brand?: string;
   confidence: number;
-  /** Where this facing sits against the planogram. */
   compliance: ComplianceKind;
 };
 
@@ -206,21 +237,21 @@ export type ExtraBox = {
  * Two shelf rows: eight facings on top, seven below.
  */
 export const RECOGNITION_BOXES: RecognitionBox[] = [
-  { x: 3, y: 4, w: 11, h: 15, kind: "own", confidence: 0.97, compliance: "compliant" },
-  { x: 15, y: 4, w: 10, h: 15, kind: "own", confidence: 0.95, compliance: "compliant" },
-  { x: 26, y: 5, w: 9, h: 14, kind: "competitor", confidence: 0.91, compliance: "compliant" },
-  { x: 36, y: 4, w: 11, h: 15, kind: "competitor", confidence: 0.93, compliance: "compliant" },
-  { x: 48, y: 5, w: 10, h: 14, kind: "competitor", confidence: 0.88, compliance: "compliant" },
-  { x: 59, y: 4, w: 9, h: 15, kind: "own", confidence: 0.96, compliance: "compliant" },
-  { x: 69, y: 5, w: 10, h: 14, kind: "competitor", confidence: 0.9, compliance: "misplaced" },
-  { x: 80, y: 4, w: 11, h: 15, kind: "unrecognised", confidence: 0.42, compliance: "missing" },
-  { x: 4, y: 22, w: 12, h: 16, kind: "competitor", confidence: 0.89, compliance: "compliant" },
-  { x: 17, y: 22, w: 11, h: 16, kind: "own", confidence: 0.94, compliance: "compliant" },
-  { x: 29, y: 23, w: 10, h: 15, kind: "competitor", confidence: 0.87, compliance: "compliant" },
-  { x: 40, y: 22, w: 12, h: 16, kind: "competitor", confidence: 0.92, compliance: "compliant" },
-  { x: 53, y: 22, w: 10, h: 16, kind: "competitor", confidence: 0.85, compliance: "misplaced" },
-  { x: 64, y: 23, w: 11, h: 15, kind: "competitor", confidence: 0.9, compliance: "compliant" },
-  { x: 76, y: 22, w: 12, h: 16, kind: "unrecognised", confidence: 0.38, compliance: "missing" },
+  { id: "s1p1", x: 3, y: 4, w: 11, h: 15, brand: "CDC", kind: "own", confidence: 0.97, compliance: "compliant" },
+  { id: "s1p2", x: 15, y: 4, w: 10, h: 15, brand: "Colgate Total", kind: "own", confidence: 0.95, compliance: "compliant" },
+  { id: "s1p3", x: 26, y: 5, w: 9, h: 14, brand: "P/S", kind: "competitor", confidence: 0.91, compliance: "compliant" },
+  { id: "s1p4", x: 36, y: 4, w: 11, h: 15, brand: "Closeup", kind: "competitor", confidence: 0.93, compliance: "compliant" },
+  { id: "s1p5", x: 48, y: 5, w: 10, h: 14, brand: "Sensodyne", kind: "competitor", confidence: 0.88, compliance: "compliant" },
+  { id: "s1p6", x: 59, y: 4, w: 9, h: 15, brand: "Natural", kind: "own", confidence: 0.96, compliance: "compliant" },
+  { id: "s1p7", x: 69, y: 5, w: 10, h: 14, brand: "Oral-B", kind: "competitor", confidence: 0.9, compliance: "misplaced" },
+  { id: "s1p8", x: 80, y: 4, w: 11, h: 15, kind: "unrecognised", confidence: 0.42, compliance: "missing" },
+  { id: "s2p1", x: 4, y: 22, w: 12, h: 16, brand: "P/S", kind: "competitor", confidence: 0.89, compliance: "compliant" },
+  { id: "s2p2", x: 17, y: 22, w: 11, h: 16, brand: "Max Fresh", kind: "own", confidence: 0.94, compliance: "compliant" },
+  { id: "s2p3", x: 29, y: 23, w: 10, h: 15, brand: "Closeup", kind: "competitor", confidence: 0.87, compliance: "compliant" },
+  { id: "s2p4", x: 40, y: 22, w: 12, h: 16, brand: "Sensodyne", kind: "competitor", confidence: 0.92, compliance: "compliant" },
+  { id: "s2p5", x: 53, y: 22, w: 10, h: 16, brand: "Oral-B", kind: "competitor", confidence: 0.85, compliance: "misplaced" },
+  { id: "s2p6", x: 64, y: 23, w: 11, h: 15, brand: "P/S", kind: "competitor", confidence: 0.9, compliance: "compliant" },
+  { id: "s2p7", x: 76, y: 22, w: 12, h: 16, kind: "unrecognised", confidence: 0.38, compliance: "missing" },
 ];
 
 export const BOX_LEGEND: { kind: BoxKind; label: string }[] = [
@@ -296,17 +327,6 @@ export const COMPLIANCE_LEGEND: { kind: ComplianceKind; label: string }[] = [
 /** The two views the toolbar switches between. */
 export type ShelfView = "store" | "compliance";
 
-/**
- * The stitch is assembled from four overlapping panels; the design labels each
- * one under the image. Widths are percentages of the stitch, left to right.
- */
-export const STITCH_PANELS = [
-  { shelf: "Others", brand: "Others" },
-  { shelf: "Others", brand: "Others" },
-  { shelf: "Others", brand: "Others" },
-  { shelf: "Others", brand: "Others" },
-];
-
 /** The mock photograph standing in for the stitched shelf capture. */
 export const SHELF_IMAGE = "/mock-shelf/shelf-toothpaste-wide.jpg";
 
@@ -316,22 +336,32 @@ export type ShelfMetric = {
   label: string;
   /** Definition surfaced as a native tooltip on the adjacent info icon. */
   definition: string;
+  /** The number, for the accuracy tab to compare an auditor's count against. */
+  pct: number;
   value: string;
   detail: string;
 };
 
+const metresOf = (cm: number) => (cm / 100).toFixed(1);
+
+/**
+ * Derived from `TOTALS`, not authored. Both figures used to be typed out here
+ * and again in the tables; a projection cannot drift from what it projects.
+ */
 export const SHELF_METRICS: ShelfMetric[] = [
   {
     label: "Share of Shelf",
     definition: "Own facings ÷ total category facings",
-    value: "34.2%",
-    detail: "128 of 374 facings",
+    pct: +((TOTALS.ownFacings / TOTALS.facings) * 100).toFixed(1),
+    value: `${((TOTALS.ownFacings / TOTALS.facings) * 100).toFixed(1)}%`,
+    detail: `${TOTALS.ownFacings} of ${TOTALS.facings} facings`,
   },
   {
     label: "Linear Share of Shelf",
     definition: "Own linear shelf length ÷ total category linear length",
-    value: "33.8%",
-    detail: "2.7 m of 8.0 m",
+    pct: +((TOTALS.ownLinearCm / TOTALS.linearCm) * 100).toFixed(1),
+    value: `${((TOTALS.ownLinearCm / TOTALS.linearCm) * 100).toFixed(1)}%`,
+    detail: `${metresOf(TOTALS.ownLinearCm)} m of ${metresOf(TOTALS.linearCm)} m`,
   },
 ];
 
@@ -339,12 +369,6 @@ export const OWN_VS_COMPETITION = { label: "34 / 66", own: 34, competition: 66 }
 
 /* ---- availability + must-stock list ---- */
 
-export const AVAILABILITY = {
-  label: "On-Shelf Availability",
-  definition: "Ranged SKUs found on shelf ÷ total ranged (MSL) SKUs",
-  value: "72%",
-  note: "Must-stock list · 2 absent, 6 found — absent shown first",
-};
 
 export type MslRow = {
   name: string;
@@ -383,57 +407,160 @@ export const MSL = MSL_RAW.map((sku) => ({
     sku.facings === undefined ? "Absent" : `Found · ${sku.facings}`,
 }));
 
-export type MslChecklistRow = MslRow & {
-  detected: boolean;
-  detail: string;
+export const RANGED_COUNT = MSL_RAW.length;
+export const FOUND_COUNT = MSL_RAW.filter((sku) => sku.facings !== undefined).length;
+
+export const AVAILABILITY = {
+  label: "On-Shelf Availability",
+  definition: "Ranged SKUs found on shelf ÷ total ranged (MSL) SKUs",
+  /**
+   * What recognition predicted. The auditor's own count of the same bay is
+   * 75.0% — six of eight — and the three-point gap is not a rounding error but
+   * the thing the Accuracy tab exists to report. See `session-accuracy.ts`,
+   * which asserts the pair rather than letting the two figures drift apart.
+   */
+  pct: 72,
+  value: "72%",
+  note: `Must-stock list · ${RANGED_COUNT - FOUND_COUNT} absent, ${FOUND_COUNT} found — absent shown first`,
+  detail: `${FOUND_COUNT} of ${RANGED_COUNT} must-stock SKUs found`,
 };
 
-/**
- * Per-store expected-vs-detected checklist. Membership — which 8 SKUs make up
- * the must-stock list — stays the one shared authored fact; only *found vs
- * absent* varies per store, and only by flipping one row, picked
- * deterministically from the store id so it's stable across renders without
- * inventing facings counts the fixture never captured. The no-`Visit` default
- * session keeps the static `MSL` output above, unchanged.
- */
-export function mslFor(visit: Visit): MslChecklistRow[] {
-  const flipIndex = hashStoreId(visit.storeId) % MSL_RAW.length;
-  return MSL_RAW.map((sku, i) => {
-    const baseDetected = sku.facings !== undefined;
-    const detected = i === flipIndex ? !baseDetected : baseDetected;
-    return {
-      ...sku,
-      detected,
-      detail: detected
-        ? sku.facings !== undefined
-          ? `Found · ${sku.facings} facings`
-          : "Found on shelf"
-        : "Not found on shelf",
-    };
-  });
-}
 
 /* ---- brand breakdown ---- */
 
-const BRAND_FACINGS: [name: string, isOwn: boolean, facings: number, share: number][] =
-  [
-    ["P/S", false, 88, 23.5],
-    ["Closeup", false, 61, 16.3],
-    ["CDC", true, 42, 11.2],
-    ["Sensodyne", false, 38, 10.2],
-    ["Colgate Total", true, 34, 9.1],
-    ["Oral-B", false, 31, 8.3],
-    ["Natural", true, 26, 7.0],
-    ["Max Fresh", true, 22, 5.9],
-  ];
+const BRAND_MAX = Math.max(...BRAND_SHELF.map((brand) => brand.facings));
 
-const BRAND_MAX = 88;
+/** All eleven brands on the bay, biggest first — what the rail's scoped list reads. */
+export const BRAND_SHARE_ROWS = BRAND_SHELF.map((brand) => ({
+  name: brand.name,
+  isOwn: brand.isOwn,
+  facings: brand.facings,
+  share: ((brand.facings / TOTALS.facings) * 100).toFixed(1),
+  width: +((brand.facings / BRAND_MAX) * 100).toFixed(1),
+})).sort((a, b) => b.facings - a.facings);
 
-/** Bars scale against the biggest brand; the label carries the true share. */
-export const BRAND_ROWS = BRAND_FACINGS.map(([name, isOwn, facings, share]) => ({
-  name,
-  isOwn,
-  facings,
-  share: share.toFixed(1),
-  width: +((facings / BRAND_MAX) * 100).toFixed(1),
-}));
+/**
+ * The named eight. A projection of `BRAND_SHELF` rather than a second list of
+ * facing counts — these used to be authored here and again in the tables, and
+ * `chat-prompts.ts` reads them, so an assertion below pins the shares.
+ */
+export const BRAND_ROWS = BRAND_SHARE_ROWS.filter(
+  (brand) => brand.name !== "Other brands",
+).slice(0, 8);
+
+/* ---- addressing, filters and scopes ---- */
+
+/** `s1p7` → "Shelf 1 · position 7". One parser, so a position can never be
+ *  written down twice and disagree with the box it points at. */
+export function positionLabel(id: string): string {
+  const match = /^s(\d+)p(\d+)$/.exec(id);
+  if (!match) return id;
+  return `Shelf ${match[1]} · position ${match[2]}`;
+}
+
+export const BOX_BY_ID = new Map(RECOGNITION_BOXES.map((box) => [box.id, box]));
+
+/**
+ * A brand is must-have iff a ranged must-have SKU carries it — read off the
+ * must-stock list rather than typed out again beside it.
+ */
+export const MUST_HAVE_BRANDS: ReadonlySet<string> = new Set(
+  MSL_RAW.filter((sku) => sku.mustHave).map((sku) => sku.brand),
+);
+
+/** The Brand filter's options: what recognition actually found, own brands first. */
+export const DETECTED_BRANDS: string[] = BRAND_SHELF.filter((brand) =>
+  RECOGNITION_BOXES.some((box) => box.brand === brand.name),
+)
+  .sort((a, b) => Number(b.isOwn) - Number(a.isOwn) || b.facings - a.facings)
+  .map((brand) => brand.name);
+
+export const MSL_FILTER_OPTIONS = [
+  { value: "all", label: "All" },
+  { value: "must", label: "Must-have" },
+  { value: "not", label: "Not must-have" },
+] as const;
+
+export type MslFilter = (typeof MSL_FILTER_OPTIONS)[number]["value"];
+
+export const SCOPE_OPTIONS = [
+  { value: "all", label: "All" },
+  { value: "top", label: "Top 10" },
+  { value: "bottom", label: "Bottom 10" },
+] as const;
+
+export type Scope = (typeof SCOPE_OPTIONS)[number]["value"];
+
+/** Shared by the three scoped lists in the rail. Assumes `rows` is sorted. */
+export function scoped<T>(rows: T[], scope: Scope): T[] {
+  if (scope === "top") return rows.slice(0, 10);
+  if (scope === "bottom") return rows.slice(-10);
+  return rows;
+}
+
+/* ---- the identities this file has to hold ---- */
+
+/* `unrecognised` and "no brand" are the same statement; anything else means a
+   box claims a brand nobody can see, or hides one it recognised. */
+for (const box of RECOGNITION_BOXES) {
+  if ((box.kind === "unrecognised") !== (box.brand === undefined)) {
+    throw new Error(
+      `Box ${box.id} is ${box.kind} but ${box.brand === undefined ? "carries no brand" : `carries "${box.brand}"`}. ` +
+        `Unrecognised boxes have no brand and recognised boxes have one — see session-viewer.ts.`,
+    );
+  }
+  if (box.brand && !BRAND_SHELF.some((brand) => brand.name === box.brand)) {
+    throw new Error(
+      `Box ${box.id} names brand "${box.brand}", which is not on the bay. ` +
+        `Add it to BRAND_SHELF in shelf-facts.ts or fix the box.`,
+    );
+  }
+}
+
+if (new Set(RECOGNITION_BOXES.map((box) => box.id)).size !== RECOGNITION_BOXES.length) {
+  throw new Error("Duplicate box id in RECOGNITION_BOXES — ids address exceptions, so they must be unique.");
+}
+
+/* The metrics are derived now; this pins the strings they render to the ratio,
+   so a formatting change cannot quietly restate the number. */
+for (const metric of SHELF_METRICS) {
+  if (metric.value !== `${metric.pct.toFixed(1)}%`) {
+    throw new Error(
+      `SHELF_METRICS "${metric.label}" prints ${metric.value} but its figure is ${metric.pct}. See session-viewer.ts.`,
+    );
+  }
+}
+
+/* BRAND_ROWS moved from authored to derived. These are the shares the drawer,
+   the tables and `chat-prompts.ts` have always shown. */
+const BRAND_SHARE_GUARD = ["23.5", "16.3", "11.2", "10.2", "9.1", "8.3", "7.0", "5.9"];
+BRAND_ROWS.forEach((row, index) => {
+  if (row.share !== BRAND_SHARE_GUARD[index]) {
+    throw new Error(
+      `BRAND_ROWS[${index}] (${row.name}) is ${row.share}% but was ${BRAND_SHARE_GUARD[index]}%. ` +
+        `Either BRAND_SHELF changed or TOTALS.facings did — see shelf-facts.ts.`,
+    );
+  }
+});
+
+if (MUST_HAVE_BRANDS.size !== 4) {
+  throw new Error(
+    `MUST_HAVE_BRANDS derived ${MUST_HAVE_BRANDS.size} brands, expected 4 (CDC, Colgate Total, Max Fresh, Optic White). ` +
+      `The must-stock list in session-viewer.ts changed.`,
+  );
+}
+
+/* The transcribed session must stay the flagship visit's: `SESSION_TITLE` is
+   slugified into the prerendered routes, so a drift here is a 404 in the
+   Analytics deep links, not a cosmetic mismatch. */
+if (slugifyStore(SESSION_TITLE) !== slugifyStore(FLAGSHIP_VISIT.store)) {
+  throw new Error(
+    `SESSION_TITLE is "${SESSION_TITLE}" but the flagship visit is "${FLAGSHIP_VISIT.store}". ` +
+      `They share a slug in the route table — see session-viewer.ts.`,
+  );
+}
+if (DEFAULT_SESSION.photos !== FLAGSHIP_VISIT.photos) {
+  throw new Error(
+    `DEFAULT_SESSION claims ${DEFAULT_SESSION.photos} photos but the visit recorded ${FLAGSHIP_VISIT.photos}.`,
+  );
+}

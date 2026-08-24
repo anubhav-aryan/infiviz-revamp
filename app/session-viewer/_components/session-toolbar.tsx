@@ -7,9 +7,8 @@ import styles from "./session-viewer.module.css";
 /**
  * The toolbar above the stitch.
  *
- * Three of these controls are real — zoom in, zoom out, and the Store /
- * Planogram view switch. `COMPARE SESSION`, `EXPORT PLANOGRAM` and `SHARE` are
- * chrome: the app has one authored session per store and no second session to
+ * Four of these controls are real — zoom in, zoom out, Reset and the Store /
+ * POG view switch. `Compare`, `Planogram` and `Share` are chrome: the app has one authored session per store and no second session to
  * compare against, so they are marked `aria-disabled` with a title saying so
  * rather than wired to a handler that would do nothing. The existing
  * `ExcelDownloadButton` sets the same precedent for a button that looks real
@@ -17,8 +16,6 @@ import styles from "./session-viewer.module.css";
  */
 
 type SessionToolbarProps = {
-  title: string;
-  date: string;
   view: ShelfView;
   onViewChange: (view: ShelfView) => void;
   onZoomIn: () => void;
@@ -26,7 +23,8 @@ type SessionToolbarProps = {
   canZoomIn: boolean;
   canZoomOut: boolean;
   zoomLabel: string;
-  onOpenMetrics: () => void;
+  onReset: () => void;
+  canReset: boolean;
 };
 
 /** Buttons with no destination yet — inert, and visibly so. */
@@ -51,8 +49,6 @@ function PendingButton({
 }
 
 export function SessionToolbar({
-  title,
-  date,
   view,
   onViewChange,
   onZoomIn,
@@ -60,10 +56,11 @@ export function SessionToolbar({
   canZoomIn,
   canZoomOut,
   zoomLabel,
-  onOpenMetrics,
+  onReset,
+  canReset,
 }: SessionToolbarProps) {
   return (
-    <div className={styles.toolbar}>
+    <div className={styles.stageHead}>
       <div className={styles.toolGroup}>
         <button
           type="button"
@@ -86,10 +83,10 @@ export function SessionToolbar({
         <span className={styles.zoomLabel}>{zoomLabel}</span>
       </div>
 
-      <div className={styles.toolGroup}>
+      <div className={styles.segmented} role="group" aria-label="Shelf view">
         <button
           type="button"
-          className={styles.toolButton}
+          className={styles.segButton}
           data-active={view === "store"}
           aria-pressed={view === "store"}
           onClick={() => onViewChange("store")}
@@ -98,31 +95,27 @@ export function SessionToolbar({
         </button>
         <button
           type="button"
-          className={styles.toolButton}
+          className={styles.segButton}
           data-active={view === "compliance"}
           aria-pressed={view === "compliance"}
           onClick={() => onViewChange("compliance")}
         >
-          Planogram compliance view
+          POG compliance
         </button>
-        <PendingButton icon="git-compare" label="Compare session" />
       </div>
 
-      <div className={styles.toolTitle}>
-        <span className={styles.toolTitleName}>{title}</span>
-        <span className={styles.toolTitleDate}>{date}</span>
-      </div>
+      <button
+        type="button"
+        className={styles.toolButton}
+        onClick={onReset}
+        disabled={!canReset}
+      >
+        Reset
+      </button>
 
       <div className={`${styles.toolGroup} ${styles.toolGroupEnd}`}>
-        <button
-          type="button"
-          className={styles.toolButton}
-          onClick={onOpenMetrics}
-        >
-          <Icon name="bar-chart-3" size={14} />
-          Session metrics
-        </button>
-        <PendingButton icon="presentation" label="Export planogram" />
+        <PendingButton icon="git-compare" label="Compare" />
+        <PendingButton icon="presentation" label="Planogram" />
         <PendingButton icon="share-2" label="Share" />
       </div>
     </div>
