@@ -145,8 +145,10 @@ export function ShelfStage({
                   height={box.h}
                   rx="0.6"
                   fill={paint.fill}
-                  stroke={pinned ? "var(--indigo-600)" : paint.stroke}
-                  strokeWidth={pinned ? 1.1 : 0.6}
+                  /* Amber, not the brand indigo: a pinned own-brand box would
+                     otherwise look exactly like an unpinned one. */
+                  stroke={pinned ? "#F59E0B" : paint.stroke}
+                  strokeWidth={pinned ? 1.3 : 0.6}
                   strokeDasharray={pinned ? undefined : paint.dash}
                   opacity={dimmed ? 0.16 : 1}
                 />

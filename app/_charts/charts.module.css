@@ -1155,3 +1155,36 @@
   outline: 2px solid var(--indigo-600);
   outline-offset: -2px;
 }
+
+/* ---------- TabbedTable · underline variant ---------- */
+
+/* The Session Viewer's tables close the page rather than sitting among other
+   panels, so their tabs get their own row and a rule under the active one.
+   Opt-in: every analytics table keeps the compact pills. */
+
+.tabbedTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.miniTabs[data-variant="underline"] {
+  gap: 6px;
+  margin-left: 0;
+}
+
+.miniTab[data-variant="underline"] {
+  padding: 11px 14px;
+  border-radius: 0;
+  background: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+}
+
+.miniTab[data-variant="underline"][data-active="true"] {
+  background: none;
+  font-weight: 600;
+  color: var(--indigo-700);
+  border-bottom-color: var(--indigo-600);
+}

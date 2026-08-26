@@ -3,9 +3,7 @@
 import { Icon } from "@/app/_components/icon";
 import {
   BOX_LEGEND,
-  BOX_PAINT,
   COMPLIANCE_LEGEND,
-  COMPLIANCE_PAINT,
   COUNTED_FACINGS,
   DETECTED_BRANDS,
   EXTRA_COUNTS,
@@ -49,13 +47,11 @@ export function ShelfToggles({
   mslFilter,
   onMslFilter,
 }: ShelfTogglesProps) {
-  const legend =
-    view === "store"
-      ? BOX_LEGEND.map((entry) => ({ label: entry.label, paint: BOX_PAINT[entry.kind] }))
-      : COMPLIANCE_LEGEND.map((entry) => ({
-          label: entry.label,
-          paint: COMPLIANCE_PAINT[entry.kind],
-        }));
+  /* The kind is what the swatch needs — the stylesheet already carries a solid
+     colour per kind. Mapping it to a `paint` handed the swatch the box-interior
+     fill instead, which is a 12–14% alpha. */
+  const legend: { kind: string; label: string }[] =
+    view === "store" ? BOX_LEGEND : COMPLIANCE_LEGEND;
 
   return (
     <div className={styles.filterRow}>
@@ -118,7 +114,8 @@ export function ShelfToggles({
           <span key={entry.label} className={styles.legendItem}>
             <span
               className={styles.legendSwatch}
-              style={{ background: entry.paint.fill, borderColor: entry.paint.stroke }}
+              data-kind={entry.kind}
+              aria-hidden="true"
             />
             {entry.label}
           </span>

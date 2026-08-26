@@ -175,7 +175,7 @@ export function SessionHeader({
               <div key={name}>
                 <div className={styles.factorName}>
                   {name}
-                  <span className={styles.factorValue}>{score}</span>
+                  <span className={styles.factorValue}>{score}%</span>
                 </div>
                 <div className={styles.factorTrack}>
                   <span className={styles.factorBar} style={{ width: `${score}%` }} />

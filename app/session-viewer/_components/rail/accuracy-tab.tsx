@@ -75,6 +75,11 @@ function AccuracyList({
             <span className={styles.accRowName} title={row.name}>
               {row.name}
             </span>
+            {/* The bar is what makes a column of near-identical percentages
+                scannable — 74% and 98% read the same as text. */}
+            <span className={styles.accRowTrack}>
+              <span className={styles.accRowBar} style={{ width: `${row.accuracy}%` }} />
+            </span>
             <span className={styles.accValue}>{row.accuracy.toFixed(1)}%</span>
           </div>
         ))}

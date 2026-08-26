@@ -29,6 +29,7 @@ export function SessionTables({
     <div className={styles.tablesBlock}>
       <TabbedTable
         views={sessionTableViews(brandFilter)}
+        variant="underline"
         title="Session tables"
         wide
         maxHeight={380}

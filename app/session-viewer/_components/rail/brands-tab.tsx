@@ -92,8 +92,12 @@ export function BrandsTab({
             className={styles.brandRow}
             data-highlighted={pinnedBrand === brand.name || undefined}
           >
-            <span className={styles.brandDot} data-own={brand.isOwn} aria-hidden="true" />
-            <span className={styles.brandName}>{brand.name}</span>
+            {/* Inside the name cell, not beside it: the grid has three columns
+                and a fourth child wrapped the value onto its own row. */}
+            <span className={styles.brandName}>
+              <span className={styles.brandDot} data-own={brand.isOwn} aria-hidden="true" />
+              {brand.name}
+            </span>
             <span className={styles.brandTrack}>
               <span
                 className={styles.brandBar}

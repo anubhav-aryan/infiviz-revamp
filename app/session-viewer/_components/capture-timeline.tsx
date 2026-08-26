@@ -23,7 +23,7 @@ export function CaptureTimeline({
   const { steps, span } = timelineFor(startedAt);
 
   return (
-    <div className={styles.card}>
+    <div className={`${styles.card} ${styles.timelineCard}`}>
       <div className={styles.timelineHead}>
         <span className={styles.blockTitle}>Capture timeline</span>
         <span className={styles.timelineSpan}>{span}</span>

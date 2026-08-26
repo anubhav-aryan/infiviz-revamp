@@ -29,6 +29,7 @@ export function TabbedTable({
   maxHeight = 360,
   wide = false,
   action,
+  variant = "pills",
 }: {
   views: TableView[];
   title?: string;
@@ -36,6 +37,13 @@ export function TabbedTable({
   wide?: boolean;
   /** Right-aligned slot — a toggle or export button. */
   action?: React.ReactNode;
+  /**
+   * `pills` keeps the compact in-header tabs every analytics table uses.
+   * `underline` gives the tabs their own row with an indigo rule under the
+   * active one — the Session Viewer's treatment, where the card is the page's
+   * last block rather than one panel among several.
+   */
+  variant?: "pills" | "underline";
 }) {
   const [activeId, setActiveId] = useState(views[0]?.id);
   const active = views.find((view) => view.id === activeId) ?? views[0];
@@ -44,13 +52,22 @@ export function TabbedTable({
 
   return (
     <div className={`${styles.card} ${styles.tableCard}`}>
-      <div className={styles.tabbedHead}>
-        <div className={styles.miniTabs} role="group" aria-label={title ?? "Table views"}>
+      <div className={styles.tabbedHead} data-variant={variant}>
+        {variant === "underline" && title ? (
+          <span className={styles.tabbedTitle}>{title}</span>
+        ) : null}
+        <div
+          className={styles.miniTabs}
+          data-variant={variant}
+          role="group"
+          aria-label={title ?? "Table views"}
+        >
           {views.map((view) => (
             <button
               key={view.id}
               type="button"
               className={styles.miniTab}
+              data-variant={variant}
               data-active={view.id === active.id}
               aria-pressed={view.id === active.id}
               onClick={() => setActiveId(view.id)}

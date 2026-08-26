@@ -28,10 +28,12 @@ export function AvailabilityTab({
     <>
       <div className={styles.availabilityHead}>
         <div className={styles.availabilityMetric}>
-          <span className={styles.availabilityLabel}>{AVAILABILITY.label}</span>
-          <Hint text={AVAILABILITY.definition} className={styles.infoIcon}>
-            <Icon name="info" size={13} />
-          </Hint>
+          <span className={styles.availabilityLabelRow}>
+            <span className={styles.availabilityLabel}>{AVAILABILITY.label}</span>
+            <Hint text={AVAILABILITY.definition} className={styles.infoIcon}>
+              <Icon name="info" size={13} />
+            </Hint>
+          </span>
           <span className={styles.availabilityValue}>{AVAILABILITY.value}</span>
         </div>
         <CardActions>

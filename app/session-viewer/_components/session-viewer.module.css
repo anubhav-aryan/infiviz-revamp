@@ -94,8 +94,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border: 1px solid var(--hairline);
   border-radius: 8px;
   background: var(--surface-card);
@@ -133,7 +133,7 @@
   font: inherit;
   font-size: 11.5px;
   font-weight: 600;
-  padding: 7px 11px;
+  padding: 6px 10px;
   cursor: pointer;
   white-space: nowrap;
   transition: background var(--transition-snap), color var(--transition-snap);
@@ -177,9 +177,10 @@ button.toolButton:hover {
 }
 
 .sessionHeadMeta {
+  margin-top: 8px;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
@@ -241,7 +242,7 @@ button.toolButton:hover {
    transform. */
 .stageViewport {
   overflow: auto;
-  max-height: 62vh;
+  max-height: 420px;
   border-radius: 10px;
   border: 1px solid var(--hairline);
   /* The design never had real photography — this striped placeholder shows
@@ -328,8 +329,7 @@ button.toolButton:hover {
 
 .legend {
   display: flex;
-  gap: 16px;
-  margin-top: 12px;
+  gap: 14px;
 }
 
 .legendItem {
@@ -375,7 +375,7 @@ button.toolButton:hover {
 
 .minimap {
   position: relative;
-  height: 44px;
+  height: 68px;
   margin-top: 10px;
   border-radius: 8px;
   overflow: hidden;
@@ -387,8 +387,8 @@ button.toolButton:hover {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: fill;
-  opacity: 0.55;
+  object-fit: cover;
+  opacity: 0.6;
 }
 
 /* The slice of the stitch the viewport is showing. Full width until a zoom
@@ -420,7 +420,7 @@ button.toolButton:hover {
   background: none;
   padding: 0;
   font: inherit;
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--text-body);
   cursor: pointer;
@@ -436,8 +436,8 @@ button.toolButton:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   flex: none;
   border: 1.5px solid var(--border-strong);
   border-radius: 4px;
@@ -559,7 +559,11 @@ button.toolButton:hover {
 }
 
 .availabilityMetric {
-  display: flex;
+  min-width: 0;
+}
+
+.availabilityLabelRow {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
 }
@@ -570,11 +574,16 @@ button.toolButton:hover {
 }
 
 /* Amber, not indigo — 72% is below target and the design says so in colour. */
+/* The rail's headline figure. It sat inline beside its label at 18px, which
+   read as a caption rather than the number the tab is about. */
 .availabilityValue {
   font-family: var(--font-mono);
-  font-size: 18px;
+  font-size: 30px;
   font-weight: 700;
   color: var(--warning);
+  line-height: 1.1;
+  display: block;
+  margin-top: 4px;
 }
 
 .mslNote {
@@ -597,6 +606,12 @@ button.toolButton:hover {
   border-bottom: 1px solid var(--hairline);
   background: var(--surface-card);
 }
+/* The same pin, one list over: an inset rule rather than a fill, so the row's
+   own absent/amber state stays readable underneath it. */
+.mslRow[data-highlighted] {
+  box-shadow: inset 3px 0 0 var(--indigo-600);
+}
+
 
 .mslRow:last-child {
   border-bottom: none;
@@ -708,10 +723,11 @@ button.toolButton:hover {
 
 .brandRow {
   display: grid;
-  grid-template-columns: 110px 1fr 78px;
+  grid-template-columns: 104px 1fr 74px;
   align-items: center;
   gap: 10px;
-  padding: 4px 0;
+  padding: 4px 6px;
+  border-radius: 7px;
 }
 
 .brandName {
@@ -730,6 +746,13 @@ button.toolButton:hover {
   height: 8px;
   border-radius: 2px;
   flex: none;
+}
+
+/* Pinning a detection marks its brand here. `data-highlighted` was already
+   being emitted by both tabs and consumed by nothing, so a pinned box lit up
+   the capture and left the rail unchanged. */
+.brandRow[data-highlighted] {
+  background: var(--indigo-50);
 }
 
 .brandTrack {
@@ -773,16 +796,16 @@ button.toolButton:hover {
   position: sticky;
   top: 0;
   z-index: 30;
-  padding: 14px 22px 12px;
+  padding: 14px 24px 12px;
   background: var(--surface-card);
   border-bottom: 1px solid var(--hairline);
 }
 
 .pageBody {
-  padding: 16px 22px 30px;
+  padding: 16px 24px 30px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .crumbs {
@@ -969,6 +992,12 @@ button.toolButton:hover {
 
 /* capture timeline */
 
+.timelineCard {
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
 .timelineHead {
   display: flex;
   align-items: center;
@@ -1064,13 +1093,13 @@ button.toolButton:hover {
 
 .workspace {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   align-items: start;
   grid-template-columns: minmax(0, 1fr);
 }
 
 .workspace[data-rail-open="true"] {
-  grid-template-columns: minmax(0, 1.62fr) minmax(340px, 1fr);
+  grid-template-columns: minmax(0, 1.62fr) minmax(360px, 1fr);
 }
 
 .stageColumn {
@@ -1193,7 +1222,7 @@ button.toolButton:hover {
 }
 
 .railBody {
-  padding: 15px 16px;
+  padding: 16px 18px;
   max-height: calc(100dvh - 230px);
   overflow-y: auto;
 }
@@ -1210,8 +1239,8 @@ button.toolButton:hover {
   border: 1px solid var(--indigo-200);
   background: var(--indigo-50);
   border-radius: 12px;
-  padding: 11px 13px;
-  margin-bottom: 14px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
 }
 
 .pinHead {
@@ -1255,6 +1284,7 @@ button.toolButton:hover {
 }
 
 .metaLabel {
+  display: block;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -1263,6 +1293,7 @@ button.toolButton:hover {
 }
 
 .metaValue {
+  display: block;
   font-size: 11.5px;
   font-weight: 600;
   color: var(--text-heading);
@@ -1362,7 +1393,7 @@ button.toolButton:hover {
 
 .accError {
   font-family: var(--font-mono);
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 700;
   margin-top: 2px;
 }
@@ -1403,10 +1434,29 @@ button.toolButton:hover {
 
 .accRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 46px;
+  grid-template-columns: 104px minmax(0, 1fr) 54px;
   align-items: center;
   gap: 10px;
   padding: 6px 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.accRow:first-child {
+  border-top: none;
+}
+
+.accRowTrack {
+  height: 10px;
+  background: var(--neutral-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.accRowBar {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--indigo-500);
 }
 
 .accRowName {
@@ -1435,7 +1485,10 @@ button.toolButton:hover {
   color: var(--text-caption);
 }
 
+/* These captions quote figures ("2 missing · 2 misplaced", "91.8% overall"),
+   and every other number on this screen is set in the mono face. */
 .countCaption {
+  font-family: var(--font-mono);
   font-size: 10.5px;
   color: var(--text-caption);
   margin-bottom: 8px;
