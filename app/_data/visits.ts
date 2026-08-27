@@ -772,7 +772,13 @@ const TOOTHBRUSH_PHOTOS: Photo[] = [
  * captured one category.
  */
 export function photosFor(visit: Visit): Photo[] {
-  return visit.category === "Toothbrush" ? TOOTHBRUSH_PHOTOS : TOOTHPASTE_PHOTOS;
+  return photosForCategory(visit.category);
+}
+
+/** The same pools keyed by category alone, for screens that hold a session
+ *  rather than a `Visit` — the Session Comparison feed's thumbnails. */
+export function photosForCategory(category: string): Photo[] {
+  return category === "Toothbrush" ? TOOTHBRUSH_PHOTOS : TOOTHPASTE_PHOTOS;
 }
 
 /** The mock thumbnail that represents a visit's single category. */

@@ -4,12 +4,13 @@ import {
   type Visit,
   type VisitStatus,
 } from "@/app/_data/visits";
-import { QUALITY_GOOD } from "./session-history";
+import { QUALITY_GOOD, sessionHistoryFor } from "./session-history";
 import {
   formatDelta,
   PREV_LINEAR_PCT,
   PREV_SOS_PCT,
   PREVIOUS_VISIT,
+  VISIT_METRICS,
   VISIT_SNAPSHOTS,
 } from "./session-previous";
 import { BRAND_SHELF, TOTALS } from "./shelf-facts";
@@ -622,20 +623,39 @@ export function scoped<T>(rows: T[], scope: Scope): T[] {
    absent has to be a must-stock row, and every box it says was misplaced has
    to be a shelf address that exists. A snapshot naming ghosts would render
    comparison chips nobody can act on. */
-for (const snapshot of VISIT_SNAPSHOTS) {
-  for (const name of snapshot.absentSkus) {
+for (const metrics of VISIT_METRICS) {
+  for (const name of metrics.absentSkus) {
     if (!MSL_RAW.some((sku) => sku.name === name)) {
       throw new Error(
-        `The ${snapshot.label} snapshot says "${name}" was absent, but it is not on the must-stock list. See session-previous.ts.`,
+        `The ${metrics.label} history says "${name}" was absent, but it is not on the must-stock list. See session-previous.ts.`,
       );
     }
   }
+}
+for (const snapshot of VISIT_SNAPSHOTS) {
   for (const boxId of snapshot.misplacedBoxes) {
     if (!BOX_BY_ID.has(boxId)) {
       throw new Error(
         `The ${snapshot.label} snapshot names box ${boxId}, which does not exist on the shelf. See session-previous.ts.`,
       );
     }
+  }
+}
+
+/* The metric history and the visit history must be the same visits in the
+   same order — a trend column for a day nobody visited, or visits the trend
+   silently skips, would each be a quiet lie. */
+{
+  const historyLabels = sessionHistoryFor(FLAGSHIP_VISIT)
+    .map((day) => day.label)
+    .reverse()
+    .slice(0, -1); // every prior visit, oldest first; day 0 is the capture
+  const metricLabels = VISIT_METRICS.map((metrics) => metrics.label);
+  if (historyLabels.join("|") !== metricLabels.join("|")) {
+    throw new Error(
+      `VISIT_METRICS covers [${metricLabels.join(", ")}] but the visit history is [${historyLabels.join(", ")}]. ` +
+        `The two lists must match one-to-one — see session-previous.ts and session-history.ts.`,
+    );
   }
 }
 

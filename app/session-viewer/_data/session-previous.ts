@@ -122,6 +122,64 @@ export const snapshotLinearPct = (snapshot: VisitSnapshot) =>
 export const PREV_SOS_PCT = snapshotSosPct(PREVIOUS_VISIT); // 33.3
 export const PREV_LINEAR_PCT = snapshotLinearPct(PREVIOUS_VISIT); // 34.3
 
+/* ---- the longer trend ---- */
+
+/**
+ * One visit's worth of comparable numbers — what a Metric trend column needs.
+ *
+ * Two tiers of history feed this. The two visits before the capture carry full
+ * snapshots above, and their metrics are *derived* from them. The eleven
+ * visits before those carry only these aggregates, authored directly: the
+ * trend table is the one consumer, and inventing eleven full facings-by-brand
+ * tables to derive eleven numbers nobody else reads would be fabrication
+ * without a reader.
+ */
+export type VisitMetrics = {
+  label: string;
+  sosPct: number;
+  linearPct: number;
+  /** Must-stock SKUs absent that visit — OSA, gaps and the matrix all read this. */
+  absentSkus: string[];
+  countedFacings: number;
+  accuracyOverall: number;
+};
+
+const MAX_FRESH = "COL Max Fresh Blue Gel 140G";
+const SALT_ORIGINAL = "COL Salt Original 200G";
+const TOTAL_PROFESSIONAL = "COL Total Professional 100G";
+const NATURAL_HERBAL = "COL Natural Salt Herbal 180G";
+
+/** Oldest first. The arc: share creeping up over the quarter, Max Fresh's gap
+ *  opening mid-June and never closing — the recurring exception the rail flags. */
+const EARLIER_VISITS: VisitMetrics[] = [
+  { label: "05 May 2026", sosPct: 30.8, linearPct: 35.2, absentSkus: [SALT_ORIGINAL, TOTAL_PROFESSIONAL], countedFacings: 11, accuracyOverall: 89.4 },
+  { label: "12 May 2026", sosPct: 31.2, linearPct: 35.0, absentSkus: [SALT_ORIGINAL], countedFacings: 12, accuracyOverall: 89.8 },
+  { label: "19 May 2026", sosPct: 31.0, linearPct: 34.9, absentSkus: [SALT_ORIGINAL, NATURAL_HERBAL], countedFacings: 12, accuracyOverall: 90.1 },
+  { label: "26 May 2026", sosPct: 31.5, linearPct: 35.1, absentSkus: [NATURAL_HERBAL], countedFacings: 12, accuracyOverall: 89.6 },
+  { label: "02 Jun 2026", sosPct: 31.9, linearPct: 34.8, absentSkus: [SALT_ORIGINAL, TOTAL_PROFESSIONAL], countedFacings: 12, accuracyOverall: 90.3 },
+  { label: "09 Jun 2026", sosPct: 32.1, linearPct: 34.6, absentSkus: [TOTAL_PROFESSIONAL], countedFacings: 12, accuracyOverall: 90.0 },
+  { label: "16 Jun 2026", sosPct: 31.8, linearPct: 34.7, absentSkus: [MAX_FRESH, TOTAL_PROFESSIONAL], countedFacings: 12, accuracyOverall: 90.5 },
+  { label: "23 Jun 2026", sosPct: 32.3, linearPct: 34.9, absentSkus: [MAX_FRESH], countedFacings: 13, accuracyOverall: 90.2 },
+  { label: "30 Jun 2026", sosPct: 32.0, linearPct: 35.0, absentSkus: [MAX_FRESH, SALT_ORIGINAL], countedFacings: 12, accuracyOverall: 90.7 },
+  { label: "07 Jul 2026", sosPct: 32.4, linearPct: 34.8, absentSkus: [MAX_FRESH, SALT_ORIGINAL, TOTAL_PROFESSIONAL], countedFacings: 12, accuracyOverall: 90.4 },
+  { label: "14 Jul 2026", sosPct: 32.2, linearPct: 34.9, absentSkus: [MAX_FRESH, SALT_ORIGINAL], countedFacings: 12, accuracyOverall: 90.8 },
+];
+
+const metricsOf = (snapshot: VisitSnapshot): VisitMetrics => ({
+  label: snapshot.label,
+  sosPct: snapshotSosPct(snapshot),
+  linearPct: snapshotLinearPct(snapshot),
+  absentSkus: snapshot.absentSkus,
+  countedFacings: snapshot.countedFacings,
+  accuracyOverall: snapshot.accuracyOverall,
+});
+
+/** Every prior visit's metrics, oldest first — the trend's column pool. */
+export const VISIT_METRICS: VisitMetrics[] = [
+  ...EARLIER_VISITS,
+  ...VISIT_SNAPSHOTS.map(metricsOf),
+];
+
 /** Current − previous facings, per brand. */
 export const BRAND_FACING_DELTAS: ReadonlyMap<string, number> = new Map(
   BRAND_SHELF.map((brand) => [

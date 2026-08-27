@@ -7,6 +7,19 @@ import styles from "./session-viewer.module.css";
 
 const noSubscription = () => () => {};
 
+/**
+ * Every UTC offset the world's clocks actually use, −12:00 through +14:00 —
+ * including the half- and quarter-hour zones (Newfoundland, India, Nepal,
+ * Chatham and the rest). Offsets rather than named zones on purpose: the
+ * timeline shifts wall-clock strings by pure minute arithmetic, and a city
+ * name would promise DST handling this fixture cannot honour.
+ */
+const TZ_OFFSETS: number[] = [
+  -720, -660, -600, -570, -540, -480, -420, -360, -300, -240, -210, -180, -120,
+  -60, 0, 60, 120, 180, 210, 240, 270, 300, 330, 345, 360, 390, 420, 480, 525,
+  540, 570, 600, 630, 660, 720, 765, 780, 825, 840,
+];
+
 /** `330` → `"UTC+5:30"`, `-240` → `"UTC−4"`. */
 function offsetLabel(minutes: number): string {
   const sign = minutes < 0 ? "−" : "+";
@@ -16,7 +29,8 @@ function offsetLabel(minutes: number): string {
   return `UTC${sign}${h}${m ? `:${String(m).padStart(2, "0")}` : ""}`;
 }
 
-type Tz = "store" | "utc" | "local";
+/** `"store" | "utc" | "local"`, or a UTC offset in minutes as a string. */
+type Tz = string;
 
 /**
  * How the capture went, end to end — the store visit through analytics being
@@ -46,6 +60,7 @@ export function CaptureTimeline({
   onToggle: () => void;
 }) {
   const [tz, setTz] = useState<Tz>("store");
+
   /* The browser's offset, null on the server — so the first client render
      matches the prerendered store time and the Local option appears after.
      A store subscription rather than an effect: the value never changes
@@ -56,12 +71,15 @@ export function CaptureTimeline({
     () => null,
   );
 
-  const shift =
+  const targetOffset =
     tz === "store"
-      ? 0
+      ? STORE_TZ.offsetMinutes
       : tz === "utc"
-        ? -STORE_TZ.offsetMinutes
-        : (localOffset ?? STORE_TZ.offsetMinutes) - STORE_TZ.offsetMinutes;
+        ? 0
+        : tz === "local"
+          ? (localOffset ?? STORE_TZ.offsetMinutes)
+          : Number(tz);
+  const shift = targetOffset - STORE_TZ.offsetMinutes;
 
   const { steps, span } = timelineFor(startedAt, shift);
 
@@ -73,7 +91,7 @@ export function CaptureTimeline({
         <select
           className={styles.filterSelect}
           value={tz}
-          onChange={(event) => setTz(event.target.value as Tz)}
+          onChange={(event) => setTz(event.target.value)}
           aria-label="Timeline timezone"
         >
           <option value="store">
@@ -83,6 +101,13 @@ export function CaptureTimeline({
           {localOffset !== null && localOffset !== STORE_TZ.offsetMinutes ? (
             <option value="local">Local ({offsetLabel(localOffset)})</option>
           ) : null}
+          <optgroup label="All UTC offsets">
+            {TZ_OFFSETS.map((offset) => (
+              <option key={offset} value={String(offset)}>
+                {offsetLabel(offset)}
+              </option>
+            ))}
+          </optgroup>
         </select>
         <button
           type="button"

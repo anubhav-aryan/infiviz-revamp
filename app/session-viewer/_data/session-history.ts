@@ -16,7 +16,19 @@ import { VISITS, type Visit, type VisitStatus } from "@/app/_data/visits";
  * arithmetic, so the server and the client render the same timeline.
  */
 
-export type SessionRef = {
+/** Capture metadata the comparison feed's metrics panel shows per session. */
+export type SessionCaptureMeta = {
+  photos: number;
+  /** Photos flagged by each quality check — mostly zero on a good capture. */
+  slantCount: number;
+  blurCount: number;
+  duplicateCount: number;
+  /** The bay's planogram width, in feet. */
+  pogSizeFt: number;
+  standardCompliant: boolean;
+};
+
+export type SessionRef = SessionCaptureMeta & {
   id: string;
   /** The bay this session photographed, e.g. `"Toothpaste"`. */
   category: string;
@@ -47,7 +59,7 @@ const START_SECONDS = "08";
  * clock — a store audited at 11:20 cannot have had its follow-up capture at
  * 10:05. The offset is the design's own gap, 34m 33s.
  */
-type AuthoredSession = {
+type AuthoredSession = Partial<SessionCaptureMeta> & {
   category: string;
   placement: string;
   startedAt: string;
@@ -55,24 +67,109 @@ type AuthoredSession = {
   afterSeconds?: number;
 };
 
+/**
+ * The metadata of an unremarkable capture — a session with nothing flagged.
+ * Most of the history is exactly that, so entries only author what deviates:
+ * a blurred photo here, a smaller bay there. The current capture's zeros are
+ * the same claim the binary quality panel makes.
+ */
+const CLEAN_CAPTURE: Omit<SessionCaptureMeta, "photos"> = {
+  slantCount: 0,
+  blurCount: 0,
+  duplicateCount: 0,
+  pogSizeFt: 8,
+  standardCompliant: true,
+};
+
 const HISTORY: { date: string; label: string; extra: AuthoredSession[] }[] = [
   {
     date: "2026-08-04",
     label: "04 Aug 2026",
-    extra: [{ category: "Toothbrush", placement: "Top Shelf", startedAt: "", afterSeconds: 2073 }],
+    extra: [
+      { category: "Toothbrush", placement: "Top Shelf", startedAt: "", afterSeconds: 2073, photos: 5, pogSizeFt: 4 },
+    ],
   },
   {
     date: "2026-07-28",
     label: "28 Jul 2026",
-    extra: [{ category: "Toothpaste", placement: "Eye Level", startedAt: "09:14:22" }],
+    extra: [{ category: "Toothpaste", placement: "Eye Level", startedAt: "09:14:22", photos: 7 }],
   },
   {
     date: "2026-07-21",
     label: "21 Jul 2026",
     extra: [
-      { category: "Toothpaste", placement: "Eye Level", startedAt: "10:02:55" },
-      { category: "Toothpaste", placement: "End Cap", startedAt: "10:26:13" },
+      { category: "Toothpaste", placement: "Eye Level", startedAt: "10:02:55", photos: 6, blurCount: 1 },
+      { category: "Toothpaste", placement: "End Cap", startedAt: "10:26:13", photos: 4, pogSizeFt: 4 },
     ],
+  },
+  {
+    date: "2026-07-14",
+    label: "14 Jul 2026",
+    extra: [
+      { category: "Toothpaste", placement: "Eye Level", startedAt: "09:48:31", photos: 7 },
+      { category: "Toothbrush", placement: "Top Shelf", startedAt: "10:12:06", photos: 5, pogSizeFt: 4 },
+    ],
+  },
+  {
+    date: "2026-07-07",
+    label: "07 Jul 2026",
+    extra: [
+      { category: "Toothpaste", placement: "Eye Level", startedAt: "11:05:44", photos: 6, slantCount: 1, standardCompliant: false },
+    ],
+  },
+  {
+    date: "2026-06-30",
+    label: "30 Jun 2026",
+    extra: [{ category: "Toothpaste", placement: "Eye Level", startedAt: "09:22:17", photos: 7 }],
+  },
+  {
+    date: "2026-06-23",
+    label: "23 Jun 2026",
+    extra: [
+      { category: "Toothpaste", placement: "Eye Level", startedAt: "10:31:53", photos: 6 },
+      { category: "Toothpaste", placement: "End Cap", startedAt: "10:58:40", photos: 4, duplicateCount: 1, pogSizeFt: 4 },
+    ],
+  },
+  {
+    date: "2026-06-16",
+    label: "16 Jun 2026",
+    extra: [{ category: "Toothpaste", placement: "Eye Level", startedAt: "09:41:02", photos: 7, blurCount: 2, standardCompliant: false }],
+  },
+  {
+    date: "2026-06-09",
+    label: "09 Jun 2026",
+    extra: [{ category: "Toothpaste", placement: "Eye Level", startedAt: "10:15:29", photos: 6 }],
+  },
+  {
+    date: "2026-06-02",
+    label: "02 Jun 2026",
+    extra: [
+      { category: "Toothpaste", placement: "Eye Level", startedAt: "09:55:11", photos: 7 },
+      { category: "Toothbrush", placement: "Top Shelf", startedAt: "10:20:47", photos: 5, slantCount: 1, pogSizeFt: 4 },
+    ],
+  },
+  {
+    date: "2026-05-26",
+    label: "26 May 2026",
+    extra: [{ category: "Toothpaste", placement: "Eye Level", startedAt: "11:12:36", photos: 6 }],
+  },
+  {
+    date: "2026-05-19",
+    label: "19 May 2026",
+    extra: [{ category: "Toothpaste", placement: "Eye Level", startedAt: "09:29:58", photos: 7, duplicateCount: 1 }],
+  },
+  {
+    date: "2026-05-12",
+    label: "12 May 2026",
+    extra: [
+      { category: "Toothpaste", placement: "Eye Level", startedAt: "10:44:19", photos: 6 },
+      { category: "Toothpaste", placement: "End Cap", startedAt: "11:08:02", photos: 4, pogSizeFt: 4 },
+    ],
+  },
+  {
+    date: "2026-05-05",
+    label: "05 May 2026",
+    extra: [{ category: "Toothpaste", placement: "Eye Level", startedAt: "09:37:45", photos: 5, blurCount: 1 }],
   },
 ];
 
@@ -111,6 +208,8 @@ export function sessionHistoryFor(visit: Visit): VisitDay[] {
               placement: visit.placement,
               label: `${visit.category} · ${visit.placement}`,
               startedAt: `${visit.time}:${START_SECONDS}`,
+              ...CLEAN_CAPTURE,
+              photos: visit.photos,
             },
           ]
         : [];
@@ -123,6 +222,13 @@ export function sessionHistoryFor(visit: Visit): VisitDay[] {
           ? session.startedAt
           : addSeconds(own[0].startedAt, session.afterSeconds),
       id: derivedSessionId(visit, day.date, index),
+      ...CLEAN_CAPTURE,
+      photos: session.photos ?? 6,
+      ...(session.slantCount !== undefined && { slantCount: session.slantCount }),
+      ...(session.blurCount !== undefined && { blurCount: session.blurCount }),
+      ...(session.duplicateCount !== undefined && { duplicateCount: session.duplicateCount }),
+      ...(session.pogSizeFt !== undefined && { pogSizeFt: session.pogSizeFt }),
+      ...(session.standardCompliant !== undefined && { standardCompliant: session.standardCompliant }),
     }));
     return {
       date: day.date,

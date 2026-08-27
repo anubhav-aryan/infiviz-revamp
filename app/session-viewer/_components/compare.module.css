@@ -126,53 +126,6 @@
   color: var(--text-caption);
 }
 
-/* ---------- visit timeline ---------- */
-
-.visitGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.visitCol {
-  padding: 16px 18px 18px;
-  border-right: 1px solid var(--hairline);
-  min-width: 0;
-}
-
-.visitCol:last-child {
-  border-right: none;
-}
-
-/* The rightmost column is the capture the viewer shows — accented, because
-   every delta on the page ends here. */
-.visitCol[data-current="true"] {
-  background: var(--indigo-50);
-}
-
-.visitDate {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--text-heading);
-  margin-bottom: 8px;
-}
-
-.currentTag {
-  font-family: var(--font-ui);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--indigo-700);
-  background: var(--indigo-100);
-  border-radius: 999px;
-  padding: 2px 8px;
-}
-
 .chip {
   display: inline-flex;
   align-items: center;
@@ -190,34 +143,207 @@
 .chip[data-tone="neutral"] { color: var(--text-secondary); background: var(--neutral-100); }
 .chip[data-tone="danger"] { color: var(--danger); background: var(--danger-subtle); }
 
-.sessionList {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
+/* ---------- the session feed ---------- */
+
+.feed {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  font-size: 11.5px;
-  color: var(--text-body);
+  gap: 18px;
 }
 
-.sessionTime {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: var(--text-caption);
-  margin-right: 7px;
+.feedRow {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
 }
 
-.visitFoot {
-  display: inline-flex;
+/* The reference draws this bar tinted — it is the row's identity line, and
+   twelve identical white bars in a feed would leave nothing to scan by. */
+.feedHead {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 12px;
-  font-size: 11px;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 11px 18px;
+  background: var(--indigo-50);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 12.5px;
+  color: var(--text-heading);
+}
+
+.feedCategory {
+  font-weight: 700;
+  flex: none;
+}
+
+.feedStore {
+  font-weight: 600;
+  min-width: 0;
+}
+
+.feedMono {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  flex: none;
+}
+
+.feedOpen {
+  margin-left: auto;
+  flex: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--indigo-600);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.feedOpen:hover {
+  text-decoration: underline;
+}
+
+.feedBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
+  gap: 24px;
+  padding: 18px;
+}
+
+.feedPhotos {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.feedThumb {
+  flex: none;
+  width: 150px;
+  height: 190px;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--neutral-100);
+  cursor: zoom-in;
+  transition: box-shadow var(--transition-snap), border-color var(--transition-snap);
+}
+
+.feedThumb:hover {
+  border-color: var(--indigo-400);
+  box-shadow: var(--shadow-md);
+}
+
+.feedThumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.feedMetrics {
+  margin: 0;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  overflow: hidden;
+  align-self: start;
+  font-size: 12px;
+}
+
+.feedMetrics > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.feedMetrics > div:last-child {
+  border-bottom: none;
+}
+
+.feedMetrics dt {
   color: var(--text-secondary);
 }
 
+.feedMetrics dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.feedVerdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--amber-700);
+}
+
+.feedVerdict[data-good="true"] {
+  color: var(--success);
+}
+
+.loadMore {
+  align-self: center;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--surface-card);
+  color: var(--indigo-700);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 9px 22px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-snap);
+}
+
+.loadMore:hover {
+  background: var(--indigo-50);
+}
+
 /* ---------- both tables ---------- */
+
+/* Wide selections stay inside the card — the page never scrolls sideways. */
+.tableScroll {
+  overflow-x: auto;
+}
+
+/* The "+ Add visit…" picker, styled like the shelf toolbar's selects. */
+.addVisit {
+  margin-left: auto;
+  flex: none;
+  padding: 5px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 7px;
+  background: var(--surface-card);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--indigo-700);
+  cursor: pointer;
+}
+
+.columnRemove {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 6px;
+  border: none;
+  background: none;
+  padding: 1px;
+  border-radius: 4px;
+  color: var(--text-disabled);
+  cursor: pointer;
+}
+
+.columnRemove:hover {
+  color: var(--danger);
+  background: var(--danger-subtle);
+}
 
 .trendTable,
 .matrixTable {
