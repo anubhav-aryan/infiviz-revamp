@@ -18,7 +18,7 @@ import {
 } from "../_data/session-viewer";
 import { CaptureTimeline } from "./capture-timeline";
 import { InsightsRail, type RailTab } from "./insights-rail";
-import { QualityPanel, SessionHeader } from "./session-header";
+import { SessionHeader } from "./session-header";
 import { SessionTables } from "./session-tables";
 import { SessionToolbar } from "./session-toolbar";
 import { ShelfStage } from "./shelf-stage";
@@ -64,7 +64,9 @@ export function SessionViewer({
   const [hovered, setHovered] = useState<number | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [focusAbsent, setFocusAbsent] = useState(false);
-  const [brandFilter, setBrandFilter] = useState("all");
+  /* Empty means unfiltered — "all brands" is the absence of a filter, not a
+     fourteenth entry in it. */
+  const [brandFilter, setBrandFilter] = useState<ReadonlySet<string>>(() => new Set());
   const [mslFilter, setMslFilter] = useState<MslFilter>("all");
 
   const [brandScope, setBrandScope] = useState<Scope>("all");
@@ -85,10 +87,8 @@ export function SessionViewer({
 
   const isVisible = useCallback(
     (box: RecognitionBox) =>
-      (brandFilter === "all" || box.brand === brandFilter) &&
-      (mslFilter === "all" ||
-        (mslFilter === "must") ===
-          (box.brand !== undefined && MUST_HAVE_BRANDS.has(box.brand))),
+      (brandFilter.size === 0 || brandFilter.has(box.brand)) &&
+      (mslFilter === "all" || MUST_HAVE_BRANDS.has(box.brand)),
     [brandFilter, mslFilter],
   );
 
@@ -192,7 +192,6 @@ export function SessionViewer({
         onToggleRail={() => setRailOpen((open) => !open)}
       />
 
-      {qualityOpen ? <QualityPanel photos={session.photos} /> : null}
 
       <CaptureTimeline
         startedAt={current.startedAt}
@@ -205,13 +204,7 @@ export function SessionViewer({
           <section className={styles.stagePanel}>
             <SessionToolbar
               view={view}
-              onViewChange={(next) => {
-                setView(next);
-                if (next === "compliance") {
-                  setRailOpen(true);
-                  setRailTab("compliance");
-                }
-              }}
+              onViewChange={setView}
               onZoomIn={() =>
                 setZoomIndex((index) => Math.min(index + 1, ZOOM_STEPS.length - 1))
               }
@@ -221,13 +214,13 @@ export function SessionViewer({
               zoomLabel={`${zoom}×`}
               onReset={() => {
                 setZoomIndex(0);
-                setBrandFilter("all");
+                setBrandFilter(new Set());
                 setMslFilter("all");
                 clearPin();
               }}
               canReset={
                 zoomIndex > 0 ||
-                brandFilter !== "all" ||
+                brandFilter.size > 0 ||
                 mslFilter !== "all" ||
                 selected !== null
               }
@@ -238,8 +231,8 @@ export function SessionViewer({
               onToggle={toggleExtra}
               view={view}
               brandFilter={brandFilter}
-              onBrandFilter={(brand) => {
-                setBrandFilter(brand);
+              onBrandFilter={(brands) => {
+                setBrandFilter(brands);
                 clearPin();
               }}
               mslFilter={mslFilter}

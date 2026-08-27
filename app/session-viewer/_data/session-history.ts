@@ -165,13 +165,14 @@ export function flatSessionsFor(visit: Visit): FlatSession[] {
 
 /**
  * The capture end to end, as seconds elapsed from the step before, so the whole
- * timeline moves with whichever session is selected instead of being eight
- * fixed clock times that only make sense for one of them.
+ * timeline moves with whichever session is selected instead of being six fixed
+ * clock times that only make sense for one of them.
  *
- * Field-side and pipeline-side both: the store visit through the confirmed
- * upload is the merchandiser's, and everything after it is the platform's. A
- * reader asking "why is this session not on the dashboard yet" is asking about
- * the second half, so the timeline has to carry it.
+ * Field-side steps plus the one platform-side answer that matters: the store
+ * visit through the confirmed upload is the merchandiser's, and "Analytics
+ * ready" is when the numbers below exist. The pipeline's internal checkpoints
+ * — data received, status set — are folded into that final gap rather than
+ * shown, so the last step still lands at the true end of processing.
  *
  * The gaps sum to 254s, which is the design's own `4m 14s` span.
  */
@@ -181,9 +182,7 @@ export const CAPTURE_STEPS: { name: string; gapSeconds: number }[] = [
   { name: "First photo captured", gapSeconds: 1 },
   { name: "Last photo captured", gapSeconds: 124 },
   { name: "Upload confirmed", gapSeconds: 53 },
-  { name: "Session data received", gapSeconds: 2 },
-  { name: "Session status", gapSeconds: 66 },
-  { name: "Analytics ready", gapSeconds: 7 },
+  { name: "Analytics ready", gapSeconds: 75 },
 ];
 
 const SPAN_SECONDS = CAPTURE_STEPS.reduce((total, step) => total + step.gapSeconds, 0);
@@ -212,10 +211,27 @@ export type TimelineStep = {
   gap: string | null;
 };
 
-export function timelineFor(startedAt: string): { steps: TimelineStep[]; span: string } {
-  let clock = startedAt;
+/**
+ * Every authored time on this screen is the store's wall clock. This is the
+ * one timezone fact the fixtures carry, and the timeline's timezone control is
+ * a *view* of it — shifting the display never touches the stored strings.
+ */
+export const STORE_TZ = { label: "ICT", offsetMinutes: 7 * 60 };
+
+/**
+ * `shiftMinutes` moves the whole timeline into another timezone's clock —
+ * 0 is store time, `-STORE_TZ.offsetMinutes` is UTC. Modular, like every time
+ * here, so a shift across midnight wraps rather than going negative.
+ */
+export function timelineFor(
+  startedAt: string,
+  shiftMinutes = 0,
+): { steps: TimelineStep[]; span: string } {
+  const shift = ((shiftMinutes * 60) % 86400 + 86400) % 86400;
+  const start = addSeconds(startedAt, shift);
+  let clock = start;
   const steps = CAPTURE_STEPS.map((step, index) => {
-    clock = index === 0 ? startedAt : addSeconds(clock, step.gapSeconds);
+    clock = index === 0 ? start : addSeconds(clock, step.gapSeconds);
     return {
       name: step.name,
       time: clock,
@@ -223,24 +239,26 @@ export function timelineFor(startedAt: string): { steps: TimelineStep[]; span: s
     };
   });
   const end = steps[steps.length - 1].time;
-  return { steps, span: `${startedAt} → ${end} · ${duration(SPAN_SECONDS)}` };
+  return { steps, span: `${start} → ${end} · ${duration(SPAN_SECONDS)}` };
 }
 
 /* ---- capture quality ---- */
 
-export const QUALITY_FACTORS: [name: string, score: number][] = [
-  ["Sharpness", 96],
-  ["Framing", 92],
-  ["Lighting", 90],
-  ["Completeness", 97],
+/**
+ * Binary checks, not scores. The pipeline grades a capture pass/fail per
+ * factor — there is no percentage behind these and no overall number above
+ * them, so the screen must not invent either.
+ */
+export const QUALITY_FACTORS: [name: string, good: boolean][] = [
+  ["Sharpness", true],
+  ["Framing", true],
+  ["Lighting", true],
+  ["Completeness", true],
 ];
 
-/** The mean of the four factors, rounded — not a fifth number to keep in step. */
-export const CAPTURE_SCORE = Math.round(
-  QUALITY_FACTORS.reduce((total, [, score]) => total + score, 0) / QUALITY_FACTORS.length,
-);
+export const QUALITY_GOOD = QUALITY_FACTORS.every(([, good]) => good);
 
-export const QUALITY_LABEL = "Good photo quality";
+export const QUALITY_LABEL = QUALITY_GOOD ? "Good photo quality" : "Bad photo quality";
 
 export const STATUS_CHIP: Record<VisitStatus, { label: string; tone: "success" | "warning" | "neutral" }> = {
   Complete: { label: "Processed", tone: "success" },
@@ -278,8 +296,12 @@ if (new Set(ALL_IDS).size !== ALL_IDS.length) {
   );
 }
 
-if (CAPTURE_SCORE !== 94) {
+/* The chip is derived, so this pins the authored checks instead: the session
+   is transcribed from the design as a good capture, and a factor quietly
+   flipped to false would relabel the whole header. */
+if (!QUALITY_GOOD) {
   throw new Error(
-    `CAPTURE_SCORE derived ${CAPTURE_SCORE}, expected 94. The quality factors in session-history.ts changed.`,
+    "A quality factor in session-history.ts is false, but the authored session is a good capture. " +
+      "Either the fixture drifted or the session is being re-authored — update both together.",
   );
 }

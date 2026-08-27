@@ -4,7 +4,7 @@ import {
   type Visit,
   type VisitStatus,
 } from "@/app/_data/visits";
-import { CAPTURE_SCORE } from "./session-history";
+import { QUALITY_GOOD } from "./session-history";
 import { BRAND_SHELF, TOTALS } from "./shelf-facts";
 
 /**
@@ -164,7 +164,7 @@ export function sessionFor(visit: Visit): SessionIdentity {
  * exists to prevent. Per-store data arrives when a backend does.
  */
 
-export type BoxKind = "own" | "competitor";
+export type BoxKind = "own" | "competitor" | "private";
 
 /**
  * Stroke/fill are the design's own hardcoded rgba values — deliberately outside
@@ -177,6 +177,7 @@ export const BOX_PAINT: Record<
 > = {
   own: { fill: "rgba(79,70,229,.14)", stroke: "#4F46E5", dash: "0" },
   competitor: { fill: "rgba(100,116,139,.12)", stroke: "#94A3B8", dash: "0" },
+  private: { fill: "rgba(13,148,136,.14)", stroke: "#0D9488", dash: "0" },
 };
 
 /** How a facing reads against the planogram, for the compliance view. */
@@ -234,22 +235,23 @@ export type ExtraBox = {
 export const RECOGNITION_BOXES: RecognitionBox[] = [
   { id: "s1p1", x: 3, y: 4, w: 11, h: 15, brand: "CDC", kind: "own", confidence: 0.97, compliance: "compliant" },
   { id: "s1p2", x: 15, y: 4, w: 10, h: 15, brand: "Colgate Total", kind: "own", confidence: 0.95, compliance: "compliant" },
-  { id: "s1p3", x: 26, y: 5, w: 9, h: 14, brand: "P/S", kind: "competitor", confidence: 0.91, compliance: "compliant" },
+  { id: "s1p3", x: 26, y: 5, w: 9, h: 14, brand: "P/S", kind: "private", confidence: 0.91, compliance: "compliant" },
   { id: "s1p4", x: 36, y: 4, w: 11, h: 15, brand: "Closeup", kind: "competitor", confidence: 0.93, compliance: "compliant" },
   { id: "s1p5", x: 48, y: 5, w: 10, h: 14, brand: "Sensodyne", kind: "competitor", confidence: 0.88, compliance: "compliant" },
   { id: "s1p6", x: 59, y: 4, w: 9, h: 15, brand: "Natural", kind: "own", confidence: 0.96, compliance: "compliant" },
   { id: "s1p7", x: 69, y: 5, w: 10, h: 14, brand: "Oral-B", kind: "competitor", confidence: 0.9, compliance: "misplaced" },
-  { id: "s2p1", x: 4, y: 22, w: 12, h: 16, brand: "P/S", kind: "competitor", confidence: 0.89, compliance: "compliant" },
+  { id: "s2p1", x: 4, y: 22, w: 12, h: 16, brand: "P/S", kind: "private", confidence: 0.89, compliance: "compliant" },
   { id: "s2p2", x: 17, y: 22, w: 11, h: 16, brand: "Max Fresh", kind: "own", confidence: 0.94, compliance: "compliant" },
   { id: "s2p3", x: 29, y: 23, w: 10, h: 15, brand: "Closeup", kind: "competitor", confidence: 0.87, compliance: "compliant" },
   { id: "s2p4", x: 40, y: 22, w: 12, h: 16, brand: "Sensodyne", kind: "competitor", confidence: 0.92, compliance: "compliant" },
   { id: "s2p5", x: 53, y: 22, w: 10, h: 16, brand: "Oral-B", kind: "competitor", confidence: 0.85, compliance: "misplaced" },
-  { id: "s2p6", x: 64, y: 23, w: 11, h: 15, brand: "P/S", kind: "competitor", confidence: 0.9, compliance: "compliant" },
+  { id: "s2p6", x: 64, y: 23, w: 11, h: 15, brand: "P/S", kind: "private", confidence: 0.9, compliance: "compliant" },
 ];
 
 export const BOX_LEGEND: { kind: BoxKind; label: string }[] = [
   { kind: "own", label: "Own" },
   { kind: "competitor", label: "Competitor" },
+  { kind: "private", label: "Private label" },
 ];
 
 /**
@@ -427,7 +429,6 @@ export const AVAILABILITY = {
 
 const BRAND_MAX = Math.max(...BRAND_SHELF.map((brand) => brand.facings));
 
-/** All eleven brands on the bay, biggest first — what the rail's scoped list reads. */
 /* ---- the session's headline figures ---- */
 
 /**
@@ -435,9 +436,11 @@ const BRAND_MAX = Math.max(...BRAND_SHELF.map((brand) => brand.facings));
  *
  * Every value is a projection of something already asserted elsewhere in this
  * folder — the two shelf metrics, the availability figure, the must-stock gap
- * count, the facing count and the capture score. Only the deltas are authored,
- * because no prior visit was ever measured; they compare against the 21 Jul
- * visit the history fixture invents, which is what the footnote says out loud.
+ * count, the facing count and the photo-quality verdict. Only the deltas are
+ * authored, because no prior visit was ever measured; they compare against the
+ * 21 Jul visit the history fixture invents, which is what the footnote says
+ * out loud. Photo quality carries none: it is a verdict, not a measure, and a
+ * verdict has no delta.
  */
 export type SessionKpi = {
   label: string;
@@ -446,9 +449,10 @@ export type SessionKpi = {
   /** What the figure is made of, under the number. */
   sub: string;
   tone: "plain" | "warning" | "danger" | "success";
-  delta: string;
+  /** Absent on Photo quality — a binary verdict has no movement to report. */
+  delta?: string;
   /** Whether the delta is movement in the right direction, not its sign. */
-  good: boolean;
+  good?: boolean;
   /** Present on `MSL gaps` only — the one figure with somewhere to go. */
   action?: string;
 };
@@ -509,15 +513,14 @@ export const SESSION_KPIS: SessionKpi[] = [
   },
   {
     label: "Photo quality",
-    definition: "Mean capture score across the session",
-    value: `${CAPTURE_SCORE}`,
+    definition: "Whether every capture check passed across the session",
+    value: QUALITY_GOOD ? "Good" : "Bad",
     sub: "",
-    tone: "success",
-    delta: "+3",
-    good: true,
+    tone: QUALITY_GOOD ? "success" : "danger",
   },
 ];
 
+/** All eleven brands on the bay, biggest first — what the rail's scoped list reads. */
 export const BRAND_SHARE_ROWS = BRAND_SHELF.map((brand) => ({
   name: brand.name,
   isOwn: brand.isOwn,
@@ -565,7 +568,6 @@ export const DETECTED_BRANDS: string[] = BRAND_SHELF.filter((brand) =>
 export const MSL_FILTER_OPTIONS = [
   { value: "all", label: "All" },
   { value: "must", label: "Must-have" },
-  { value: "not", label: "Not must-have" },
 ] as const;
 
 export type MslFilter = (typeof MSL_FILTER_OPTIONS)[number]["value"];
@@ -600,6 +602,21 @@ for (const box of RECOGNITION_BOXES) {
 
 if (new Set(RECOGNITION_BOXES.map((box) => box.id)).size !== RECOGNITION_BOXES.length) {
   throw new Error("Duplicate box id in RECOGNITION_BOXES — ids address exceptions, so they must be unique.");
+}
+
+/* A brand is own, competitor or private label — one of them, everywhere it
+   appears. P/S is the demo's private label; a fourteenth P/S facing authored
+   back as competitor would split one brand across two legend colours. */
+const KIND_BY_BRAND = new Map<string, BoxKind>();
+for (const box of RECOGNITION_BOXES) {
+  const kind = KIND_BY_BRAND.get(box.brand);
+  if (kind === undefined) KIND_BY_BRAND.set(box.brand, box.kind);
+  else if (kind !== box.kind) {
+    throw new Error(
+      `Brand ${box.brand} is ${kind} on one facing and ${box.kind} on ${box.id}. ` +
+        `A brand carries one kind — see session-viewer.ts.`,
+    );
+  }
 }
 
 /* The metrics are derived now; this pins the strings they render to the ratio,

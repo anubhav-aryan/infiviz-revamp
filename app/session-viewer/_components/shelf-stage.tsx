@@ -219,23 +219,20 @@ export function ShelfStage({
         </div>
       </div>
 
-      <div className={styles.overviewRow}>
-        <span className={styles.overviewLabel}>Overview</span>
-        <div
-          className={styles.minimap}
-          onClick={recentre}
-          role="presentation"
-          title="Click to move the view"
-        >
-          <img className={styles.minimapImage} src={SHELF_IMAGE} alt="" />
-          <span
-            className={styles.minimapWindow}
-            style={{
-              left: `${viewWindow.left * 100}%`,
-              width: `${Math.min(1, viewWindow.width) * 100}%`,
-            }}
-          />
-        </div>
+      <div
+        className={styles.minimap}
+        onClick={recentre}
+        role="presentation"
+        title="Click to move the view"
+      >
+        <img className={styles.minimapImage} src={SHELF_IMAGE} alt="" />
+        <span
+          className={styles.minimapWindow}
+          style={{
+            left: `${viewWindow.left * 100}%`,
+            width: `${Math.min(1, viewWindow.width) * 100}%`,
+          }}
+        />
       </div>
     </div>
   );

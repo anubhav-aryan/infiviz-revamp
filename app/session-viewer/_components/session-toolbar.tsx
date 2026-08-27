@@ -13,11 +13,11 @@ import styles from "./session-viewer.module.css";
  * right operates on the view rather than choosing it, so it is pushed there
  * and divided off.
  *
- * `Compare` and `Planogram` are chrome: the app has one authored session per
- * store and no second session to compare against, so they are marked
- * `aria-disabled` with a title saying so rather than wired to a handler that
- * would do nothing. The existing `ExcelDownloadButton` sets the same precedent
- * for a button that looks real and isn't.
+ * `Compare` is chrome: the app has one authored session per store and no
+ * second session to compare against, so it is marked `aria-disabled` with a
+ * title saying so rather than wired to a handler that would do nothing.
+ * `Planogram Export` renders at full strength by request — the export itself
+ * is not built yet, so the button waits for its behaviour.
  *
  * `Share` is not chrome. The mockup draws it enabled beside those two, and the
  * only way to draw an enabled button honestly is to give it something to do —
@@ -149,7 +149,10 @@ export function SessionToolbar({
         <span className={styles.divider} aria-hidden="true" />
 
         <PendingButton icon="git-compare" label="Compare" />
-        <PendingButton icon="presentation" label="Planogram" />
+        <button type="button" className={styles.toolButton}>
+          <Icon name="file-down" size={14} />
+          Planogram Export
+        </button>
         <ShareButton />
       </div>
     </div>

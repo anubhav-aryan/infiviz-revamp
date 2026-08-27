@@ -67,13 +67,15 @@ export function SummaryTab({
               <span className={styles.kpiValue} data-tone={kpi.tone}>
                 {kpi.value}
               </span>
-              <span
-                className={styles.deltaChip}
-                data-good={kpi.good}
-                title="vs this store's previous visit"
-              >
-                {kpi.delta}
-              </span>
+              {kpi.delta ? (
+                <span
+                  className={styles.deltaChip}
+                  data-good={kpi.good}
+                  title="vs this store's previous visit"
+                >
+                  {kpi.delta}
+                </span>
+              ) : null}
             </div>
             <div className={styles.kpiSub}>{subFor(kpi.label, kpi.sub)}</div>
             {kpi.action ? (

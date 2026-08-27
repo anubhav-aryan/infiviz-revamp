@@ -4,13 +4,13 @@ import { Icon } from "@/app/_components/icon";
 import {
   BOX_LEGEND,
   COMPLIANCE_LEGEND,
-  DETECTED_BRANDS,
   MSL_FILTER_OPTIONS,
   SHELF_TOGGLES,
   type ExtraKind,
   type MslFilter,
   type ShelfView,
 } from "../_data/session-viewer";
+import { BrandFilter } from "./brand-filter";
 import styles from "./session-viewer.module.css";
 
 /**
@@ -31,8 +31,8 @@ type ShelfTogglesProps = {
   shown: Set<ExtraKind>;
   onToggle: (kind: ExtraKind) => void;
   view: ShelfView;
-  brandFilter: string;
-  onBrandFilter: (brand: string) => void;
+  brandFilter: ReadonlySet<string>;
+  onBrandFilter: (brands: ReadonlySet<string>) => void;
   mslFilter: MslFilter;
   onMslFilter: (filter: MslFilter) => void;
 };
@@ -54,21 +54,10 @@ export function ShelfToggles({
 
   return (
     <div className={styles.filterRow}>
-      <label className={styles.inlineField}>
+      <div className={styles.inlineField}>
         <span className={styles.inlineLabel}>Brand</span>
-        <select
-          className={styles.filterSelect}
-          value={brandFilter}
-          onChange={(event) => onBrandFilter(event.target.value)}
-        >
-          <option value="all">All brands</option>
-          {DETECTED_BRANDS.map((brand) => (
-            <option key={brand} value={brand}>
-              {brand}
-            </option>
-          ))}
-        </select>
-      </label>
+        <BrandFilter selected={brandFilter} onChange={onBrandFilter} />
+      </div>
 
       <label className={styles.inlineField}>
         <span className={styles.inlineLabel}>MSL</span>
