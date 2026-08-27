@@ -3,6 +3,7 @@
 import { Hint } from "@/app/_components/hint";
 import { Icon } from "@/app/_components/icon";
 import { ACCURACY_PAIRS } from "../../_data/session-accuracy";
+import { formatDelta, PREVIOUS_VISIT } from "../../_data/session-previous";
 import styles from "../session-viewer.module.css";
 
 /**
@@ -13,6 +14,10 @@ import styles from "../session-viewer.module.css";
  * the finding rather than a bug in either. It leads the Summary tab for that
  * reason — a reader should meet the caveat with the headline, not two tabs
  * away from it.
+ *
+ * Each pair carries its movement since the last audit. The brand- and
+ * SKU-level lists on the Accuracy tab deliberately do not: no per-row history
+ * was measured, and thirty-three invented deltas would be fiction.
  */
 export function PredictedVsActual() {
   return (
@@ -48,6 +53,17 @@ export function PredictedVsActual() {
               <span className={styles.accBar} style={{ width: `${pair.accuracy}%` }} />
             </span>
             <span className={styles.accValue}>{pair.accuracy.toFixed(1)}%</span>
+            <span
+              className={styles.deltaChip}
+              data-size="sm"
+              data-good={pair.accuracy >= PREVIOUS_VISIT.pairAccuracy[pair.label]}
+              title="Recognition accuracy vs this store's previous visit"
+            >
+              {formatDelta(pair.accuracy - PREVIOUS_VISIT.pairAccuracy[pair.label], {
+                unit: "pts",
+                decimals: 1,
+              })}
+            </span>
           </div>
         </div>
       ))}

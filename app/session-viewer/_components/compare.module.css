@@ -1,0 +1,325 @@
+/* Compare view — one store's visits as columns, oldest to newest. Its own
+   stylesheet: the session viewer's module is about a workspace, and this page
+   is a reading. The vocabulary (chips, delta chips, mono numbers, hairlines)
+   deliberately matches it. */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding: 18px 24px 14px;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--indigo-600);
+}
+
+.crumbLink {
+  color: var(--indigo-600);
+  text-decoration: none;
+}
+
+.crumbLink:hover {
+  text-decoration: underline;
+}
+
+.crumbSep {
+  color: var(--text-disabled);
+}
+
+.crumbHere {
+  color: var(--text-caption);
+}
+
+.headRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 3px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: var(--text-heading);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.caption {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-caption);
+  white-space: nowrap;
+}
+
+.toolButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  margin-left: auto;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 7px 11px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--transition-snap), color var(--transition-snap);
+}
+
+.toolButton:hover {
+  background: var(--surface-hover);
+  color: var(--text-body);
+}
+
+.body {
+  padding: 18px 24px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 15px 18px 13px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-heading);
+}
+
+.cardCaption {
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+/* ---------- visit timeline ---------- */
+
+.visitGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.visitCol {
+  padding: 16px 18px 18px;
+  border-right: 1px solid var(--hairline);
+  min-width: 0;
+}
+
+.visitCol:last-child {
+  border-right: none;
+}
+
+/* The rightmost column is the capture the viewer shows — accented, because
+   every delta on the page ends here. */
+.visitCol[data-current="true"] {
+  background: var(--indigo-50);
+}
+
+.visitDate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-heading);
+  margin-bottom: 8px;
+}
+
+.currentTag {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--indigo-700);
+  background: var(--indigo-100);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.chip[data-tone="success"] { color: var(--success); background: var(--success-subtle); }
+.chip[data-tone="warning"] { color: var(--warning); background: var(--warning-subtle); }
+.chip[data-tone="neutral"] { color: var(--text-secondary); background: var(--neutral-100); }
+.chip[data-tone="danger"] { color: var(--danger); background: var(--danger-subtle); }
+
+.sessionList {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--text-body);
+}
+
+.sessionTime {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-caption);
+  margin-right: 7px;
+}
+
+.visitFoot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* ---------- both tables ---------- */
+
+.trendTable,
+.matrixTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.trendTable th[scope="col"],
+.matrixTable th[scope="col"] {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-caption);
+  border-bottom: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+
+.trendTable th[scope="col"][data-current="true"],
+.matrixTable th[scope="col"][data-current="true"] {
+  color: var(--indigo-700);
+}
+
+.trendTable th[scope="row"],
+.matrixTable th[scope="row"] {
+  padding: 10px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-heading);
+  white-space: nowrap;
+}
+
+.trendTable td,
+.matrixTable td {
+  padding: 10px 16px;
+  border-top: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+
+.trendTable th[scope="row"],
+.matrixTable th[scope="row"] {
+  border-top: 1px solid var(--hairline);
+}
+
+.trendTable td[data-current="true"],
+.matrixTable td[data-current="true"] {
+  background: var(--indigo-50);
+}
+
+.cellValue {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.deltaChip {
+  display: inline-flex;
+  margin-left: 8px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  color: var(--danger);
+  background: var(--danger-subtle);
+}
+
+.deltaChip[data-good="true"] {
+  color: var(--success);
+  background: var(--success-subtle);
+}
+
+/* ---------- must-stock matrix ---------- */
+
+.skuName {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-heading);
+}
+
+.skuBrand {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 400;
+  color: var(--text-caption);
+  margin-top: 2px;
+}
+
+.mark {
+  display: inline-flex;
+  color: var(--success);
+}
+
+.mark[data-found="false"] {
+  color: var(--amber-700);
+}
+
+.changeCell {
+  text-align: right;
+}

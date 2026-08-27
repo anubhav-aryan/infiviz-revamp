@@ -7,6 +7,7 @@ import { flatSessionsFor } from "../_data/session-history";
 import {
   DEFAULT_SESSION,
   FLAGSHIP_VISIT,
+  slugifyStore,
   MUST_HAVE_BRANDS,
   RECOGNITION_BOXES,
   type ExtraKind,
@@ -166,6 +167,8 @@ export function SessionViewer({
 
   const selectedBox = selected === null ? null : RECOGNITION_BOXES[selected];
   const zoom = ZOOM_STEPS[zoomIndex];
+  const compareHref =
+    `/session-viewer/${slugifyStore((visit ?? FLAGSHIP_VISIT).store)}/compare` as const;
 
   /* The Summary tab's one action: the two must-stock gaps, shown as gaps. */
   const viewGaps = useCallback(() => {
@@ -203,6 +206,7 @@ export function SessionViewer({
         <div className={styles.workspace} data-rail-open={railOpen}>
           <section className={styles.stagePanel}>
             <SessionToolbar
+              compareHref={compareHref}
               view={view}
               onViewChange={setView}
               onZoomIn={() =>

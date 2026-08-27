@@ -2,6 +2,11 @@
 
 import { Icon } from "@/app/_components/icon";
 import {
+  BRAND_FACING_DELTAS,
+  formatDelta,
+  PREVIOUS_VISIT,
+} from "../../_data/session-previous";
+import {
   BRAND_SHARE_ROWS,
   SCOPE_OPTIONS,
   scoped,
@@ -60,7 +65,7 @@ export function BrandsTab({
       </div>
 
       <div className={styles.countCaption}>
-        {rows.length} of {BRAND_SHARE_ROWS.length} brands
+        {rows.length} of {BRAND_SHARE_ROWS.length} brands · deltas vs {PREVIOUS_VISIT.label}
       </div>
 
       <div className={styles.scrollList}>
@@ -85,6 +90,21 @@ export function BrandsTab({
             </span>
             <span className={styles.brandValue}>
               {brand.facings} · {brand.share}%
+              {(() => {
+                /* Facings moved, or the chip stays away — a column of ±0
+                   would bury the three rows that actually changed. */
+                const delta = formatDelta(BRAND_FACING_DELTAS.get(brand.name) ?? 0);
+                return delta ? (
+                  <span
+                    className={styles.deltaChip}
+                    data-size="sm"
+                    data-good={(BRAND_FACING_DELTAS.get(brand.name) ?? 0) > 0}
+                    title={`Facings vs ${PREVIOUS_VISIT.label}`}
+                  >
+                    {delta}
+                  </span>
+                ) : null;
+              })()}
             </span>
           </div>
         ))}

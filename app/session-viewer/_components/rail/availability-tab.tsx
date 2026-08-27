@@ -2,7 +2,13 @@
 
 import { CreateTicketButton } from "@/app/_components/create-ticket-button";
 import { Icon } from "@/app/_components/icon";
-import { AVAILABILITY, MSL, MUST_HAVE_BRANDS } from "../../_data/session-viewer";
+import {
+  AVAILABILITY,
+  MSL,
+  MSL_CHANGE,
+  MUST_HAVE_BRANDS,
+  type MslChange,
+} from "../../_data/session-viewer";
 import styles from "../session-viewer.module.css";
 
 /**
@@ -16,7 +22,16 @@ import styles from "../session-viewer.module.css";
  * One status column, not an expected/found pair. Every row here is ranged by
  * definition — that is what a must-stock list is — so a column of identical
  * ticks under "Expected" was restating the heading.
+ *
+ * Rows that moved since the last visit say how: newly absent, still absent,
+ * back on shelf. A SKU found both times carries nothing — six "unchanged"
+ * chips would bury the four rows with something to report.
  */
+const CHANGE_CHIP: Record<MslChange, { label: string; tone: "danger" | "warning" | "success" }> = {
+  new: { label: "Newly absent", tone: "danger" },
+  recurring: { label: "Still absent", tone: "warning" },
+  recovered: { label: "Back on shelf", tone: "success" },
+};
 export function AvailabilityTab({
   retailer,
   focusAbsent,
@@ -65,6 +80,21 @@ export function AvailabilityTab({
                   Must-have
                 </span>
               ) : null}
+              {(() => {
+                const change = MSL_CHANGE.get(sku.name);
+                if (!change) return null;
+                const chip = CHANGE_CHIP[change];
+                return (
+                  <span
+                    className={styles.chip}
+                    data-tone={chip.tone}
+                    data-size="sm"
+                    title="vs this store's previous visit"
+                  >
+                    {chip.label}
+                  </span>
+                );
+              })()}
               <span
                 className={styles.mslDetected}
                 data-detected={found}

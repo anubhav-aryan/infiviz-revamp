@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Icon } from "@/app/_components/icon";
 import type { ShelfView } from "../_data/session-viewer";
@@ -13,11 +14,9 @@ import styles from "./session-viewer.module.css";
  * right operates on the view rather than choosing it, so it is pushed there
  * and divided off.
  *
- * `Compare` is chrome: the app has one authored session per store and no
- * second session to compare against, so it is marked `aria-disabled` with a
- * title saying so rather than wired to a handler that would do nothing.
- * `Planogram Export` renders at full strength by request — the export itself
- * is not built yet, so the button waits for its behaviour.
+ * `Compare` opens the store's visit-comparison timeline. `Planogram Export`
+ * renders at full strength by request — the export itself is not built yet,
+ * so the button waits for its behaviour.
  *
  * `Share` is not chrome. The mockup draws it enabled beside those two, and the
  * only way to draw an enabled button honestly is to give it something to do —
@@ -25,6 +24,8 @@ import styles from "./session-viewer.module.css";
  */
 
 type SessionToolbarProps = {
+  /** The store's `/compare` page — every visit side by side. */
+  compareHref: string;
   view: ShelfView;
   onViewChange: (view: ShelfView) => void;
   onZoomIn: () => void;
@@ -58,28 +59,8 @@ function ShareButton() {
   );
 }
 
-/** Buttons with no destination yet — inert, and visibly so. */
-function PendingButton({
-  icon,
-  label,
-}: {
-  icon: Parameters<typeof Icon>[0]["name"];
-  label: string;
-}) {
-  return (
-    <span
-      className={styles.toolButton}
-      data-pending="true"
-      aria-disabled="true"
-      title={`${label} — not available in this demo`}
-    >
-      <Icon name={icon} size={14} />
-      {label}
-    </span>
-  );
-}
-
 export function SessionToolbar({
+  compareHref,
   view,
   onViewChange,
   onZoomIn,
@@ -148,7 +129,10 @@ export function SessionToolbar({
 
         <span className={styles.divider} aria-hidden="true" />
 
-        <PendingButton icon="git-compare" label="Compare" />
+        <Link href={compareHref} className={styles.toolButton}>
+          <Icon name="git-compare" size={14} />
+          Compare
+        </Link>
         <button type="button" className={styles.toolButton}>
           <Icon name="file-down" size={14} />
           Planogram Export

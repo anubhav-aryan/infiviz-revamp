@@ -1,6 +1,11 @@
 "use client";
 
-import { COMPLIANCE_CAPTION, EXCEPTIONS, type Exception } from "../../_data/session-compliance";
+import {
+  COMPLIANCE_CAPTION,
+  COMPLIANCE_PREVIOUS_CAPTION,
+  EXCEPTIONS,
+  type Exception,
+} from "../../_data/session-compliance";
 import styles from "../session-viewer.module.css";
 
 /**
@@ -25,7 +30,7 @@ export function ComplianceTab({
       <div className={styles.scopeRow} data-first="true">
         <span className={styles.blockTitle}>Planogram exceptions</span>
         <span className={styles.countCaption} style={{ marginBottom: 0 }}>
-          {COMPLIANCE_CAPTION}
+          {COMPLIANCE_CAPTION} · {COMPLIANCE_PREVIOUS_CAPTION}
         </span>
       </div>
 
@@ -53,6 +58,16 @@ export function ComplianceTab({
             >
               {exception.kind === "absent" ? "Missing" : "Misplaced"}
             </span>
+            {exception.recurring ? (
+              <span
+                className={styles.chip}
+                data-tone="neutral"
+                data-size="sm"
+                title="This same exception was on the previous visit's capture"
+              >
+                Recurring
+              </span>
+            ) : null}
           </span>
 
           <span className={styles.exceptionPair}>

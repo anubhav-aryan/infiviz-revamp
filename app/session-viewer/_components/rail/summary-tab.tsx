@@ -3,6 +3,7 @@
 import { Hint } from "@/app/_components/hint";
 import { Icon } from "@/app/_components/icon";
 import { ACCURACY_AUTHOR, ACCURACY_OVERALL } from "../../_data/session-accuracy";
+import { formatDelta, PREVIOUS_VISIT } from "../../_data/session-previous";
 import {
   EXTRA_COUNTS,
   KPI_FOOTNOTE,
@@ -51,6 +52,17 @@ export function SummaryTab({
         <span className={styles.blockTitle}>Session summary</span>
         <span className={styles.countCaption} style={{ marginBottom: 0 }}>
           {ACCURACY_OVERALL}% accuracy
+        </span>
+        <span
+          className={styles.deltaChip}
+          data-size="sm"
+          data-good={ACCURACY_OVERALL >= PREVIOUS_VISIT.accuracyOverall}
+          title="vs this store's previous visit"
+        >
+          {formatDelta(ACCURACY_OVERALL - PREVIOUS_VISIT.accuracyOverall, {
+            unit: "pts",
+            decimals: 1,
+          })}
         </span>
       </div>
 

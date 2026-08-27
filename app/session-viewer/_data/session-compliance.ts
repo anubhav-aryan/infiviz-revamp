@@ -1,6 +1,8 @@
+import { PREVIOUS_VISIT } from "./session-previous";
 import {
   BOX_BY_ID,
   MSL,
+  MSL_CHANGE,
   positionLabel,
   RECOGNITION_BOXES,
 } from "./session-viewer";
@@ -34,9 +36,11 @@ export type Exception = {
   note: string;
   /** Absent rows only: the must-stock row to flag in the availability tab. */
   sku?: string;
+  /** Derived: this same failure was already on the last visit's capture. */
+  recurring: boolean;
 };
 
-const ABSENT: Exception[] = [
+const ABSENT_RAW: Omit<Exception, "recurring">[] = [
   {
     kind: "absent",
     brand: "Optic White",
@@ -60,7 +64,7 @@ const ABSENT: Exception[] = [
  * authored — the shelf plan is not in this fixture. `found` is read off the
  * box, so the two can never be quietly transposed.
  */
-const MISPLACED: Exception[] = [
+const MISPLACED_RAW: Omit<Exception, "recurring">[] = [
   {
     kind: "misplaced",
     brand: "Oral-B",
@@ -82,6 +86,20 @@ const MISPLACED: Exception[] = [
   },
 ];
 
+/**
+ * Recurring is derived, never authored: an absent row recurs iff the previous
+ * visit's snapshot lists its SKU, a misplaced row iff it lists its box. The
+ * snapshot is the one place that knows what last visit looked like.
+ */
+const ABSENT: Exception[] = ABSENT_RAW.map((row) => ({
+  ...row,
+  recurring: MSL_CHANGE.get(row.sku ?? "") === "recurring",
+}));
+const MISPLACED: Exception[] = MISPLACED_RAW.map((row) => ({
+  ...row,
+  recurring: row.boxId !== undefined && PREVIOUS_VISIT.misplacedBoxes.includes(row.boxId),
+}));
+
 /** Absent first: a SKU that is not on the shelf outranks one in the wrong slot. */
 export const EXCEPTIONS: Exception[] = [...ABSENT, ...MISPLACED];
 
@@ -90,6 +108,10 @@ export const EXCEPTION_BY_BOX = new Map(
 );
 
 export const COMPLIANCE_CAPTION = `${ABSENT.length} missing · ${MISPLACED.length} misplaced`;
+
+/** What the same two counts were on 21 Jul — one authored misplacement plus
+ *  the snapshot's absent list, so it can never contradict the availability tab. */
+export const COMPLIANCE_PREVIOUS_CAPTION = `was ${PREVIOUS_VISIT.absentSkus.length} · ${PREVIOUS_VISIT.misplacedBoxes.length} last visit`;
 
 /* ---- the identities this file has to hold ---- */
 

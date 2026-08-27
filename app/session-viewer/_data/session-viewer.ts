@@ -5,6 +5,13 @@ import {
   type VisitStatus,
 } from "@/app/_data/visits";
 import { QUALITY_GOOD } from "./session-history";
+import {
+  formatDelta,
+  PREV_LINEAR_PCT,
+  PREV_SOS_PCT,
+  PREVIOUS_VISIT,
+  VISIT_SNAPSHOTS,
+} from "./session-previous";
 import { BRAND_SHELF, TOTALS } from "./shelf-facts";
 
 /**
@@ -407,6 +414,24 @@ export const MSL = MSL_RAW.map((sku) => ({
 }));
 
 export const RANGED_COUNT = MSL_RAW.length;
+
+/**
+ * How each must-stock SKU moved since the last visit. Only the rows that
+ * changed — or stayed wrong — carry an entry; a SKU found both times has
+ * nothing to say about itself.
+ */
+export type MslChange = "new" | "recurring" | "recovered";
+
+export const MSL_CHANGE: ReadonlyMap<string, MslChange> = new Map(
+  MSL_RAW.flatMap((sku): [string, MslChange][] => {
+    const absentNow = sku.facings === undefined;
+    const absentThen = PREVIOUS_VISIT.absentSkus.includes(sku.name);
+    if (absentNow && absentThen) return [[sku.name, "recurring"]];
+    if (absentNow) return [[sku.name, "new"]];
+    if (absentThen) return [[sku.name, "recovered"]];
+    return [];
+  }),
+);
 export const FOUND_COUNT = MSL_RAW.filter((sku) => sku.facings !== undefined).length;
 
 export const AVAILABILITY = {
@@ -420,7 +445,7 @@ export const AVAILABILITY = {
    */
   pct: 72,
   value: "72%",
-  note: `${RANGED_COUNT - FOUND_COUNT} absent, ${FOUND_COUNT} found — absent first`,
+  note: `${RANGED_COUNT - FOUND_COUNT} absent, ${FOUND_COUNT} found — absent first · was ${PREVIOUS_VISIT.absentSkus.length} absent last visit`,
   detail: `${FOUND_COUNT} of ${RANGED_COUNT} must-stock SKUs found`,
 };
 
@@ -436,11 +461,11 @@ const BRAND_MAX = Math.max(...BRAND_SHELF.map((brand) => brand.facings));
  *
  * Every value is a projection of something already asserted elsewhere in this
  * folder — the two shelf metrics, the availability figure, the must-stock gap
- * count, the facing count and the photo-quality verdict. Only the deltas are
- * authored, because no prior visit was ever measured; they compare against the
- * 21 Jul visit the history fixture invents, which is what the footnote says
- * out loud. Photo quality carries none: it is a verdict, not a measure, and a
- * verdict has no delta.
+ * count, the facing count and the photo-quality verdict. The deltas derive
+ * from `PREVIOUS_VISIT` in session-previous.ts — one authored snapshot, not
+ * six authored strings — so the cards can never disagree with the per-row
+ * comparisons the other tabs draw from the same object. Photo quality carries
+ * none: it is a verdict, not a measure, and a verdict has no delta.
  */
 export type SessionKpi = {
   label: string;
@@ -457,8 +482,11 @@ export type SessionKpi = {
   action?: string;
 };
 
-export const KPI_FOOTNOTE =
-  "Deltas compare with this store's previous visit — 21 Jul 2026.";
+export const KPI_FOOTNOTE = `Deltas compare with this store's previous visit — ${PREVIOUS_VISIT.label}.`;
+
+const PREV_GAPS = PREVIOUS_VISIT.absentSkus.length;
+const PREV_OSA_PCT = +(((RANGED_COUNT - PREV_GAPS) / RANGED_COUNT) * 100).toFixed(1);
+const CURRENT_GAPS = RANGED_COUNT - FOUND_COUNT;
 
 export const SESSION_KPIS: SessionKpi[] = [
   {
@@ -467,8 +495,8 @@ export const SESSION_KPIS: SessionKpi[] = [
     value: SHELF_METRICS[0].value,
     sub: SHELF_METRICS[0].detail,
     tone: "plain",
-    delta: "+1.6 pts",
-    good: true,
+    delta: formatDelta(SHELF_METRICS[0].pct - PREV_SOS_PCT, { unit: "pts", decimals: 1 }) ?? undefined,
+    good: SHELF_METRICS[0].pct >= PREV_SOS_PCT,
   },
   {
     label: "Linear SOS",
@@ -476,8 +504,8 @@ export const SESSION_KPIS: SessionKpi[] = [
     value: SHELF_METRICS[1].value,
     sub: SHELF_METRICS[1].detail,
     tone: "plain",
-    delta: "−1.1 pts",
-    good: false,
+    delta: formatDelta(SHELF_METRICS[1].pct - PREV_LINEAR_PCT, { unit: "pts", decimals: 1 }) ?? undefined,
+    good: SHELF_METRICS[1].pct >= PREV_LINEAR_PCT,
   },
   {
     label: AVAILABILITY.label,
@@ -485,19 +513,20 @@ export const SESSION_KPIS: SessionKpi[] = [
     value: AVAILABILITY.value,
     sub: `${FOUND_COUNT} of ${RANGED_COUNT} must-stock found`,
     tone: "warning",
-    delta: "+9 pts",
-    good: true,
+    delta: formatDelta(AVAILABILITY.pct - PREV_OSA_PCT, { unit: "pts", decimals: 1 }) ?? undefined,
+    good: AVAILABILITY.pct >= PREV_OSA_PCT,
   },
   {
     label: "MSL gaps",
     definition: "Must-stock SKUs not detected on shelf",
-    value: `${RANGED_COUNT - FOUND_COUNT}`,
+    value: `${CURRENT_GAPS}`,
     sub: MSL_RAW.filter((sku) => sku.facings === undefined)
       .map((sku) => sku.brand)
       .join(" · "),
     tone: "danger",
-    delta: "−1",
-    good: true,
+    delta: formatDelta(CURRENT_GAPS - PREV_GAPS) ?? undefined,
+    /* Fewer gaps is the good direction. */
+    good: CURRENT_GAPS <= PREV_GAPS,
     action: "View gaps",
   },
   {
@@ -508,8 +537,8 @@ export const SESSION_KPIS: SessionKpi[] = [
        toggles are on. */
     sub: "",
     tone: "plain",
-    delta: "+1",
-    good: true,
+    delta: formatDelta(COUNTED_FACINGS - PREVIOUS_VISIT.countedFacings) ?? undefined,
+    good: COUNTED_FACINGS >= PREVIOUS_VISIT.countedFacings,
   },
   {
     label: "Photo quality",
@@ -588,6 +617,27 @@ export function scoped<T>(rows: T[], scope: Scope): T[] {
 }
 
 /* ---- the identities this file has to hold ---- */
+
+/* The previous-visit snapshot must describe *this* bay: every SKU it says was
+   absent has to be a must-stock row, and every box it says was misplaced has
+   to be a shelf address that exists. A snapshot naming ghosts would render
+   comparison chips nobody can act on. */
+for (const snapshot of VISIT_SNAPSHOTS) {
+  for (const name of snapshot.absentSkus) {
+    if (!MSL_RAW.some((sku) => sku.name === name)) {
+      throw new Error(
+        `The ${snapshot.label} snapshot says "${name}" was absent, but it is not on the must-stock list. See session-previous.ts.`,
+      );
+    }
+  }
+  for (const boxId of snapshot.misplacedBoxes) {
+    if (!BOX_BY_ID.has(boxId)) {
+      throw new Error(
+        `The ${snapshot.label} snapshot names box ${boxId}, which does not exist on the shelf. See session-previous.ts.`,
+      );
+    }
+  }
+}
 
 /* Every counted facing names a brand the bay actually stocks. A box that named
    a brand nobody sells would put a facing in a column no table has. */
