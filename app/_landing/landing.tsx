@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, type ReactElement } from "react";
+import type { ReactElement } from "react";
 import { AppShell } from "@/app/_components/app-shell";
 import { NAV_CAPTURING, fullNav, type NavEntry } from "@/app/_components/nav";
 import type { LandingStateId } from "./_data/landing";
-import { DemoStatePicker } from "./demo-state-picker";
 import { OnboardingScreen } from "./onboarding-screen";
 import { LiveScreen } from "./live-screen";
+import { useDemoState } from "./use-demo-state";
 
 /**
  * Two phases of the same screen. Each changes the nav as well as the main
@@ -30,28 +30,15 @@ const STATES: Record<
   },
 };
 
-const STATE_IDS: LandingStateId[] = ["onboarding", "live"];
-
 export function Landing() {
-  const [stateId, setStateId] = useState<LandingStateId>("live");
-  const state = STATES[stateId];
+  /* The switch lives in the sidebar footer now, beside the role picker —
+     this screen only reads the phase. */
+  const { demoState } = useDemoState();
+  const state = STATES[demoState];
 
   return (
-    <>
-      <AppShell active="activity" nav={state.nav} filterScope="activity">
-        {state.render()}
-      </AppShell>
-
-      {/* Not in the design — a demo affordance for stepping between the
-          onboarding and live phases. Draggable, because it sits over the
-          bottom-right of the page and that is somewhere a reader wants to
-          look during a walkthrough. */}
-      <DemoStatePicker
-        states={STATES}
-        order={STATE_IDS}
-        active={stateId}
-        onChange={setStateId}
-      />
-    </>
+    <AppShell active="activity" nav={state.nav} filterScope="activity">
+      {state.render()}
+    </AppShell>
   );
 }

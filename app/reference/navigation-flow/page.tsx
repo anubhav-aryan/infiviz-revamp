@@ -18,7 +18,7 @@ import styles from "./navigation-flow.module.css";
 export const metadata: Metadata = {
   title: "Platform navigation flow",
   description:
-    "How the InfiViz surfaces connect, and which detail pages have exactly one way in.",
+    "How the InfiView surfaces connect, and which detail pages have exactly one way in.",
 };
 
 /** Landing page down into one of the two branches. */

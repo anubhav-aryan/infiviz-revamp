@@ -5,7 +5,7 @@
  */
 
 export const HEADER = {
-  eyebrow: "InfiViz · reference",
+  eyebrow: "InfiView · reference",
   title: "Platform navigation flow",
   lede: "How the surfaces connect. Two detail pages are each reachable by exactly one path — Session Viewer only from Analytics, App Images only from Store Explorer — and those paths never cross.",
 };

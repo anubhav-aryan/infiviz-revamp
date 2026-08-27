@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { ROLES, useRole, type Role } from "@/app/_identity/use-role";
+import { DEMO_STATES, useDemoState } from "@/app/_landing/use-demo-state";
+import type { LandingStateId } from "@/app/_landing/_data/landing";
 import { Hint } from "./hint";
 import { Icon } from "./icon";
 import { NAV_BY_ID, OTHER_APPS, OTHER_APPS_LABEL, type NavEntry } from "./nav";
@@ -26,6 +29,8 @@ export function Sidebar({
   defaultCollapsed?: boolean;
 }) {
   const [collapsed, toggle] = useSidebarCollapsed(defaultCollapsed);
+  const { role, setRole } = useRole();
+  const { demoState, setDemoState } = useDemoState();
 
   return (
     <nav
@@ -39,7 +44,7 @@ export function Sidebar({
           <span className={styles.brandMark} aria-hidden="true">
             iV
           </span>
-          <span className={styles.brandName}>InfiViz</span>
+          <span className={styles.brandName}>InfiView</span>
         </Link>
 
         <button
@@ -115,6 +120,60 @@ export function Sidebar({
             </span>
           ))}
         </div>
+      </div>
+
+      {/* Pinned to the bottom of the rail: the two account-level demo
+          controls that used to float over individual screens, then the
+          session chrome. Settings and Logout are presentational for now —
+          the demo has one shared password and nothing to configure — so they
+          carry no handlers rather than handlers that pretend. */}
+      <div className={styles.sidebarFoot}>
+        <label className={styles.footField}>
+          <span className={styles.footLabel}>Role</span>
+          <select
+            className={styles.footSelect}
+            value={role}
+            onChange={(event) => setRole(event.target.value as Role)}
+          >
+            {ROLES.map((entry) => (
+              <option key={entry.id} value={entry.id}>
+                {entry.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className={styles.footField}>
+          <span className={styles.footLabel}>Account state</span>
+          <select
+            className={styles.footSelect}
+            value={demoState}
+            onChange={(event) => setDemoState(event.target.value as LandingStateId)}
+          >
+            {DEMO_STATES.map((entry) => (
+              <option key={entry.id} value={entry.id}>
+                {entry.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <button
+          type="button"
+          className={styles.navItem}
+          title={collapsed ? "Settings" : undefined}
+        >
+          <Icon name="settings" />
+          <span className={styles.navLabel}>Settings</span>
+        </button>
+        <button
+          type="button"
+          className={styles.navItem}
+          title={collapsed ? "Logout" : undefined}
+        >
+          <Icon name="log-out" />
+          <span className={styles.navLabel}>Logout</span>
+        </button>
       </div>
     </nav>
   );

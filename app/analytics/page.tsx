@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AppShell } from "@/app/_components/app-shell";
-import { RolePicker } from "@/app/_identity/role-picker";
 import { Analytics } from "./_components/analytics";
 
 export const metadata: Metadata = {
@@ -22,10 +21,6 @@ export default function AnalyticsPage() {
           <Analytics />
         </Suspense>
       </AppShell>
-      {/* A sibling of the shell, like the landing screen's demo-state picker:
-          it is a walkthrough affordance parked over the page, not chrome
-          belonging to any one surface inside it. */}
-      <RolePicker />
     </>
   );
 }

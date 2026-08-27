@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Icon } from "@/app/_components/icon";
 import {
   BOX_PAINT,
   COMPLIANCE_LEGEND,
@@ -24,6 +25,8 @@ const complianceLabel = (kind: (typeof RECOGNITION_BOXES)[number]["compliance"])
 type ShelfStageProps = {
   view: ShelfView;
   zoom: number;
+  /** Slug the exported planogram file is named after. */
+  exportName: string;
   /** Which `ExtraBox` kinds the toggles are currently revealing. */
   shown: Set<ExtraKind>;
   /** Owned by the page, so the rail can scroll a box into view. */
@@ -55,6 +58,7 @@ type ShelfStageProps = {
 export function ShelfStage({
   view,
   zoom,
+  exportName,
   shown,
   viewportRef,
   hovered,
@@ -219,21 +223,110 @@ export function ShelfStage({
         </div>
       </div>
 
-      <div
-        className={styles.minimap}
-        onClick={recentre}
-        role="presentation"
-        title="Click to move the view"
-      >
-        <img className={styles.minimapImage} src={SHELF_IMAGE} alt="" />
-        <span
-          className={styles.minimapWindow}
-          style={{
-            left: `${viewWindow.left * 100}%`,
-            width: `${Math.min(1, viewWindow.width) * 100}%`,
-          }}
-        />
+      <div className={styles.minimapRow}>
+        <div
+          className={styles.minimap}
+          onClick={recentre}
+          role="presentation"
+          title="Click to move the view"
+        >
+          <img className={styles.minimapImage} src={SHELF_IMAGE} alt="" />
+          <span
+            className={styles.minimapWindow}
+            style={{
+              left: `${viewWindow.left * 100}%`,
+              width: `${Math.min(1, viewWindow.width) * 100}%`,
+            }}
+          />
+        </div>
+
+        <PlanogramExportButton view={view} exportName={exportName} />
       </div>
     </div>
+  );
+}
+
+/**
+ * Downloads the shelf as the reader currently sees it: the stitch with the
+ * active view's recognition boxes painted over it, rendered to a PNG on a
+ * canvas. Client-side end to end — the stitch is same-origin, so the canvas
+ * stays untainted and `toBlob` is allowed to hand the file over.
+ */
+function PlanogramExportButton({
+  view,
+  exportName,
+}: {
+  view: ShelfView;
+  exportName: string;
+}) {
+  const [state, setState] = useState<"idle" | "working" | "done">("idle");
+
+  const exportPlanogram = async () => {
+    if (state !== "idle") return;
+    setState("working");
+    try {
+      const image = new Image();
+      image.src = SHELF_IMAGE;
+      await image.decode();
+
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("no 2d context");
+
+      ctx.drawImage(image, 0, 0);
+
+      /* The same geometry the SVG overlay draws: x on a 0–100 canvas, y on
+         0–CANVAS_H, stretched to the bitmap. */
+      const sx = canvas.width / 100;
+      const sy = canvas.height / CANVAS_H;
+      ctx.lineWidth = Math.max(3, canvas.width * 0.004);
+      for (const box of RECOGNITION_BOXES) {
+        const paint =
+          view === "store" ? BOX_PAINT[box.kind] : COMPLIANCE_PAINT[box.compliance];
+        ctx.fillStyle = paint.fill;
+        ctx.strokeStyle = paint.stroke;
+        ctx.setLineDash(
+          paint.dash === "0" ? [] : paint.dash.split(" ").map((n) => Number(n) * sx),
+        );
+        ctx.fillRect(box.x * sx, box.y * sy, box.w * sx, box.h * sy);
+        ctx.strokeRect(box.x * sx, box.y * sy, box.w * sx, box.h * sy);
+      }
+
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, "image/png"),
+      );
+      if (!blob) throw new Error("toBlob failed");
+
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${exportName}-planogram-${view}.png`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+
+      setState("done");
+      window.setTimeout(() => setState("idle"), 1600);
+    } catch {
+      /* A failed decode leaves nothing half-exported — just re-arm the button. */
+      setState("idle");
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      className={styles.toolButton}
+      onClick={() => void exportPlanogram()}
+      disabled={state !== "idle"}
+    >
+      <Icon name={state === "done" ? "check" : "file-down"} size={14} />
+      {state === "working"
+        ? "Exporting…"
+        : state === "done"
+          ? "Saved"
+          : "Planogram Export"}
+    </button>
   );
 }

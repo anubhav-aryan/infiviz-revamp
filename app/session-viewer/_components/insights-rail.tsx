@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/app/_components/icon";
 import type { Exception } from "../_data/session-compliance";
 import type { ExtraKind, RecognitionBox, Scope } from "../_data/session-viewer";
 import { AccuracyTab } from "./rail/accuracy-tab";
@@ -34,6 +35,7 @@ export const RAIL_TABS: { id: RailTab; label: string }[] = [
 export function InsightsRail({
   tab,
   onTab,
+  onClose,
   selectedBox,
   onClearPin,
   retailer,
@@ -58,6 +60,8 @@ export function InsightsRail({
 }: {
   tab: RailTab;
   onTab: (tab: RailTab) => void;
+  /** The pane's own way out — the header toggle stays the other one. */
+  onClose: () => void;
   selectedBox: RecognitionBox | null;
   onClearPin: () => void;
   retailer: string;
@@ -98,6 +102,14 @@ export function InsightsRail({
             {entry.label}
           </button>
         ))}
+        <button
+          type="button"
+          className={styles.railClose}
+          onClick={onClose}
+          aria-label="Close insights"
+        >
+          <Icon name="x" size={14} />
+        </button>
       </div>
 
       <div className={styles.railBody}>

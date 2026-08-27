@@ -99,6 +99,48 @@
   overflow-y: auto;
 }
 
+/* ---------- the sidebar footer ---------- */
+
+/* Pinned to the viewport bottom: the account-level demo controls, then the
+   session chrome. `margin-top: auto` pushes it past whatever the scroll
+   region above does not fill. */
+.sidebarFoot {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--hairline);
+}
+
+.footField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.footLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-caption);
+}
+
+.footSelect {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 7px;
+  background: var(--surface-card);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-body);
+  cursor: pointer;
+}
+
 .navItem {
   display: flex;
   align-items: center;
@@ -107,6 +149,7 @@
   border: none;
   background: none;
   border-radius: 8px;
+  font-family: inherit;
   font-size: 13px;
   margin-bottom: 2px;
   cursor: pointer;
@@ -253,6 +296,17 @@
 .sidebar[data-collapsed="true"] .navItem[data-state="unavailable"]:hover {
   background: none;
   color: var(--neutral-600);
+}
+
+/* The dropdowns need their labels to mean anything, so on the icon rail only
+   the two session buttons survive, as icon chips like every nav item. */
+.sidebar[data-collapsed="true"] .footField {
+  display: none;
+}
+
+.sidebar[data-collapsed="true"] .sidebarFoot {
+  padding-top: 8px;
+  border-top-color: var(--neutral-700);
 }
 
 /* Stands in for the labelled divider the expanded sidebar uses — with the

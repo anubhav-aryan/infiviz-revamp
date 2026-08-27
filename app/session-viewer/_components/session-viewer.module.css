@@ -213,13 +213,20 @@ a.toolButton:hover {
   background: #d97706;
 }
 
+/* The strip and the button that exports what it maps, on one line. */
+.minimapRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
 /* Compact on purpose: the strip is a map of where you are in the capture, not
    a second copy of it, and at full width it read as exactly that. */
 .minimap {
   position: relative;
-  max-width: 460px;
+  flex: 0 1 460px;
   height: 54px;
-  margin-top: 14px;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid var(--hairline);
@@ -1356,6 +1363,29 @@ a.toolButton:hover {
   border-bottom-color: var(--indigo-600);
   color: var(--indigo-700);
   font-weight: 600;
+}
+
+/* The pane's own way out, at the end of the tab row. */
+.railClose {
+  flex: none;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-left: 6px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  color: var(--text-caption);
+  cursor: pointer;
+  transition: background var(--transition-snap), color var(--transition-snap);
+}
+
+.railClose:hover {
+  color: var(--danger);
+  background: var(--danger-subtle);
 }
 
 .railBody {

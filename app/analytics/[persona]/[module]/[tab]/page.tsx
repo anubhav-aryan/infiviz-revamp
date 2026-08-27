@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Icon } from "@/app/_components/icon";
 import { RailGroups, RailShell, type SectionGroup } from "@/app/_components/app-shell";
-import { RolePicker } from "@/app/_identity/role-picker";
 import { ModuleScreen } from "@/app/analytics/_modules/module-screen";
 import {
   AnalyticsRailItems,
@@ -140,9 +139,6 @@ export default async function AnalyticsModulePage(
         <ModuleScreen persona={personaId} module={moduleId} tab={tabId} />
       </Suspense>
     </RailShell>
-    {/* Sibling of the shell, as on the overview: a role that does not own this
-        route redirects itself from inside `ModuleScreen`. */}
-    <RolePicker />
     </>
   );
 }

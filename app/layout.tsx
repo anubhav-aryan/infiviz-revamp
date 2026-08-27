@@ -27,8 +27,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "InfiViz",
-    template: "%s · InfiViz",
+    default: "InfiView",
+    template: "%s · InfiView",
   },
   description: "Retail execution intelligence for Colgate-Palmolive Vietnam.",
 };

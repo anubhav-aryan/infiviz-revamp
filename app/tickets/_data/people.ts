@@ -130,7 +130,7 @@ export const EXEC: Person = {
  */
 export const INTERNAL_OPERATOR: Person = {
   id: "internal_ops",
-  name: "InfiViz Operations",
+  name: "InfiView Operations",
   rank: "exec",
   region: "National",
   role: "Internal operator",

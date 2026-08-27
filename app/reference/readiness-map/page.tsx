@@ -23,7 +23,7 @@ import styles from "./readiness-map.module.css";
 export const metadata: Metadata = {
   title: "Platform readiness map",
   description:
-    "Which InfiViz surface exists, and in what state, across the four journey phases.",
+    "Which InfiView surface exists, and in what state, across the four journey phases.",
 };
 
 export default function ReadinessMapPage() {

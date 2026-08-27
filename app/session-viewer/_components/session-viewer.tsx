@@ -167,8 +167,8 @@ export function SessionViewer({
 
   const selectedBox = selected === null ? null : RECOGNITION_BOXES[selected];
   const zoom = ZOOM_STEPS[zoomIndex];
-  const compareHref =
-    `/session-viewer/${slugifyStore((visit ?? FLAGSHIP_VISIT).store)}/compare` as const;
+  const storeSlug = slugifyStore((visit ?? FLAGSHIP_VISIT).store);
+  const compareHref = `/session-viewer/${storeSlug}/compare` as const;
 
   /* The Summary tab's one action: the two must-stock gaps, shown as gaps. */
   const viewGaps = useCallback(() => {
@@ -256,6 +256,7 @@ export function SessionViewer({
             <ShelfStage
               view={view}
               zoom={zoom}
+              exportName={storeSlug}
               shown={shown}
               viewportRef={viewportRef}
               hovered={hovered}
@@ -271,6 +272,7 @@ export function SessionViewer({
             <InsightsRail
               tab={railTab}
               onTab={setRailTab}
+              onClose={() => setRailOpen(false)}
               selectedBox={selectedBox}
               onClearPin={clearPin}
               retailer={session.retailer}

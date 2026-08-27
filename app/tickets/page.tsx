@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AppShell } from "@/app/_components/app-shell";
-import { RolePicker } from "@/app/_identity/role-picker";
 import { Tickets } from "./_components/tickets";
 
 export const metadata: Metadata = {
@@ -21,10 +20,6 @@ export default function TicketsPage() {
           <Tickets />
         </Suspense>
       </AppShell>
-      {/* The role decides both the visible pool and who a ticket can be
-          assigned to, so the switch belongs on this screen as much as on
-          Analytics. */}
-      <RolePicker />
     </>
   );
 }

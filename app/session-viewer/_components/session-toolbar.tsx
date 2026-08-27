@@ -14,9 +14,9 @@ import styles from "./session-viewer.module.css";
  * right operates on the view rather than choosing it, so it is pushed there
  * and divided off.
  *
- * `Compare` opens the store's visit-comparison timeline. `Planogram Export`
- * renders at full strength by request — the export itself is not built yet,
- * so the button waits for its behaviour.
+ * `Compare` opens the store's visit-comparison timeline. Planogram Export
+ * lives under the stitch beside the minimap — it exports what the stage
+ * shows, so it sits with the stage.
  *
  * `Share` is not chrome. The mockup draws it enabled beside those two, and the
  * only way to draw an enabled button honestly is to give it something to do —
@@ -133,10 +133,6 @@ export function SessionToolbar({
           <Icon name="git-compare" size={14} />
           Compare
         </Link>
-        <button type="button" className={styles.toolButton}>
-          <Icon name="file-down" size={14} />
-          Planogram Export
-        </button>
         <ShareButton />
       </div>
     </div>

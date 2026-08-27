@@ -4,7 +4,7 @@
  */
 
 export const HEADER = {
-  eyebrow: "InfiViz · reference",
+  eyebrow: "InfiView · reference",
   title: "Platform readiness map",
   lede: "Which surface exists, and in what state, as a customer moves through the four journey phases. A surface only appears once its data is populated — a brand-new account is a coherent screen, not a dashboard of zeros.",
 };
