@@ -1,94 +1,6 @@
-/* Session Viewer — one capture session end to end: the stitch and its
-   recognition overlay, the shelf tables underneath, and the roll-up metrics in
-   a drawer. The session's filters live in the section rail. */
-
-/* Tighter than the app's other screens: the section rail already takes 210px
-   and the stitch wants every pixel of what is left. */
-.page {
-  padding: 16px 20px 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* ---------- section rail: the six session filters ---------- */
-
-.rail {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 18px;
-}
-
-/* One picker. `.rail`'s gap does the spacing; this exists so a picker is a
-   single addressable unit rather than three loose siblings. */
-.railBlock {
-  min-width: 0;
-}
-
-.railLabel {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--text-caption);
-}
-
-.railSelect {
-  width: 100%;
-  padding: 7px 8px;
-  border: 1px solid var(--hairline);
-  border-radius: 8px;
-  background: var(--surface-card);
-  font: inherit;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-body);
-  cursor: pointer;
-  transition: background var(--transition-snap), border-color var(--transition-snap);
-}
-
-.railSelect:hover {
-  background: var(--surface-hover);
-}
-
-.railSelect:focus-visible {
-  outline: 2px solid var(--indigo-600);
-  outline-offset: 1px;
-}
-
-.railCaption {
-  margin-top: 5px;
-  font-size: 10.5px;
-  color: var(--text-caption);
-}
-
-/* ---------- toolbar ---------- */
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 8px 10px;
-  background: var(--surface-card);
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
-  box-shadow: var(--shadow-sm);
-}
-
-.toolGroup {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Pushes the export/share cluster to the far end of the row. */
-.toolGroupEnd {
-  margin-left: auto;
-}
+/* Session Viewer — one capture session end to end: a header naming the store
+   and its session, the capture timeline, the stitch with its recognition
+   overlay beside the insights rail, and the shelf tables underneath. */
 
 .iconButton {
   display: inline-flex;
@@ -159,91 +71,22 @@ button.toolButton:hover {
   cursor: not-allowed;
 }
 
-/* ---------- session header ---------- */
-
-.sessionHead {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.sessionHeadTitle {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-heading);
-  letter-spacing: -0.02em;
-  margin: 0;
-}
-
-.sessionHeadMeta {
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.sessionHeadItem {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  color: var(--text-secondary);
-}
-
-.sessionHeadItem[data-mono="true"] {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-}
-
 /* ---------- layout ---------- */
-
-.column {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.card {
-  background: var(--surface-card);
-  border: 1px solid var(--hairline);
-  border-radius: 14px;
-  box-shadow: var(--shadow-md);
-}
-
-.metricsCard {
-  padding: 18px 20px;
-}
-
-/* Indigo eyebrow that opens each metrics card. */
-.sectionLabel {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--indigo-600);
-  font-weight: 700;
-}
-
-/* Eyebrows stand off their card by 14px, card titles by 12px. */
-.sectionLabelBlock {
-  display: block;
-  margin-bottom: 14px;
-}
 
 /* ---------- stitched shelf ---------- */
 
 .stageCard {
-  padding: 12px;
+  padding: 18px 18px 20px;
 }
 
 /* The scroll container. Zoom widens `.stage` past this box and the overflow is
    panned natively — see the note on `ShelfStage` for why this is not a
    transform. */
 .stageViewport {
-  overflow: auto;
-  max-height: 420px;
-  border-radius: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 330px;
+  border-radius: 12px;
   border: 1px solid var(--hairline);
   /* The design never had real photography — this striped placeholder shows
      through wherever the stitch has not loaded. */
@@ -270,7 +113,8 @@ button.toolButton:hover {
   position: relative;
   width: calc(var(--zoom, 1) * 100%);
   min-width: 100%;
-  aspect-ratio: 100 / 56;
+  height: 100%;
+  flex: none;
 }
 
 .shelfOverlay {
@@ -327,23 +171,30 @@ button.toolButton:hover {
   z-index: 2;
 }
 
+/* Pushed to the far end: the legend reads the overlay, it does not filter it,
+   so it belongs opposite the controls that do. */
 .legend {
   display: flex;
+  align-items: center;
   gap: 14px;
+  margin-left: auto;
+  flex: none;
 }
 
 .legendItem {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .legendSwatch {
-  width: 11px;
-  height: 11px;
+  width: 10px;
+  height: 10px;
   border-radius: 3px;
+  flex: none;
 }
 
 .legendSwatch[data-kind="own"] {
@@ -354,12 +205,7 @@ button.toolButton:hover {
   background: var(--neutral-400);
 }
 
-.legendSwatch[data-kind="unrecognised"] {
-  background: transparent;
-  border: 1.5px dashed var(--neutral-400);
-}
-
-/* Compliance view swatches — the same three tints the overlay paints with. */
+/* Compliance view swatches — the same two tints the overlay paints with. */
 .legendSwatch[data-kind="compliant"] {
   background: #16a34a;
 }
@@ -368,18 +214,32 @@ button.toolButton:hover {
   background: #d97706;
 }
 
-.legendSwatch[data-kind="missing"] {
-  background: transparent;
-  border: 1.5px dashed #dc2626;
+/* The label earns its place: without it the strip reads as a second, squashed
+   copy of the capture rather than a map of where you are in the first. */
+.overviewRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.overviewLabel {
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-caption);
 }
 
 .minimap {
   position: relative;
-  height: 68px;
-  margin-top: 10px;
-  border-radius: 8px;
+  flex: 1;
+  height: 54px;
+  border-radius: 10px;
   overflow: hidden;
   border: 1px solid var(--hairline);
+  background: var(--neutral-100);
   cursor: crosshair;
 }
 
@@ -388,7 +248,7 @@ button.toolButton:hover {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 /* The slice of the stitch the viewport is showing. Full width until a zoom
@@ -404,13 +264,6 @@ button.toolButton:hover {
 }
 
 /* ---------- overlay toggles ---------- */
-
-.toggleRow {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  flex-wrap: wrap;
-}
 
 .checkbox {
   display: inline-flex;
@@ -452,16 +305,6 @@ button.toolButton:hover {
 }
 
 /* States the invariant: the toggles add marks, they never change the count. */
-.toggleCaption {
-  font-size: 11px;
-  color: var(--text-caption);
-}
-
-.toggleCaption span[data-on="true"] {
-  color: var(--indigo-600);
-  font-weight: 700;
-}
-
 /* ---------- session tables ---------- */
 
 .tablesBlock {
@@ -476,19 +319,6 @@ button.toolButton:hover {
 
 /* ---------- shelf metrics ---------- */
 
-.metricPair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.metricLabel {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
 .metricLabelText {
   font-size: 12px;
   color: var(--text-secondary);
@@ -500,109 +330,173 @@ button.toolButton:hover {
   cursor: help;
 }
 
-.metricValue {
-  font-family: var(--font-mono);
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-heading);
-  margin-top: 4px;
-}
-
-.metricDetail {
-  font-size: 11px;
-  color: var(--text-caption);
-}
-
 .splitHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.splitLabel {
-  font-size: 11.5px;
-  color: var(--text-caption);
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
 }
 
 .splitValue {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--text-secondary);
 }
 
 .splitBar {
   display: flex;
-  height: 12px;
+  height: 10px;
   border-radius: 999px;
   overflow: hidden;
 }
 
-.splitOwn {
+.splitBar span[data-side="own"] {
   background: var(--indigo-600);
 }
 
-.splitCompetition {
+.splitBar span[data-side="competition"] {
   background: var(--neutral-300);
+}
+
+/* ---------- session summary ---------- */
+
+/* Six figures, two across. A single column would run the tab past a screen
+   before the reader reached the gap count, which is the one they act on. */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.kpiCard {
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--surface-card);
+  padding: 11px 13px;
+  min-width: 0;
+}
+
+.kpiLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.kpiLabel {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kpiValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.kpiValue {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 4px 0 2px;
+  color: var(--text-heading);
+}
+
+.kpiValue[data-tone="warning"] { color: var(--warning); }
+.kpiValue[data-tone="danger"] { color: var(--danger); }
+.kpiValue[data-tone="success"] { color: var(--success); }
+
+/* Toned by direction of travel, not by sign — a falling gap count is good
+   news, and a rising one is not. */
+.deltaChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  color: var(--danger);
+  background: var(--danger-subtle);
+}
+
+.deltaChip[data-good="true"] {
+  color: var(--success);
+  background: var(--success-subtle);
+}
+
+.kpiSub {
+  font-size: 10px;
+  line-height: 1.35;
+  color: var(--text-caption);
+}
+
+.kpiAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 7px;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--indigo-600);
+  cursor: pointer;
+}
+
+.kpiFootnote {
+  font-size: 10px;
+  color: var(--text-caption);
+  margin-top: 8px;
+}
+
+.splitCard {
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 12px;
 }
 
 /* ---------- availability + must-stock list ---------- */
 
-.availabilityHead {
+/* Title, count and the one action, on one line — the tab leads with the list
+   rather than restating the Summary tab's percentage above it. */
+.mslHead {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  /* Three children now that the ticket button sits at the edge rather than
-     against the figure, so the first two need their own separation. */
-  gap: 12px;
-  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-.availabilityMetric {
-  min-width: 0;
-}
-
-.availabilityLabelRow {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.availabilityLabel {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-/* Amber, not indigo — 72% is below target and the design says so in colour. */
-/* The rail's headline figure. It sat inline beside its label at 18px, which
-   read as a caption rather than the number the tab is about. */
-.availabilityValue {
-  font-family: var(--font-mono);
-  font-size: 30px;
-  font-weight: 700;
-  color: var(--warning);
-  line-height: 1.1;
-  display: block;
-  margin-top: 4px;
-}
-
-.mslNote {
-  font-size: 11px;
-  color: var(--text-caption);
-  margin-bottom: 8px;
+.mslHead > :last-child {
+  margin-left: auto;
 }
 
 .mslList {
   border: 1px solid var(--hairline);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
 .mslRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
+  gap: 11px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--hairline);
   background: var(--surface-card);
 }
@@ -611,7 +505,6 @@ button.toolButton:hover {
 .mslRow[data-highlighted] {
   box-shadow: inset 3px 0 0 var(--indigo-600);
 }
-
 
 .mslRow:last-child {
   border-bottom: none;
@@ -666,48 +559,18 @@ button.toolButton:hover {
   flex: none;
 }
 
-.mslChecklistHead {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 12px 6px;
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-caption);
-}
-
-/* Mirrors mslRow's flex slots: thumb (30px) + flexible text, then the two
-   fixed-width check columns this head labels. */
-.mslChecklistHead span:first-child {
-  width: 30px;
-  flex: none;
-}
-
-.mslChecklistHead span:nth-child(2) {
-  flex: 1;
-}
-
-.mslExpected,
+/* One status column, not an expected/found pair: every row on a must-stock
+   list is ranged by definition, so a column of identical ticks under
+   "Expected" was restating the heading. */
 .mslDetected {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 4px;
   flex: none;
+  width: 86px;
   font-size: 10.5px;
   font-weight: 600;
-  color: var(--text-caption);
-}
-
-/* Every row is expected by definition — a plain check, not a status pill. */
-.mslExpected {
-  color: var(--success);
-  width: 60px;
-}
-
-.mslDetected {
-  width: 130px;
   color: var(--text-secondary);
 }
 
@@ -796,53 +659,73 @@ button.toolButton:hover {
   position: sticky;
   top: 0;
   z-index: 30;
-  padding: 14px 24px 12px;
+  padding: 18px 24px 14px;
   background: var(--surface-card);
   border-bottom: 1px solid var(--hairline);
 }
 
 .pageBody {
-  padding: 16px 24px 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.crumbs {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--text-caption);
-}
-
-.crumbSep {
-  color: var(--text-disabled);
+  padding: 18px 24px 36px;
 }
 
 .headTop {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 3px;
+  align-items: center;
+  gap: 20px;
 }
 
-.headTitleRow {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  flex-wrap: wrap;
-  min-width: 0;
+.headTitleWrap {
+  flex: 1 1 auto;
+  min-width: 240px;
+}
+
+/* Names the surface rather than the path to it. A breadcrumb would be the
+   third control in a row that already has two. */
+.eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--indigo-600);
 }
 
 .headTitle {
   font-family: var(--font-display);
-  font-size: 21px;
+  font-size: 23px;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
   color: var(--text-heading);
-  margin: 0;
+  margin: 3px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Everything that qualifies the capture rather than naming it, under a rule:
+   the two status pills, the six facts, and which session of how many. */
+.headMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid var(--hairline);
+}
+
+.headFact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.headFact[data-mono="true"] {
+  font-family: var(--font-mono);
+  font-size: 11px;
 }
 
 .chip {
@@ -850,10 +733,11 @@ button.toolButton:hover {
   align-items: center;
   gap: 4px;
   flex: none;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 2px 9px;
+  padding: 4px 10px;
   border-radius: 999px;
+  white-space: nowrap;
 }
 
 .chip[data-tone="success"] { color: var(--success); background: var(--success-subtle); }
@@ -863,50 +747,59 @@ button.toolButton:hover {
 .qualityChip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   flex: none;
-  padding: 3px 9px;
+  padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid var(--success);
   background: var(--success-subtle);
   color: var(--success);
   font: inherit;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
+  white-space: nowrap;
   cursor: pointer;
 }
 
+/* Its own full-bleed band under the header. A panel inside a sticky header
+   would change that header's height as the page scrolled under it. */
 .qualityPanel {
-  margin-top: 10px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--hairline);
-  background: var(--surface-sunken);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 16px 24px;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--hairline);
 }
 
 .qualityTop {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  margin-bottom: 10px;
+  flex: none;
+  padding-right: 24px;
+  border-right: 1px solid var(--hairline);
 }
 
 .qualityScore {
   font-family: var(--font-mono);
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--success);
 }
 
 .qualityCaption {
   font-size: 11.5px;
+  line-height: 1.35;
+  max-width: 132px;
   color: var(--text-secondary);
 }
 
-.qualityGrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px 16px;
+.factor {
+  flex: 1;
+  min-width: 120px;
 }
 
 .factorName {
@@ -938,45 +831,93 @@ button.toolButton:hover {
   background: var(--success);
 }
 
-/* the two selectors */
+/* the one session control */
 
 .headControls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-left: auto;
   flex: none;
-  flex-wrap: wrap;
 }
 
-.headField {
+/* Label, value and both steppers in one raised shell — the control reads as a
+   single object because choosing a session is a single decision. */
+.controlShell {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
+  gap: 4px;
+  padding: 4px 6px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--surface-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.controlField {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 6px;
+  min-width: 0;
+}
+
+.controlLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--text-caption);
 }
 
-.headSelect {
-  max-width: 210px;
-  padding: 5px 8px;
-  border: 1px solid var(--hairline);
-  border-radius: 7px;
-  background: var(--surface-card);
+.bareSelect {
+  max-width: 184px;
+  border: none;
+  background: none;
+  padding: 0;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--text-body);
+  color: var(--text-heading);
   cursor: pointer;
 }
 
 .stepper {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+  padding-left: 4px;
+}
+
+/* Fills when the rail is open, because the rail is the thing it toggles and
+   an outlined "Hide" reads as the state rather than the action. */
+.railToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 7px 11px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--transition-snap), color var(--transition-snap);
+}
+
+.railToggle[data-active="true"] {
+  border-color: var(--indigo-600);
+  background: var(--indigo-600);
+  color: var(--neutral-0);
 }
 
 .sessionCaption {
+  margin-left: auto;
+  flex: none;
   font-family: var(--font-mono);
   font-size: 10.5px;
   color: var(--text-caption);
@@ -992,23 +933,36 @@ button.toolButton:hover {
 
 /* capture timeline */
 
-.timelineCard {
-  border-radius: 12px;
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
+/* A band, not a card. It says when this session happened, which is the same
+   kind of fact as who captured it — so it belongs to the header, not to the
+   cards below that are about what was on the shelf. */
+.timelineStrip {
+  padding: 12px 24px 14px;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--hairline);
 }
 
 .timelineHead {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 14px;
+}
+
+.stripLabel {
+  flex: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-caption);
+  white-space: nowrap;
 }
 
 .timelineSpan {
+  flex: none;
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--text-caption);
+  color: var(--text-secondary);
 }
 
 .blockToggle {
@@ -1026,27 +980,32 @@ button.toolButton:hover {
   gap: 4px;
 }
 
-.timelineBody {
-  padding: 2px 16px 16px;
-}
-
+/* Eight steps do not divide a page width evenly, so the row scrolls rather
+   than compressing each label into two words. */
 .timelineRow {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  margin-top: 12px;
+  padding-bottom: 14px;
+  overflow-x: auto;
 }
 
 .step {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+
+.stepText {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
-.stepTop {
-  display: flex;
-  align-items: center;
-}
-
 .stepDot {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border-radius: 999px;
   flex: none;
   color: var(--neutral-0);
@@ -1057,12 +1016,15 @@ button.toolButton:hover {
 }
 
 .stepBar {
-  flex: 1;
+  flex: none;
+  width: 14px;
   height: 2px;
   background: var(--indigo-200);
-  margin: 0 8px;
+  margin: 0 7px;
 }
 
+/* The gap belongs to the leg *after* its step, which is why it is rendered
+   from the next step's elapsed time rather than this one's. */
 .gapChip {
   flex: none;
   font-family: var(--font-mono);
@@ -1071,61 +1033,107 @@ button.toolButton:hover {
   color: var(--indigo-700);
   background: var(--indigo-50);
   border-radius: 999px;
-  padding: 2px 8px;
-  margin-right: 8px;
+  padding: 2px 7px;
+  margin-right: 7px;
 }
 
 .stepName {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--text-heading);
-  margin-top: 9px;
+  white-space: nowrap;
 }
 
 .stepTime {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--text-caption);
-  margin-top: 2px;
 }
 
 /* workspace: stage | rail */
 
 .workspace {
   display: grid;
-  gap: 16px;
+  gap: 18px;
   align-items: start;
   grid-template-columns: minmax(0, 1fr);
 }
 
 .workspace[data-rail-open="true"] {
-  grid-template-columns: minmax(0, 1.62fr) minmax(360px, 1fr);
+  grid-template-columns: minmax(0, 1.55fr) minmax(380px, 1fr);
 }
 
-.stageColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* The section *is* the card — toolbar, filters and stitch are one object, and
+   a wrapper between them would only put a seam where the design has none. */
+.stagePanel {
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
   min-width: 0;
 }
 
+/* No bottom border: the filter row below carries both rules, so the toolbar
+   and the filters read as one banded head rather than three stacked strips. */
 .stageHead {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
-  padding: 9px 12px;
-  border-bottom: 1px solid var(--hairline);
+  padding: 15px 18px;
+}
+
+/* The panel names itself before it offers a control. */
+.stageTitle {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-heading);
+  white-space: nowrap;
+}
+
+/* Everything that operates on the view rather than choosing it. */
+.stageTools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex: none;
+}
+
+.zoomGroup {
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .filterRow {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
-  padding: 8px 12px;
+  padding: 10px 18px;
   background: var(--surface-sunken);
+  border-top: 1px solid var(--hairline);
   border-bottom: 1px solid var(--hairline);
+}
+
+.inlineField {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.inlineLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-caption);
 }
 
 .filterSelect {
@@ -1149,7 +1157,7 @@ button.toolButton:hover {
 }
 
 .segButton {
-  padding: 6px 12px;
+  padding: 6px 13px;
   border: none;
   border-radius: 7px;
   cursor: pointer;
@@ -1168,7 +1176,7 @@ button.toolButton:hover {
 
 /* Said out loud whenever the reader is on a session the evidence is not from. */
 .stageNote {
-  padding: 8px 12px;
+  padding: 8px 18px;
   font-size: 11px;
   color: var(--warning);
   background: var(--warning-subtle);
@@ -1184,7 +1192,7 @@ button.toolButton:hover {
 
 .railPanel {
   position: sticky;
-  top: 104px;
+  top: 150px;
   background: var(--surface-card);
   border: 1px solid var(--hairline);
   border-radius: 14px;
@@ -1193,37 +1201,44 @@ button.toolButton:hover {
   min-width: 0;
 }
 
+/* Underlines, not pills. Five tabs in a pill group read as five buttons; the
+   underline says these are views of one panel — and it is the same tab
+   treatment the session tables below already use. */
 .railTabs {
   display: flex;
-  gap: 3px;
-  padding: 4px;
-  background: var(--surface-sunken);
+  gap: 2px;
+  padding: 0 16px;
   border-bottom: 1px solid var(--hairline);
+  overflow-x: auto;
 }
 
 .railTab {
   flex: 1;
-  padding: 6px 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  margin-bottom: -1px;
   border: none;
-  border-radius: 7px;
+  border-bottom: 2px solid transparent;
+  background: none;
   cursor: pointer;
   font: inherit;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--text-secondary);
-  background: transparent;
   white-space: nowrap;
 }
 
 .railTab[data-active="true"] {
-  background: var(--surface-card);
+  border-bottom-color: var(--indigo-600);
   color: var(--indigo-700);
-  box-shadow: var(--shadow-sm);
+  font-weight: 600;
 }
 
 .railBody {
-  padding: 16px 18px;
-  max-height: calc(100dvh - 230px);
+  padding: 20px 22px 24px;
+  max-height: calc(100dvh - 220px);
   overflow-y: auto;
 }
 
@@ -1469,20 +1484,44 @@ button.toolButton:hover {
 
 /* shared block furniture */
 
+/* A rule above each section after the first, so a tab that stacks four blocks
+   reads as four rather than one long column. `marginTop: 0` from the caller
+   takes it off whichever block opens the tab. */
 .scopeRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
-  margin: 16px 0 8px;
+  margin: 22px 0 6px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline);
+}
+
+/* The display face, title case — these name sections of a panel, the way the
+   card titles elsewhere on the page do. Uppercase 11px read as a table header
+   for content that is not a table. */
+.scopeRow[data-first="true"] {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 }
 
 .blockTitle {
-  font-size: 11px;
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 14px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-caption);
+  letter-spacing: -0.01em;
+  color: var(--text-heading);
+}
+
+/* Prose, not a figure — the mono face below is for captions that quote
+   numbers, and a sentence set in it reads as output rather than explanation. */
+.blockNote {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 6px 0 14px;
 }
 
 /* These captions quote figures ("2 missing · 2 misplaced", "91.8% overall"),
@@ -1524,11 +1563,4 @@ button.toolButton:hover {
   font-size: 10.5px;
   font-weight: 700;
   cursor: pointer;
-}
-
-.railCaption {
-  margin: 0;
-  font-size: 11px;
-  line-height: 1.45;
-  color: var(--text-caption);
 }

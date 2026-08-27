@@ -4,6 +4,7 @@ import {
   type Visit,
   type VisitStatus,
 } from "@/app/_data/visits";
+import { CAPTURE_SCORE } from "./session-history";
 import { BRAND_SHELF, TOTALS } from "./shelf-facts";
 
 /**
@@ -14,12 +15,6 @@ import { BRAND_SHELF, TOTALS } from "./shelf-facts";
 
 /** Why the user landed here; the headline is the Analytics figure being audited. */
 export type SessionHeaderRow = { key: string; value: string };
-
-/** The section rail's heading, above the six session filters. */
-export const SECTION = {
-  title: "Session Viewer",
-  caption: "One capture session, its recognition and its shelf numbers.",
-};
 
 export const SESSION_TITLE = "3742 · Winlife HCM 94/54 - 56";
 
@@ -169,7 +164,7 @@ export function sessionFor(visit: Visit): SessionIdentity {
  * exists to prevent. Per-store data arrives when a backend does.
  */
 
-export type BoxKind = "own" | "competitor" | "unrecognised";
+export type BoxKind = "own" | "competitor";
 
 /**
  * Stroke/fill are the design's own hardcoded rgba values — deliberately outside
@@ -182,11 +177,10 @@ export const BOX_PAINT: Record<
 > = {
   own: { fill: "rgba(79,70,229,.14)", stroke: "#4F46E5", dash: "0" },
   competitor: { fill: "rgba(100,116,139,.12)", stroke: "#94A3B8", dash: "0" },
-  unrecognised: { fill: "rgba(148,163,184,.06)", stroke: "#94A3B8", dash: "1.4 1.2" },
 };
 
 /** How a facing reads against the planogram, for the compliance view. */
-export type ComplianceKind = "compliant" | "misplaced" | "missing";
+export type ComplianceKind = "compliant" | "misplaced";
 
 /** A counted facing. Every shelf metric and every session table is computed
  *  from exactly these — which is why `compliance` is required here and absent
@@ -203,11 +197,8 @@ export type RecognitionBox = {
   w: number;
   h: number;
   kind: BoxKind;
-  /**
-   * The recognised brand. Undefined exactly when `kind` is `"unrecognised"` —
-   * that is what unrecognised means, and the assertion below holds them to it.
-   */
-  brand?: string;
+  /** The recognised brand. Every counted facing has one — see the assertion below. */
+  brand: string;
   confidence: number;
   compliance: ComplianceKind;
 };
@@ -234,7 +225,11 @@ export type ExtraBox = {
 /**
  * Coordinates live on the design's 100×56 canvas; the overlay is drawn with
  * `preserveAspectRatio="none"` so they stretch with the 16:9 shelf container.
- * Two shelf rows: eight facings on top, seven below.
+ * Two shelf rows: seven facings on top, six below.
+ *
+ * Every one of the thirteen is identified. An absent must-stock SKU has no box
+ * here on purpose — it is a gap on the shelf, not a detection, and the
+ * planogram exception that names it says so without pointing at a rectangle.
  */
 export const RECOGNITION_BOXES: RecognitionBox[] = [
   { id: "s1p1", x: 3, y: 4, w: 11, h: 15, brand: "CDC", kind: "own", confidence: 0.97, compliance: "compliant" },
@@ -244,20 +239,17 @@ export const RECOGNITION_BOXES: RecognitionBox[] = [
   { id: "s1p5", x: 48, y: 5, w: 10, h: 14, brand: "Sensodyne", kind: "competitor", confidence: 0.88, compliance: "compliant" },
   { id: "s1p6", x: 59, y: 4, w: 9, h: 15, brand: "Natural", kind: "own", confidence: 0.96, compliance: "compliant" },
   { id: "s1p7", x: 69, y: 5, w: 10, h: 14, brand: "Oral-B", kind: "competitor", confidence: 0.9, compliance: "misplaced" },
-  { id: "s1p8", x: 80, y: 4, w: 11, h: 15, kind: "unrecognised", confidence: 0.42, compliance: "missing" },
   { id: "s2p1", x: 4, y: 22, w: 12, h: 16, brand: "P/S", kind: "competitor", confidence: 0.89, compliance: "compliant" },
   { id: "s2p2", x: 17, y: 22, w: 11, h: 16, brand: "Max Fresh", kind: "own", confidence: 0.94, compliance: "compliant" },
   { id: "s2p3", x: 29, y: 23, w: 10, h: 15, brand: "Closeup", kind: "competitor", confidence: 0.87, compliance: "compliant" },
   { id: "s2p4", x: 40, y: 22, w: 12, h: 16, brand: "Sensodyne", kind: "competitor", confidence: 0.92, compliance: "compliant" },
   { id: "s2p5", x: 53, y: 22, w: 10, h: 16, brand: "Oral-B", kind: "competitor", confidence: 0.85, compliance: "misplaced" },
   { id: "s2p6", x: 64, y: 23, w: 11, h: 15, brand: "P/S", kind: "competitor", confidence: 0.9, compliance: "compliant" },
-  { id: "s2p7", x: 76, y: 22, w: 12, h: 16, kind: "unrecognised", confidence: 0.38, compliance: "missing" },
 ];
 
 export const BOX_LEGEND: { kind: BoxKind; label: string }[] = [
-  { kind: "own", label: "Own products" },
-  { kind: "competitor", label: "Competitors" },
-  { kind: "unrecognised", label: "Unrecognised" },
+  { kind: "own", label: "Own" },
+  { kind: "competitor", label: "Competitor" },
 ];
 
 /**
@@ -280,9 +272,9 @@ export const EXTRA_BOXES: ExtraBox[] = [
 
 /** The three toggles, and which `ExtraBox.kind` each one reveals. */
 export const SHELF_TOGGLES: { kind: ExtraKind; label: string; short: string }[] = [
-  { kind: "posm", label: "Show POSM", short: "POSM" },
-  { kind: "overlap", label: "Show Overlap", short: "overlap" },
-  { kind: "excluded", label: "Show Exclusions", short: "excluded" },
+  { kind: "posm", label: "POSM", short: "POSM" },
+  { kind: "overlap", label: "Overlap", short: "overlap" },
+  { kind: "excluded", label: "Exclusions", short: "excluded" },
 ];
 
 /** Paint for the marks the toggles reveal — all dashed, none of them a facing. */
@@ -315,20 +307,25 @@ export const COMPLIANCE_PAINT: Record<
 > = {
   compliant: { fill: "rgba(22,163,74,.14)", stroke: "#16A34A", dash: "0" },
   misplaced: { fill: "rgba(217,119,6,.16)", stroke: "#D97706", dash: "0" },
-  missing: { fill: "rgba(220,38,38,.10)", stroke: "#DC2626", dash: "1.4 1.2" },
 };
 
 export const COMPLIANCE_LEGEND: { kind: ComplianceKind; label: string }[] = [
   { kind: "compliant", label: "Compliant" },
   { kind: "misplaced", label: "Misplaced" },
-  { kind: "missing", label: "Missing" },
 ];
 
 /** The two views the toolbar switches between. */
 export type ShelfView = "store" | "compliance";
 
-/** The mock photograph standing in for the stitched shelf capture. */
-export const SHELF_IMAGE = "/mock-shelf/shelf-toothpaste-wide.jpg";
+/**
+ * The stitched shelf capture the overlay is drawn over.
+ *
+ * 1920x1075 — the 100:56 box the box coordinates in `RECOGNITION_BOXES` were
+ * authored against, so `object-fit: fill` on `.shelfImage` is a no-op rather
+ * than a stretch. The file it replaced was a 1200x1600 portrait photograph
+ * squashed into the same landscape box, which is why nothing lined up.
+ */
+export const SHELF_IMAGE = "/mock-shelf/shelf-stitch.jpg";
 
 /* ---- shelf metrics ---- */
 
@@ -421,7 +418,7 @@ export const AVAILABILITY = {
    */
   pct: 72,
   value: "72%",
-  note: `Must-stock list · ${RANGED_COUNT - FOUND_COUNT} absent, ${FOUND_COUNT} found — absent shown first`,
+  note: `${RANGED_COUNT - FOUND_COUNT} absent, ${FOUND_COUNT} found — absent first`,
   detail: `${FOUND_COUNT} of ${RANGED_COUNT} must-stock SKUs found`,
 };
 
@@ -431,6 +428,96 @@ export const AVAILABILITY = {
 const BRAND_MAX = Math.max(...BRAND_SHELF.map((brand) => brand.facings));
 
 /** All eleven brands on the bay, biggest first — what the rail's scoped list reads. */
+/* ---- the session's headline figures ---- */
+
+/**
+ * The six numbers the Summary tab opens on.
+ *
+ * Every value is a projection of something already asserted elsewhere in this
+ * folder — the two shelf metrics, the availability figure, the must-stock gap
+ * count, the facing count and the capture score. Only the deltas are authored,
+ * because no prior visit was ever measured; they compare against the 21 Jul
+ * visit the history fixture invents, which is what the footnote says out loud.
+ */
+export type SessionKpi = {
+  label: string;
+  definition: string;
+  value: string;
+  /** What the figure is made of, under the number. */
+  sub: string;
+  tone: "plain" | "warning" | "danger" | "success";
+  delta: string;
+  /** Whether the delta is movement in the right direction, not its sign. */
+  good: boolean;
+  /** Present on `MSL gaps` only — the one figure with somewhere to go. */
+  action?: string;
+};
+
+export const KPI_FOOTNOTE =
+  "Deltas compare with this store's previous visit — 21 Jul 2026.";
+
+export const SESSION_KPIS: SessionKpi[] = [
+  {
+    label: SHELF_METRICS[0].label,
+    definition: SHELF_METRICS[0].definition,
+    value: SHELF_METRICS[0].value,
+    sub: SHELF_METRICS[0].detail,
+    tone: "plain",
+    delta: "+1.6 pts",
+    good: true,
+  },
+  {
+    label: "Linear SOS",
+    definition: SHELF_METRICS[1].definition,
+    value: SHELF_METRICS[1].value,
+    sub: SHELF_METRICS[1].detail,
+    tone: "plain",
+    delta: "−1.1 pts",
+    good: false,
+  },
+  {
+    label: AVAILABILITY.label,
+    definition: AVAILABILITY.definition,
+    value: AVAILABILITY.value,
+    sub: `${FOUND_COUNT} of ${RANGED_COUNT} must-stock found`,
+    tone: "warning",
+    delta: "+9 pts",
+    good: true,
+  },
+  {
+    label: "MSL gaps",
+    definition: "Must-stock SKUs not detected on shelf",
+    value: `${RANGED_COUNT - FOUND_COUNT}`,
+    sub: MSL_RAW.filter((sku) => sku.facings === undefined)
+      .map((sku) => sku.brand)
+      .join(" · "),
+    tone: "danger",
+    delta: "−1",
+    good: true,
+    action: "View gaps",
+  },
+  {
+    label: "Facings counted",
+    definition: "Recognised product facings in this capture",
+    value: `${COUNTED_FACINGS}`,
+    /* Filled in by the tab, which is the only place that knows which overlay
+       toggles are on. */
+    sub: "",
+    tone: "plain",
+    delta: "+1",
+    good: true,
+  },
+  {
+    label: "Photo quality",
+    definition: "Mean capture score across the session",
+    value: `${CAPTURE_SCORE}`,
+    sub: "",
+    tone: "success",
+    delta: "+3",
+    good: true,
+  },
+];
+
 export const BRAND_SHARE_ROWS = BRAND_SHELF.map((brand) => ({
   name: brand.name,
   isOwn: brand.isOwn,
@@ -500,16 +587,10 @@ export function scoped<T>(rows: T[], scope: Scope): T[] {
 
 /* ---- the identities this file has to hold ---- */
 
-/* `unrecognised` and "no brand" are the same statement; anything else means a
-   box claims a brand nobody can see, or hides one it recognised. */
+/* Every counted facing names a brand the bay actually stocks. A box that named
+   a brand nobody sells would put a facing in a column no table has. */
 for (const box of RECOGNITION_BOXES) {
-  if ((box.kind === "unrecognised") !== (box.brand === undefined)) {
-    throw new Error(
-      `Box ${box.id} is ${box.kind} but ${box.brand === undefined ? "carries no brand" : `carries "${box.brand}"`}. ` +
-        `Unrecognised boxes have no brand and recognised boxes have one — see session-viewer.ts.`,
-    );
-  }
-  if (box.brand && !BRAND_SHELF.some((brand) => brand.name === box.brand)) {
+  if (!BRAND_SHELF.some((brand) => brand.name === box.brand)) {
     throw new Error(
       `Box ${box.id} names brand "${box.brand}", which is not on the bay. ` +
         `Add it to BRAND_SHELF in shelf-facts.ts or fix the box.`,

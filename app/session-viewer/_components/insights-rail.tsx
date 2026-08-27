@@ -1,17 +1,19 @@
 "use client";
 
 import type { Exception } from "../_data/session-compliance";
-import type { RecognitionBox, Scope } from "../_data/session-viewer";
+import type { ExtraKind, RecognitionBox, Scope } from "../_data/session-viewer";
 import { AccuracyTab } from "./rail/accuracy-tab";
 import { AvailabilityTab } from "./rail/availability-tab";
 import { BrandsTab } from "./rail/brands-tab";
 import { ComplianceTab } from "./rail/compliance-tab";
 import { PinnedDetection } from "./rail/pinned-detection";
+import { SummaryTab } from "./rail/summary-tab";
 import styles from "./session-viewer.module.css";
 
-export type RailTab = "availability" | "brands" | "compliance" | "accuracy";
+export type RailTab = "summary" | "availability" | "brands" | "compliance" | "accuracy";
 
 export const RAIL_TABS: { id: RailTab; label: string }[] = [
+  { id: "summary", label: "Summary" },
   { id: "availability", label: "Availability" },
   { id: "brands", label: "Brands" },
   { id: "compliance", label: "POG compliance" },
@@ -24,6 +26,10 @@ export const RAIL_TABS: { id: RailTab; label: string }[] = [
  * This used to be a modal drawer, which meant the evidence and the figure it
  * explains could never be on screen together. Inline, pinning a box on the
  * stitch can move what the rail shows, and vice versa.
+ *
+ * `Summary` opens first and carries every headline figure, so a reader who
+ * wants the session's answer never has to guess which of four tabs holds it.
+ * The others are the working-out.
  */
 export function InsightsRail({
   tab,
@@ -46,6 +52,9 @@ export function InsightsRail({
   onAccSkuScope,
   accSkuAsc,
   onAccSkuSort,
+  shown,
+  photos,
+  onViewGaps,
 }: {
   tab: RailTab;
   onTab: (tab: RailTab) => void;
@@ -67,6 +76,11 @@ export function InsightsRail({
   onAccSkuScope: (scope: Scope) => void;
   accSkuAsc: boolean;
   onAccSkuSort: () => void;
+  /** Which overlay toggles are on — the facings figure says what they added. */
+  shown: Set<ExtraKind>;
+  photos: number;
+  /** Jumps to the must-stock list with the absent SKUs flagged. */
+  onViewGaps: () => void;
 }) {
   return (
     <div className={styles.railPanel}>
@@ -89,6 +103,10 @@ export function InsightsRail({
       <div className={styles.railBody}>
         {selectedBox ? (
           <PinnedDetection box={selectedBox} onClear={onClearPin} />
+        ) : null}
+
+        {tab === "summary" ? (
+          <SummaryTab shown={shown} photos={photos} onViewGaps={onViewGaps} />
         ) : null}
 
         {tab === "availability" ? (

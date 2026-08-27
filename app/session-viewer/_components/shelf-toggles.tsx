@@ -4,9 +4,7 @@ import { Icon } from "@/app/_components/icon";
 import {
   BOX_LEGEND,
   COMPLIANCE_LEGEND,
-  COUNTED_FACINGS,
   DETECTED_BRANDS,
-  EXTRA_COUNTS,
   MSL_FILTER_OPTIONS,
   SHELF_TOGGLES,
   type ExtraKind,
@@ -23,9 +21,10 @@ import styles from "./session-viewer.module.css";
  * `role="checkbox"` buttons built the same way rather than a shared component
  * introduced for one screen.
  *
- * The caption is the point of the row: each toggle only ever *adds* marks to
- * the stitch. The counted facing total never moves, so nothing here can put the
- * overlay and the tables into disagreement.
+ * Each toggle only ever *adds* marks to the stitch — none of what they reveal
+ * is a facing — so the counted total never moves and nothing here can put the
+ * overlay and the tables into disagreement. That total is stated once, in the
+ * rail's `Facings counted` figure, rather than repeated under the shelf.
  */
 
 type ShelfTogglesProps = {
@@ -55,14 +54,14 @@ export function ShelfToggles({
 
   return (
     <div className={styles.filterRow}>
-      <label className={styles.headField}>
-        Brand
+      <label className={styles.inlineField}>
+        <span className={styles.inlineLabel}>Brand</span>
         <select
           className={styles.filterSelect}
           value={brandFilter}
           onChange={(event) => onBrandFilter(event.target.value)}
         >
-          <option value="all">All</option>
+          <option value="all">All brands</option>
           {DETECTED_BRANDS.map((brand) => (
             <option key={brand} value={brand}>
               {brand}
@@ -71,8 +70,8 @@ export function ShelfToggles({
         </select>
       </label>
 
-      <label className={styles.headField}>
-        MSL
+      <label className={styles.inlineField}>
+        <span className={styles.inlineLabel}>MSL</span>
         <select
           className={styles.filterSelect}
           value={mslFilter}
@@ -107,8 +106,6 @@ export function ShelfToggles({
         );
       })}
 
-      <span className={styles.divider} aria-hidden="true" />
-
       <span className={styles.legend}>
         {legend.map((entry) => (
           <span key={entry.label} className={styles.legendItem}>
@@ -118,16 +115,6 @@ export function ShelfToggles({
               aria-hidden="true"
             />
             {entry.label}
-          </span>
-        ))}
-      </span>
-
-      <span className={styles.toggleCaption}>
-        {COUNTED_FACINGS} counted facings
-        {EXTRA_COUNTS.map((entry) => (
-          <span key={entry.kind} data-on={shown.has(entry.kind)}>
-            {" · +"}
-            {entry.count} {entry.short}
           </span>
         ))}
       </span>

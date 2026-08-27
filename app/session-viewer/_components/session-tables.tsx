@@ -32,7 +32,7 @@ export function SessionTables({
         variant="underline"
         title="Session tables"
         wide
-        maxHeight={380}
+        maxHeight={420}
         action={
           <CardActions>
             {brandFilter ? (

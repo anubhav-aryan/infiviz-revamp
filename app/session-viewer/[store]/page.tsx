@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { RailShell } from "@/app/_components/app-shell";
-import { SessionFilterRail } from "../_components/session-filter-rail";
+import { AppShell } from "@/app/_components/app-shell";
 import { SessionViewer } from "../_components/session-viewer";
-import {
-  SECTION,
-  SESSION_STORES,
-  sessionFor,
-  visitBySlug,
-} from "../_data/session-viewer";
+import { SESSION_STORES, sessionFor, visitBySlug } from "../_data/session-viewer";
 
 /**
  * One prerendered page per store in the Store Explorer visit list, so an
@@ -45,18 +39,13 @@ export default async function StoreSessionPage(
   if (!visit) notFound();
 
   return (
-    // Analytics stays highlighted: this surface has no nav entry of its own and
-    // is only ever reached by drilling into an Analytics number.
-    <RailShell
-      active="analytics"
-      section={SECTION}
-      groups={[]}
-      activeSection=""
-      railItems={
-        <SessionFilterRail activeSlug={store} />
-      }
-    >
+    // No section rail. The store is the route and the header names it, so a
+    // rail here would hold one control — a store picker duplicating the estate
+    // index this page is reached from — while taking 210px off the capture,
+    // which is the whole point of the screen. The primary sidebar opens
+    // collapsed for the same reason, the way the other dense screens do.
+    <AppShell active="session-viewer" defaultCollapsed>
       <SessionViewer session={sessionFor(visit)} visit={visit} />
-    </RailShell>
+    </AppShell>
   );
 }

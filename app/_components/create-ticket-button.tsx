@@ -39,12 +39,20 @@ export function CreateTicketButton({
   context,
   persona,
   compact = false,
+  label = "Create ticket",
+  className,
 }: {
   context: TicketContext;
   /** Who is raising it, which decides who can be assigned. Analytics passes its
    *  route persona; everywhere else falls back to the reader's role. */
   persona?: string;
   compact?: boolean;
+  /** The button's text. Overridden where the surrounding copy names the act
+   *  differently — the Session Viewer's must-stock list says "Raise ticket". */
+  label?: string;
+  /** Geometry override for callers that sit outside a card-action trio. The
+   *  tone, icon and behaviour stay this component's. */
+  className?: string;
 }) {
   const pathname = usePathname();
   /* Screens outside Analytics used to raise everything as the compose panel's
@@ -65,17 +73,17 @@ export function CreateTicketButton({
     <>
       <button
         type="button"
-        className={`${styles.ticketButton} ${actions.tip}`}
+        className={`${className ?? styles.ticketButton} ${actions.tip}`}
         data-compact={compact}
         onClick={(event) => {
           event.stopPropagation();
           setComposing(true);
         }}
-        aria-label="Create ticket from this"
+        aria-label={`${label} from this`}
         data-tip="Raise a ticket from this"
       >
         <Icon name="ticket-plus" size={12} />
-        {compact ? null : "Create ticket"}
+        {compact ? null : label}
       </button>
 
       {composing ? (

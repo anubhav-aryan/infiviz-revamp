@@ -18,6 +18,11 @@ import { VISITS, type Visit, type VisitStatus } from "@/app/_data/visits";
 
 export type SessionRef = {
   id: string;
+  /** The bay this session photographed, e.g. `"Toothpaste"`. */
+  category: string;
+  /** Where in the bay, e.g. `"Eye Level"`. */
+  placement: string;
+  /** `"{category} · {placement}"`, derived — never authored twice. */
   label: string;
   /** `HH:MM:SS`, local to the store. */
   startedAt: string;
@@ -42,23 +47,31 @@ const START_SECONDS = "08";
  * clock — a store audited at 11:20 cannot have had its follow-up capture at
  * 10:05. The offset is the design's own gap, 34m 33s.
  */
-const HISTORY: { date: string; label: string; extra: (Omit<SessionRef, "id"> & { afterSeconds?: number })[] }[] = [
+type AuthoredSession = {
+  category: string;
+  placement: string;
+  startedAt: string;
+  /** Day 0 only: timed as an offset from the visit rather than by a clock. */
+  afterSeconds?: number;
+};
+
+const HISTORY: { date: string; label: string; extra: AuthoredSession[] }[] = [
   {
     date: "2026-08-04",
     label: "04 Aug 2026",
-    extra: [{ label: "Toothbrush · Top Shelf", startedAt: "", afterSeconds: 2073 }],
+    extra: [{ category: "Toothbrush", placement: "Top Shelf", startedAt: "", afterSeconds: 2073 }],
   },
   {
     date: "2026-07-28",
     label: "28 Jul 2026",
-    extra: [{ label: "Toothpaste · Eye Level", startedAt: "09:14:22" }],
+    extra: [{ category: "Toothpaste", placement: "Eye Level", startedAt: "09:14:22" }],
   },
   {
     date: "2026-07-21",
     label: "21 Jul 2026",
     extra: [
-      { label: "Toothpaste · Eye Level", startedAt: "10:02:55" },
-      { label: "Toothpaste · End Cap", startedAt: "10:26:13" },
+      { category: "Toothpaste", placement: "Eye Level", startedAt: "10:02:55" },
+      { category: "Toothpaste", placement: "End Cap", startedAt: "10:26:13" },
     ],
   },
 ];
@@ -94,13 +107,17 @@ export function sessionHistoryFor(visit: Visit): VisitDay[] {
         ? [
             {
               id: visit.sessionId,
+              category: visit.category,
+              placement: visit.placement,
               label: `${visit.category} · ${visit.placement}`,
               startedAt: `${visit.time}:${START_SECONDS}`,
             },
           ]
         : [];
     const rest = day.extra.map((session, index) => ({
-      label: session.label,
+      category: session.category,
+      placement: session.placement,
+      label: `${session.category} · ${session.placement}`,
       startedAt:
         session.afterSeconds === undefined
           ? session.startedAt
@@ -117,18 +134,56 @@ export function sessionHistoryFor(visit: Visit): VisitDay[] {
   });
 }
 
+/**
+ * The same history flattened into one ordered list, newest first.
+ *
+ * The header offers a single Session control rather than a visit picker plus a
+ * session picker, because a merchandiser thinking "the capture before this one"
+ * is not thinking about which day boundary it fell on. `visitIdx`/`sessionIdx`
+ * stay the page's state; this is the projection the control reads, so the two
+ * can never disagree about what session five is.
+ */
+export type FlatSession = SessionRef & {
+  /** The visit day this session belongs to, e.g. `"04 Aug 2026"`. */
+  dayLabel: string;
+  visitIdx: number;
+  sessionIdx: number;
+};
+
+export function flatSessionsFor(visit: Visit): FlatSession[] {
+  return sessionHistoryFor(visit).flatMap((day, visitIdx) =>
+    day.sessions.map((session, sessionIdx) => ({
+      ...session,
+      dayLabel: day.label,
+      visitIdx,
+      sessionIdx,
+    })),
+  );
+}
+
 /* ---- the capture timeline ---- */
 
 /**
- * Field-side steps only, as seconds elapsed from the step before, so the whole
- * timeline moves with whichever session is selected instead of being four
+ * The capture end to end, as seconds elapsed from the step before, so the whole
+ * timeline moves with whichever session is selected instead of being eight
  * fixed clock times that only make sense for one of them.
+ *
+ * Field-side and pipeline-side both: the store visit through the confirmed
+ * upload is the merchandiser's, and everything after it is the platform's. A
+ * reader asking "why is this session not on the dashboard yet" is asking about
+ * the second half, so the timeline has to carry it.
+ *
+ * The gaps sum to 254s, which is the design's own `4m 14s` span.
  */
 export const CAPTURE_STEPS: { name: string; gapSeconds: number }[] = [
-  { name: "Capture started", gapSeconds: 0 },
-  { name: "First photo captured", gapSeconds: 2 },
+  { name: "Store Visit", gapSeconds: 0 },
+  { name: "Capture started", gapSeconds: 1 },
+  { name: "First photo captured", gapSeconds: 1 },
   { name: "Last photo captured", gapSeconds: 124 },
   { name: "Upload confirmed", gapSeconds: 53 },
+  { name: "Session data received", gapSeconds: 2 },
+  { name: "Session status", gapSeconds: 66 },
+  { name: "Analytics ready", gapSeconds: 7 },
 ];
 
 const SPAN_SECONDS = CAPTURE_STEPS.reduce((total, step) => total + step.gapSeconds, 0);

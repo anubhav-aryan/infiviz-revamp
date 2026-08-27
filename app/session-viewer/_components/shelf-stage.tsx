@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  BOX_LEGEND,
   BOX_PAINT,
   COMPLIANCE_LEGEND,
   COMPLIANCE_PAINT,
@@ -18,9 +17,6 @@ import styles from "./session-viewer.module.css";
 
 /** The canvas the box coordinates were authored against. */
 const CANVAS_H = 56;
-
-const kindLabel = (kind: (typeof RECOGNITION_BOXES)[number]["kind"]) =>
-  BOX_LEGEND.find((entry) => entry.kind === kind)?.label ?? kind;
 
 const complianceLabel = (kind: (typeof RECOGNITION_BOXES)[number]["compliance"]) =>
   COMPLIANCE_LEGEND.find((entry) => entry.kind === kind)?.label ?? kind;
@@ -200,8 +196,8 @@ export function ShelfStage({
                 aria-pressed={selected === index}
                 aria-label={
                   view === "store"
-                    ? `${box.brand ?? kindLabel(box.kind)} · ${Math.round(box.confidence * 100)}% confidence`
-                    : `${complianceLabel(box.compliance)} · ${box.brand ?? kindLabel(box.kind)}`
+                    ? `${box.brand} · ${Math.round(box.confidence * 100)}% confidence`
+                    : `${complianceLabel(box.compliance)} · ${box.brand}`
                 }
               />
             ))}
@@ -215,30 +211,32 @@ export function ShelfStage({
                 }}
               >
                 {view === "store"
-                  ? `${hoveredBox.brand ?? kindLabel(hoveredBox.kind)} · ${Math.round(hoveredBox.confidence * 100)}%`
-                  : `${complianceLabel(hoveredBox.compliance)} · ${hoveredBox.brand ?? kindLabel(hoveredBox.kind)}`}
+                  ? `${hoveredBox.brand} · ${Math.round(hoveredBox.confidence * 100)}%`
+                  : `${complianceLabel(hoveredBox.compliance)} · ${hoveredBox.brand}`}
               </span>
             ) : null}
           </div>
         </div>
       </div>
 
-            <div
-        className={styles.minimap}
-        onClick={recentre}
-        role="presentation"
-        title="Click to move the view"
-      >
-        <img className={styles.minimapImage} src={SHELF_IMAGE} alt="" />
-        <span
-          className={styles.minimapWindow}
-          style={{
-            left: `${viewWindow.left * 100}%`,
-            width: `${Math.min(1, viewWindow.width) * 100}%`,
-          }}
-        />
+      <div className={styles.overviewRow}>
+        <span className={styles.overviewLabel}>Overview</span>
+        <div
+          className={styles.minimap}
+          onClick={recentre}
+          role="presentation"
+          title="Click to move the view"
+        >
+          <img className={styles.minimapImage} src={SHELF_IMAGE} alt="" />
+          <span
+            className={styles.minimapWindow}
+            style={{
+              left: `${viewWindow.left * 100}%`,
+              width: `${Math.min(1, viewWindow.width) * 100}%`,
+            }}
+          />
+        </div>
       </div>
-
     </div>
   );
 }

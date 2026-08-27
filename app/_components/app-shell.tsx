@@ -22,6 +22,13 @@ type AppShellProps = {
    * bar's absence is the signal that they are not session-scoped.
    */
   filterScope?: FilterScopeId;
+  /**
+   * Opens with the primary sidebar collapsed to icons, for the rare
+   * single-rail screen that wants the width — the Session Viewer's stitch.
+   * A *default* only: anything the reader has already chosen wins, and their
+   * next toggle persists across every shell. Same contract as `RailShell`.
+   */
+  defaultCollapsed?: boolean;
   children: ReactNode;
 };
 
@@ -29,12 +36,18 @@ type AppShellProps = {
  *  clear on the two-rail routes. */
 const SECTION_RAIL_W = 210;
 
-export function AppShell({ active, nav, filterScope, children }: AppShellProps) {
+export function AppShell({
+  active,
+  nav,
+  filterScope,
+  defaultCollapsed,
+  children,
+}: AppShellProps) {
   const entries = nav ?? fullNav(active);
 
   return (
     <div className={styles.shell}>
-      <Sidebar entries={entries} />
+      <Sidebar entries={entries} defaultCollapsed={defaultCollapsed} />
 
       {/* Paired with the shell rather than the root layout, which is a server
           component with no providers — the same reason `ChatPaneProvider` is
@@ -57,7 +70,9 @@ export function AppShell({ active, nav, filterScope, children }: AppShellProps) 
           <ChatLauncher active={active} />
         </ChatPaneProvider>
 
-        <ToastHost />
+        {/* Same default the sidebar above gets, or the toast sits adrift of a
+            rail that opened collapsed. */}
+        <ToastHost defaultCollapsed={defaultCollapsed} />
       </ToastProvider>
     </div>
   );

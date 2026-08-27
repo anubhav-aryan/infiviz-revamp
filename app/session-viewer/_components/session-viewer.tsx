@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { Visit } from "@/app/_data/visits";
 import { EXCEPTION_BY_BOX, type Exception } from "../_data/session-compliance";
-import { sessionHistoryFor } from "../_data/session-history";
+import { flatSessionsFor } from "../_data/session-history";
 import {
   DEFAULT_SESSION,
   FLAGSHIP_VISIT,
@@ -18,7 +18,7 @@ import {
 } from "../_data/session-viewer";
 import { CaptureTimeline } from "./capture-timeline";
 import { InsightsRail, type RailTab } from "./insights-rail";
-import { SessionHeader } from "./session-header";
+import { QualityPanel, SessionHeader } from "./session-header";
 import { SessionTables } from "./session-tables";
 import { SessionToolbar } from "./session-toolbar";
 import { ShelfStage } from "./shelf-stage";
@@ -36,10 +36,10 @@ const ZOOM_STEPS = [1, 1.5, 2, 3, 4];
  * filters the SKU table, and picking an exception in the rail scrolls the
  * stitch — so a single owner is what keeps them from disagreeing.
  *
- * Visit and session are in-page state, not routes: the store is the route, and
- * Analytics deep-links into it by slug. Switching session changes identity and
- * timeline only; the recognition evidence below is the one authored capture,
- * and the stage says so whenever the reader is on a different session.
+ * Session is in-page state, not a route: the store is the route, and Analytics
+ * deep-links into it by slug. Switching session changes identity and timeline
+ * only; the recognition evidence below is the one authored capture, and the
+ * stage says so whenever the reader is on a different session.
  */
 export function SessionViewer({
   session = DEFAULT_SESSION,
@@ -52,11 +52,12 @@ export function SessionViewer({
   const [zoomIndex, setZoomIndex] = useState(0);
   const [shown, setShown] = useState<Set<ExtraKind>>(() => new Set());
 
-  const [visitIdx, setVisitIdx] = useState(0);
-  const [sessionIdx, setSessionIdx] = useState(0);
+  /* One index over every session in every visit — the header offers one
+     control, so the page keeps one number. */
+  const [flatIndex, setFlatIndex] = useState(0);
 
   const [railOpen, setRailOpen] = useState(false);
-  const [railTab, setRailTab] = useState<RailTab>("availability");
+  const [railTab, setRailTab] = useState<RailTab>("summary");
   const [qualityOpen, setQualityOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(true);
 
@@ -78,10 +79,9 @@ export function SessionViewer({
   /* Pure over the visit, so the server and the first client render agree. */
   /* `/session-viewer` with no store is still the flagship's session, so its
      own visit row is what the history is built from — not a synthesised one. */
-  const days = useMemo(() => sessionHistoryFor(visit ?? FLAGSHIP_VISIT), [visit]);
-  const day = days[Math.min(visitIdx, days.length - 1)];
-  const current = day.sessions[Math.min(sessionIdx, day.sessions.length - 1)];
-  const isCurrentCapture = visitIdx === 0 && sessionIdx === 0;
+  const sessions = useMemo(() => flatSessionsFor(visit ?? FLAGSHIP_VISIT), [visit]);
+  const current = sessions[Math.min(flatIndex, sessions.length - 1)];
+  const isCurrentCapture = flatIndex === 0;
 
   const isVisible = useCallback(
     (box: RecognitionBox) =>
@@ -130,20 +130,22 @@ export function SessionViewer({
 
   const pickException = useCallback(
     (exception: Exception) => {
+      if (exception.kind === "absent") {
+        /* An absent SKU has no box — there is no rectangle to draw around a
+           gap. The answer is in the must-stock list, so go there instead. */
+        setSelected(null);
+        setHovered(null);
+        setRailTab("availability");
+        setFocusAbsent(true);
+        setMslFilter("must");
+        return;
+      }
       const index = RECOGNITION_BOXES.findIndex((box) => box.id === exception.boxId);
       if (index < 0) return;
       setSelected(index);
       setHovered(index);
       scrollToBox(index);
-      if (exception.kind === "absent") {
-        /* An absent SKU is an availability question; the box only shows where
-           the gap is. */
-        setRailTab("availability");
-        setFocusAbsent(true);
-        setMslFilter("must");
-      } else {
-        setFocusAbsent(false);
-      }
+      setFocusAbsent(false);
     },
     [scrollToBox],
   );
@@ -165,20 +167,23 @@ export function SessionViewer({
   const selectedBox = selected === null ? null : RECOGNITION_BOXES[selected];
   const zoom = ZOOM_STEPS[zoomIndex];
 
+  /* The Summary tab's one action: the two must-stock gaps, shown as gaps. */
+  const viewGaps = useCallback(() => {
+    setRailTab("availability");
+    setMslFilter("must");
+    setSelected(null);
+    setFocusAbsent(true);
+  }, []);
+
   return (
     <div>
       <SessionHeader
         session={session}
-        days={days}
-        visitIdx={visitIdx}
-        sessionIdx={sessionIdx}
-        onVisit={(index) => {
-          setVisitIdx(index);
-          setSessionIdx(0);
-          clearPin();
-        }}
+        sessions={sessions}
+        flatIndex={flatIndex}
         onSession={(index) => {
-          setSessionIdx(index);
+          if (index < 0 || index >= sessions.length) return;
+          setFlatIndex(index);
           clearPin();
         }}
         qualityOpen={qualityOpen}
@@ -187,83 +192,83 @@ export function SessionViewer({
         onToggleRail={() => setRailOpen((open) => !open)}
       />
 
+      {qualityOpen ? <QualityPanel photos={session.photos} /> : null}
+
+      <CaptureTimeline
+        startedAt={current.startedAt}
+        open={timelineOpen}
+        onToggle={() => setTimelineOpen((open) => !open)}
+      />
+
       <div className={styles.pageBody}>
-        <CaptureTimeline
-          startedAt={current.startedAt}
-          open={timelineOpen}
-          onToggle={() => setTimelineOpen((open) => !open)}
-        />
-
         <div className={styles.workspace} data-rail-open={railOpen}>
-          <div className={styles.stageColumn}>
-            <div className={styles.card}>
-              <SessionToolbar
-                view={view}
-                onViewChange={(next) => {
-                  setView(next);
-                  if (next === "compliance") {
-                    setRailOpen(true);
-                    setRailTab("compliance");
-                  }
-                }}
-                onZoomIn={() =>
-                  setZoomIndex((index) => Math.min(index + 1, ZOOM_STEPS.length - 1))
+          <section className={styles.stagePanel}>
+            <SessionToolbar
+              view={view}
+              onViewChange={(next) => {
+                setView(next);
+                if (next === "compliance") {
+                  setRailOpen(true);
+                  setRailTab("compliance");
                 }
-                onZoomOut={() => setZoomIndex((index) => Math.max(index - 1, 0))}
-                canZoomIn={zoomIndex < ZOOM_STEPS.length - 1}
-                canZoomOut={zoomIndex > 0}
-                zoomLabel={`${zoom}×`}
-                onReset={() => {
-                  setZoomIndex(0);
-                  setBrandFilter("all");
-                  setMslFilter("all");
-                  clearPin();
-                }}
-                canReset={
-                  zoomIndex > 0 ||
-                  brandFilter !== "all" ||
-                  mslFilter !== "all" ||
-                  selected !== null
-                }
-              />
+              }}
+              onZoomIn={() =>
+                setZoomIndex((index) => Math.min(index + 1, ZOOM_STEPS.length - 1))
+              }
+              onZoomOut={() => setZoomIndex((index) => Math.max(index - 1, 0))}
+              canZoomIn={zoomIndex < ZOOM_STEPS.length - 1}
+              canZoomOut={zoomIndex > 0}
+              zoomLabel={`${zoom}×`}
+              onReset={() => {
+                setZoomIndex(0);
+                setBrandFilter("all");
+                setMslFilter("all");
+                clearPin();
+              }}
+              canReset={
+                zoomIndex > 0 ||
+                brandFilter !== "all" ||
+                mslFilter !== "all" ||
+                selected !== null
+              }
+            />
 
-              <ShelfToggles
-                shown={shown}
-                onToggle={toggleExtra}
-                view={view}
-                brandFilter={brandFilter}
-                onBrandFilter={(brand) => {
-                  setBrandFilter(brand);
-                  clearPin();
-                }}
-                mslFilter={mslFilter}
-                onMslFilter={(filter) => {
-                  setMslFilter(filter);
-                  clearPin();
-                }}
-              />
+            <ShelfToggles
+              shown={shown}
+              onToggle={toggleExtra}
+              view={view}
+              brandFilter={brandFilter}
+              onBrandFilter={(brand) => {
+                setBrandFilter(brand);
+                clearPin();
+              }}
+              mslFilter={mslFilter}
+              onMslFilter={(filter) => {
+                setMslFilter(filter);
+                clearPin();
+              }}
+            />
 
-              {!isCurrentCapture ? (
-                <div className={styles.stageNote}>
-                  Recognition evidence below is the {days[0].label} capture — earlier
-                  sessions carry identity and timeline only.
-                </div>
-              ) : null}
+            {!isCurrentCapture ? (
+              <div className={styles.stageNote}>
+                Recognition evidence below is the {sessions[0].dayLabel} capture —
+                earlier sessions carry identity and timeline only.
+              </div>
+            ) : null}
 
-              <ShelfStage
-                view={view}
-                zoom={zoom}
-                shown={shown}
-                viewportRef={viewportRef}
-                hovered={hovered}
-                onHover={setHovered}
-                selected={selected}
-                onSelect={selectBox}
-                isVisible={isVisible}
-                onArrow={onArrow}
-              />
-            </div>
-          </div>
+            <ShelfStage
+              view={view}
+              zoom={zoom}
+              shown={shown}
+              viewportRef={viewportRef}
+              hovered={hovered}
+              onHover={setHovered}
+              selected={selected}
+              onSelect={selectBox}
+              isVisible={isVisible}
+              onArrow={onArrow}
+            />
+          </section>
 
           {railOpen ? (
             <InsightsRail
@@ -293,6 +298,9 @@ export function SessionViewer({
               onAccSkuScope={setAccSkuScope}
               accSkuAsc={accSkuAsc}
               onAccSkuSort={() => setAccSkuAsc((asc) => !asc)}
+              shown={shown}
+              photos={session.photos}
+              onViewGaps={viewGaps}
             />
           ) : null}
         </div>

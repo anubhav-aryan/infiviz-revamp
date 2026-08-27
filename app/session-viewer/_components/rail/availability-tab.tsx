@@ -1,8 +1,6 @@
 "use client";
 
-import { CardActions } from "@/app/_components/card-actions";
 import { CreateTicketButton } from "@/app/_components/create-ticket-button";
-import { Hint } from "@/app/_components/hint";
 import { Icon } from "@/app/_components/icon";
 import { AVAILABILITY, MSL, MUST_HAVE_BRANDS } from "../../_data/session-viewer";
 import styles from "../session-viewer.module.css";
@@ -10,9 +8,14 @@ import styles from "../session-viewer.module.css";
 /**
  * What was meant to be on the shelf, and what recognition found.
  *
- * Columns read **Expected / Found**: "detected" describes what the model did,
- * and this list is about the shelf, not the model. How well the model read it
- * is the Accuracy tab's question.
+ * The list leads rather than the percentage: `72%` is already the Summary tab's
+ * headline, and a reader who has opened Availability has moved past the figure
+ * to the eight rows behind it. Absent SKUs sort first and sit on amber, because
+ * they are the only rows anyone acts on.
+ *
+ * One status column, not an expected/found pair. Every row here is ranged by
+ * definition — that is what a must-stock list is — so a column of identical
+ * ticks under "Expected" was restating the heading.
  */
 export function AvailabilityTab({
   retailer,
@@ -26,30 +29,16 @@ export function AvailabilityTab({
 }) {
   return (
     <>
-      <div className={styles.availabilityHead}>
-        <div className={styles.availabilityMetric}>
-          <span className={styles.availabilityLabelRow}>
-            <span className={styles.availabilityLabel}>{AVAILABILITY.label}</span>
-            <Hint text={AVAILABILITY.definition} className={styles.infoIcon}>
-              <Icon name="info" size={13} />
-            </Hint>
-          </span>
-          <span className={styles.availabilityValue}>{AVAILABILITY.value}</span>
-        </div>
-        <CardActions>
-          <CreateTicketButton
-            context={{ region: retailer, metric: AVAILABILITY.label }}
-          />
-        </CardActions>
-      </div>
-
-      <div className={styles.countCaption}>{AVAILABILITY.detail}</div>
-      <div className={styles.countCaption}>{AVAILABILITY.note}</div>
-
-      <div className={styles.mslChecklistHead}>
-        <span />
-        <span>Expected</span>
-        <span>Found</span>
+      <div className={styles.mslHead}>
+        <span className={styles.blockTitle}>Must-stock list</span>
+        <span className={styles.countCaption} style={{ marginBottom: 0 }}>
+          {AVAILABILITY.note}
+        </span>
+        <CreateTicketButton
+          className={styles.toolButton}
+          label="Raise ticket"
+          context={{ region: retailer, metric: AVAILABILITY.label }}
+        />
       </div>
 
       <div className={styles.mslList}>
@@ -76,9 +65,6 @@ export function AvailabilityTab({
                   Must-have
                 </span>
               ) : null}
-              <span className={styles.mslExpected} aria-label="Expected on shelf">
-                <Icon name="check" size={13} />
-              </span>
               <span
                 className={styles.mslDetected}
                 data-detected={found}

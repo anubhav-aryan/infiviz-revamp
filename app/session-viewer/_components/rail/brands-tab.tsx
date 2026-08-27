@@ -1,18 +1,23 @@
 "use client";
 
-import { Hint } from "@/app/_components/hint";
 import { Icon } from "@/app/_components/icon";
 import {
   BRAND_SHARE_ROWS,
-  OWN_VS_COMPETITION,
   SCOPE_OPTIONS,
-  SHELF_METRICS,
   scoped,
   type Scope,
 } from "../../_data/session-viewer";
 import styles from "../session-viewer.module.css";
 
-/** The shelf as a share: how much of it is ours, and who holds the rest. */
+/**
+ * Who holds the shelf, brand by brand.
+ *
+ * The two share metrics and the own-versus-competition split used to open this
+ * tab; they lead the Summary tab now, where they sit beside the other four
+ * headline figures instead of one tab away from them. What is left here is the
+ * full list they summarise, which a category of two dozen brands needs scoped
+ * and sorted rather than truncated silently.
+ */
 export function BrandsTab({
   scope,
   onScope,
@@ -31,34 +36,7 @@ export function BrandsTab({
 
   return (
     <>
-      <div className={styles.metricPair}>
-        {SHELF_METRICS.map((metric) => (
-          <div key={metric.label}>
-            <div className={styles.metricLabel}>
-              <span className={styles.metricLabelText}>{metric.label}</span>
-              <Hint text={metric.definition} className={styles.infoIcon}>
-                <Icon name="info" size={13} />
-              </Hint>
-            </div>
-            <div className={styles.metricValue}>{metric.value}</div>
-            <div className={styles.metricDetail}>{metric.detail}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className={styles.splitHead}>
-        <span className={styles.splitLabel}>Own vs competition</span>
-        <span className={styles.splitValue}>{OWN_VS_COMPETITION.label}</span>
-      </div>
-      <div className={styles.splitBar}>
-        <span className={styles.splitOwn} style={{ width: `${OWN_VS_COMPETITION.own}%` }} />
-        <span
-          className={styles.splitCompetition}
-          style={{ width: `${OWN_VS_COMPETITION.competition}%` }}
-        />
-      </div>
-
-      <div className={styles.scopeRow}>
+      <div className={styles.scopeRow} data-first="true">
         <span className={styles.blockTitle}>Brand breakdown · facings</span>
         <select
           className={styles.filterSelect}

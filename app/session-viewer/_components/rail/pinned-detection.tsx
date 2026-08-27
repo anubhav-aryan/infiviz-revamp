@@ -9,7 +9,6 @@ import styles from "../session-viewer.module.css";
 const COMPLIANCE_LABEL: Record<RecognitionBox["compliance"], string> = {
   compliant: "Compliant",
   misplaced: "Misplaced",
-  missing: "Missing",
 };
 
 /** The box the reader has pinned, and what the rest of the screen is showing because of it. */
@@ -31,7 +30,7 @@ export function PinnedDetection({
         </button>
       </div>
 
-      <div className={styles.pinBrand}>{box.brand ?? "Unrecognised facing"}</div>
+      <div className={styles.pinBrand}>{box.brand}</div>
 
       <div className={styles.pinGrid}>
         <div>
@@ -56,11 +55,9 @@ export function PinnedDetection({
 
       {exception ? <div className={styles.pinNote}>{exception.note}</div> : null}
 
-      {box.brand ? (
-        <div className={styles.pinNote}>
-          <Icon name="list" size={12} /> The SKU table below is filtered to {box.brand}.
-        </div>
-      ) : null}
+      <div className={styles.pinNote}>
+        <Icon name="list" size={12} /> The SKU table below is filtered to {box.brand}.
+      </div>
     </div>
   );
 }

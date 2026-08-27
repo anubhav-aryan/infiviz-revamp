@@ -6,26 +6,28 @@ import {
   QUALITY_FACTORS,
   QUALITY_LABEL,
   STATUS_CHIP,
-  type SessionRef,
-  type VisitDay,
+  type FlatSession,
 } from "../_data/session-history";
 import type { SessionIdentity } from "../_data/session-viewer";
 import styles from "./session-viewer.module.css";
 
 /**
- * Who and what you are looking at: the store, the state of its capture, and
- * the two controls that choose which of its sessions the page is about.
+ * Who and what you are looking at: the store, the state of its capture, and the
+ * one control that chooses which of its sessions the page is about.
  *
- * The `<h1>` is the store, not the session — the session id is a fact about
- * the store, and a reader arriving from a deep link needs to know where they
- * are before they know which capture they got.
+ * The `<h1>` is the store — code and name, the way the estate lists it — because
+ * a reader arriving from a deep link needs to know where they are before they
+ * know which capture they got. Everything that qualifies the capture rather
+ * than naming it sits in the second row, under a hairline: the two status
+ * pills, then the six facts, then which session of how many this is.
+ *
+ * There is one Session control, not a visit picker plus a session picker.
+ * "The capture before this one" is not a thought about day boundaries.
  */
 export function SessionHeader({
   session,
-  days,
-  visitIdx,
-  sessionIdx,
-  onVisit,
+  sessions,
+  flatIndex,
   onSession,
   qualityOpen,
   onToggleQuality,
@@ -33,167 +35,148 @@ export function SessionHeader({
   onToggleRail,
 }: {
   session: SessionIdentity;
-  days: VisitDay[];
-  visitIdx: number;
-  sessionIdx: number;
-  onVisit: (index: number) => void;
-  onSession: (index: number) => void;
+  /** Every session across every visit, newest first. */
+  sessions: FlatSession[];
+  flatIndex: number;
+  onSession: (flatIndex: number) => void;
   qualityOpen: boolean;
   onToggleQuality: () => void;
   railOpen: boolean;
   onToggleRail: () => void;
 }) {
-  const day = days[visitIdx];
-  const current: SessionRef = day.sessions[sessionIdx];
+  const current = sessions[flatIndex];
   const status = STATUS_CHIP[session.status];
 
   const facts: { icon: IconName; value: string; mono?: boolean }[] = [
     { icon: "store", value: session.retailer },
     { icon: "map-pin", value: session.place },
-    { icon: "list", value: session.category },
-    { icon: "boxes", value: session.placement },
-    { icon: "camera", value: `${session.photos} photos` },
+    { icon: "list", value: current.category },
+    { icon: "calendar-days", value: `${current.dayLabel} · ${current.startedAt}` },
     { icon: "user", value: session.merchandiser, mono: true },
-    { icon: "hash", value: current.id.slice(0, 8), mono: true },
+    { icon: "image", value: `${session.photos} photos` },
   ];
 
   return (
-    <div className={styles.pageHeader}>
-      <div className={styles.crumbs}>
-        Sessions
-        <span className={styles.crumbSep} aria-hidden="true">
-          /
-        </span>
-        Session Viewer
-      </div>
-
+    <header className={styles.pageHeader}>
       <div className={styles.headTop}>
-        <div className={styles.headTitleRow}>
-          <h1 className={styles.headTitle}>{session.store}</h1>
-          <span className={styles.chip} data-tone={status.tone}>
-            {status.label}
-          </span>
-          <button
-            type="button"
-            className={styles.qualityChip}
-            onClick={onToggleQuality}
-            aria-expanded={qualityOpen}
-          >
-            <Icon name="camera" size={12} />
-            {QUALITY_LABEL}
-            <Icon name={qualityOpen ? "chevron-up" : "chevron-down"} size={12} />
-          </button>
+        <div className={styles.headTitleWrap}>
+          <div className={styles.eyebrow}>Session viewer</div>
+          <h1 className={styles.headTitle}>{session.title}</h1>
         </div>
 
         <div className={styles.headControls}>
-          <label className={styles.headField}>
-            Visit date
-            <select
-              className={styles.headSelect}
-              value={day.date}
-              onChange={(event) =>
-                onVisit(days.findIndex((entry) => entry.date === event.target.value))
-              }
-            >
-              {days.map((entry) => (
-                <option key={entry.date} value={entry.date}>
-                  {entry.label}
-                  {entry.sessions.length > 1 ? ` · ${entry.sessions.length} sessions` : ""}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <span className={styles.stepper}>
-            <button
-              type="button"
-              className={styles.iconButton}
-              onClick={() => onSession(sessionIdx - 1)}
-              disabled={sessionIdx === 0}
-              aria-label="Previous session in this visit"
-            >
-              <Icon name="chevron-left" size={16} />
-            </button>
-            <label className={styles.headField}>
-              Session
+          <div className={styles.controlShell}>
+            <label className={styles.controlField}>
+              <span className={styles.controlLabel}>Session</span>
               <select
-                className={styles.headSelect}
+                className={styles.bareSelect}
                 value={current.id}
                 onChange={(event) =>
-                  onSession(day.sessions.findIndex((entry) => entry.id === event.target.value))
+                  onSession(sessions.findIndex((entry) => entry.id === event.target.value))
                 }
               >
-                {day.sessions.map((entry) => (
+                {sessions.map((entry) => (
                   <option key={entry.id} value={entry.id}>
-                    {entry.startedAt} · {entry.label}
+                    {entry.dayLabel} · {entry.startedAt} · {entry.category}
                   </option>
                 ))}
               </select>
             </label>
-            <button
-              type="button"
-              className={styles.iconButton}
-              onClick={() => onSession(sessionIdx + 1)}
-              disabled={sessionIdx === day.sessions.length - 1}
-              aria-label="Next session in this visit"
-            >
-              <Icon name="chevron-right" size={16} />
-            </button>
-          </span>
-
-          <span className={styles.sessionCaption}>
-            {day.sessions.length === 1
-              ? "only session"
-              : `${sessionIdx + 1} of ${day.sessions.length} in visit`}
-          </span>
-
-          <span className={styles.divider} aria-hidden="true" />
+            <span className={styles.stepper}>
+              <button
+                type="button"
+                className={styles.iconButton}
+                onClick={() => onSession(flatIndex - 1)}
+                disabled={flatIndex === 0}
+                aria-label="Previous session"
+              >
+                <Icon name="chevron-left" size={16} />
+              </button>
+              <button
+                type="button"
+                className={styles.iconButton}
+                onClick={() => onSession(flatIndex + 1)}
+                disabled={flatIndex === sessions.length - 1}
+                aria-label="Next session"
+              >
+                <Icon name="chevron-right" size={16} />
+              </button>
+            </span>
+          </div>
 
           <button
             type="button"
-            className={styles.toolButton}
+            className={styles.railToggle}
             data-active={railOpen}
             aria-pressed={railOpen}
             onClick={onToggleRail}
           >
             <Icon name="panel-right" size={14} />
-            Insights
+            {railOpen ? "Hide insights" : "Insights"}
           </button>
         </div>
       </div>
 
-      {qualityOpen ? (
-        <div className={styles.qualityPanel}>
-          <div className={styles.qualityTop}>
-            <span className={styles.qualityScore}>{CAPTURE_SCORE}</span>
-            <span className={styles.qualityCaption}>
-              mean capture score · {session.photos} of {session.photos} photos passed
-            </span>
-          </div>
-          <div className={styles.qualityGrid}>
-            {QUALITY_FACTORS.map(([name, score]) => (
-              <div key={name}>
-                <div className={styles.factorName}>
-                  {name}
-                  <span className={styles.factorValue}>{score}%</span>
-                </div>
-                <div className={styles.factorTrack}>
-                  <span className={styles.factorBar} style={{ width: `${score}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
+      <div className={styles.headMeta}>
+        <span className={styles.chip} data-tone={status.tone}>
+          <Icon name="check" size={12} />
+          {status.label}
+        </span>
+        <button
+          type="button"
+          className={styles.qualityChip}
+          onClick={onToggleQuality}
+          aria-expanded={qualityOpen}
+        >
+          <Icon name="camera" size={12} />
+          {QUALITY_LABEL}
+          <Icon name={qualityOpen ? "chevron-up" : "chevron-down"} size={12} />
+        </button>
 
-      <div className={styles.sessionHeadMeta}>
+        <span className={styles.divider} aria-hidden="true" />
+
         {facts.map((fact) => (
-          <span key={fact.icon} className={styles.sessionHeadItem} data-mono={fact.mono}>
-            <Icon name={fact.icon} size={15} />
+          <span key={fact.icon} className={styles.headFact} data-mono={fact.mono}>
+            <Icon name={fact.icon} size={14} />
             {fact.value}
           </span>
         ))}
+
+        <span className={styles.sessionCaption}>
+          Session {flatIndex + 1} of {sessions.length}
+        </span>
       </div>
+    </header>
+  );
+}
+
+/**
+ * The four factors behind the capture score, opened from the pill above.
+ *
+ * Its own full-bleed band rather than a panel inside the header: it pushes the
+ * whole page down when it opens, and a sticky header that changes height as you
+ * scroll under it is a header that fights the reader.
+ */
+export function QualityPanel({ photos }: { photos: number }) {
+  return (
+    <div className={styles.qualityPanel}>
+      <div className={styles.qualityTop}>
+        <span className={styles.qualityScore}>{CAPTURE_SCORE}</span>
+        <span className={styles.qualityCaption}>
+          mean capture score · {photos} of {photos} photos passed
+        </span>
+      </div>
+      {QUALITY_FACTORS.map(([name, score]) => (
+        <div key={name} className={styles.factor}>
+          <div className={styles.factorName}>
+            {name}
+            <span className={styles.factorValue}>{score}%</span>
+          </div>
+          <div className={styles.factorTrack}>
+            <span className={styles.factorBar} style={{ width: `${score}%` }} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

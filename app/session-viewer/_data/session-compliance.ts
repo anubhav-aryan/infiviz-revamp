@@ -11,10 +11,10 @@ import {
  *
  * Two kinds, and they are genuinely different failures. A **misplaced** SKU is
  * on the shelf in the wrong slot: recognition found it, the planogram disagrees
- * about where. An **absent** one is a ranged must-stock SKU that is not on the
- * shelf at all — which is why both of them point at the two boxes recognition
- * could not identify. Every row pins a box on the capture, so "position 7" is
- * something you can look at rather than a coordinate you take on trust.
+ * about where — so it has a box, and picking the row pins that box on the
+ * capture. An **absent** one is not on the shelf at all, so it has **no** box:
+ * there is no rectangle to draw around a gap. Picking one of those rows takes
+ * the reader to the must-stock list instead, which is where a gap is answerable.
  *
  * Every `found` label is derived from the box it names. The design authored
  * them by hand and one had drifted a position out of step with its own
@@ -26,10 +26,10 @@ export type ExceptionKind = "absent" | "misplaced";
 export type Exception = {
   kind: ExceptionKind;
   brand: string;
-  /** The box this row pins on the capture. */
-  boxId: string;
+  /** The box this row pins on the capture. Misplaced rows only — see above. */
+  boxId?: string;
   expected: string;
-  /** Derived — `positionLabel(boxId)` for a misplaced row, "Not detected" otherwise. */
+  /** `positionLabel(boxId)` for a misplaced row, "Not detected" for an absent one. */
   found: string;
   note: string;
   /** Absent rows only: the must-stock row to flag in the availability tab. */
@@ -41,8 +41,7 @@ const ABSENT: Exception[] = [
     kind: "absent",
     brand: "Optic White",
     sku: "COL Optic White Plus Shine 100G",
-    boxId: "s1p8",
-    expected: positionLabel("s1p8"),
+    expected: "Shelf 1 · position 8",
     found: "Not detected",
     note: "Ranged must-stock SKU absent from the bay",
   },
@@ -50,8 +49,7 @@ const ABSENT: Exception[] = [
     kind: "absent",
     brand: "Max Fresh",
     sku: "COL Max Fresh Blue Gel 140G",
-    boxId: "s2p7",
-    expected: positionLabel("s2p7"),
+    expected: "Shelf 2 · position 9",
     found: "Not detected",
     note: "Ranged must-stock SKU absent from the bay",
   },
@@ -87,27 +85,43 @@ const MISPLACED: Exception[] = [
 /** Absent first: a SKU that is not on the shelf outranks one in the wrong slot. */
 export const EXCEPTIONS: Exception[] = [...ABSENT, ...MISPLACED];
 
-export const EXCEPTION_BY_BOX = new Map(EXCEPTIONS.map((row) => [row.boxId, row]));
+export const EXCEPTION_BY_BOX = new Map(
+  EXCEPTIONS.flatMap((row) => (row.boxId === undefined ? [] : [[row.boxId, row] as const])),
+);
 
 export const COMPLIANCE_CAPTION = `${ABSENT.length} missing · ${MISPLACED.length} misplaced`;
 
 /* ---- the identities this file has to hold ---- */
 
 for (const row of EXCEPTIONS) {
+  if (row.kind === "absent") {
+    if (row.boxId !== undefined) {
+      throw new Error(
+        `Exception for ${row.brand} is absent but names box ${row.boxId}. ` +
+          `An absent SKU is a gap on the shelf, not a detection — see session-compliance.ts.`,
+      );
+    }
+    continue;
+  }
+  if (row.boxId === undefined) {
+    throw new Error(
+      `Exception for ${row.brand} is misplaced but names no box. ` +
+        `A misplaced facing was found somewhere, and the row has to say where.`,
+    );
+  }
   const box = BOX_BY_ID.get(row.boxId);
   if (!box) {
     throw new Error(
       `Exception for ${row.brand} points at box ${row.boxId}, which does not exist. See session-compliance.ts.`,
     );
   }
-  const wanted = row.kind === "absent" ? "missing" : "misplaced";
-  if (box.compliance !== wanted) {
+  if (box.compliance !== "misplaced") {
     throw new Error(
-      `Exception for ${row.brand} is "${row.kind}" but box ${row.boxId} is ${box.compliance}. ` +
+      `Exception for ${row.brand} is "misplaced" but box ${row.boxId} is ${box.compliance}. ` +
         `An exception must name the box that actually failed — see session-compliance.ts.`,
     );
   }
-  if (row.kind === "misplaced" && row.found !== positionLabel(row.boxId)) {
+  if (row.found !== positionLabel(row.boxId)) {
     throw new Error(`Exception for ${row.brand} reports "${row.found}" but sits at ${positionLabel(row.boxId)}.`);
   }
 }
