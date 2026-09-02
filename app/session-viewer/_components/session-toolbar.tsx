@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Hint } from "@/app/_components/hint";
 import { Icon } from "@/app/_components/icon";
 import type { ShelfView } from "../_data/session-viewer";
 import styles from "./session-viewer.module.css";
@@ -134,6 +135,20 @@ export function SessionToolbar({
           Compare
         </Link>
         <ShareButton />
+
+        {/* Evidence photos are the after shot — what the shelf looked like once
+            the merchandiser acted on the session. Some sessions have them and
+            some do not, and they carry their own metrics, so the destination is
+            a page of its own rather than a lightbox. Disabled until that page
+            exists: an enabled button with nowhere to go is the one thing this
+            toolbar refuses to draw. `align="end"` because this sits at the
+            right edge, where a centred bubble would run off the panel. */}
+        <Hint text="After-action evidence photos — not built yet" align="end">
+          <button type="button" className={styles.toolButton} disabled>
+            <Icon name="camera" size={14} />
+            Evidence Image
+          </button>
+        </Hint>
       </div>
     </div>
   );

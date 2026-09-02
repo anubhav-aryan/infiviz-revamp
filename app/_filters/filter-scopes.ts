@@ -33,7 +33,7 @@ export type FilterScopeId = "activity" | "analytics" | "session-viewer";
  * per-screen choice — and their fixed count is what guarantees the row cannot
  * overflow.
  */
-const DEFAULTS: DimId[] = ["photoType", "category", "retailer"];
+const DEFAULTS: DimId[] = ["placementType", "category", "retailer"];
 
 export const FILTER_SCOPES: Record<FilterScopeId, DimId[]> = {
   activity: [...DEFAULTS, "region", "storeType"],

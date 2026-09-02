@@ -4,7 +4,8 @@ import type { RejectedSession, WorstRow } from "./photo-quality";
 
 /**
  * What the report's row-level tables can be filtered by. Everything else the
- * global bar offers — photo type, category, retailer — has no field on these
+ * global bar offers — placement type, category, retailer — has no field on
+ * these
  * rows, so `narrowFilters` abstains and the figure carries an "unfiltered" mark
  * instead of quietly emptying.
  */

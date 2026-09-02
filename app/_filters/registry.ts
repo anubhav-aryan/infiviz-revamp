@@ -37,7 +37,7 @@ export type DimId =
   | "storeType"
   | "category"
   | "placement"
-  | "photoType"
+  | "placementType"
   | "store"
   | "merchandiser"
   | "session"
@@ -167,7 +167,12 @@ export const REGISTRY: Record<DimId, CanonicalDim> = {
 
   placement: {
     id: "placement",
-    label: "Placement",
+    /* Retitled from "Placement" when `placementType` took that name. The id
+       stays `placement`: it is the key `canon()` and `VISIT_ACCESSORS` read,
+       and every fixture row carries a `placement` field, so renaming it would
+       touch four dozen call sites to say the same thing. Label and id drift
+       here deliberately — the label is what these five values actually are. */
+    label: "Shelf Position",
     values: plain(
       "Eye Level",
       "Top Shelf",
@@ -177,27 +182,27 @@ export const REGISTRY: Record<DimId, CanonicalDim> = {
     ),
   },
 
-  photoType: {
-    id: "photoType",
-    label: "Photo type",
-    /* New. Nothing in the fixtures carries a photo type yet, so no accessor can
-       answer for it — it is offered because it is one of the four facts that
-       define a session, and it is deliberately the longest default list, which
-       is what makes it the dimension that proves the search affordance. */
-    values: plain(
-      "Shelf",
-      "Display",
-      "Prototype",
-      "POSM",
-      "Planogram",
-      "Competitor shelf",
-      "Storefront",
-      "Price tag",
-      "Promotion",
-      "Cooler",
-      "Gondola end",
-      "Rejected capture",
-    ),
+  placementType: {
+    id: "placementType",
+    label: "Placement Type",
+    /* Where the product is merchandised — the fixture it sits in — which is a
+       different question from `placement` above (now "Shelf Position"), where
+       on a shelf it sits. Nothing in the fixtures carries a placement type
+       yet, so no accessor answers for it; it is offered because it is one of
+       the facts that define a session.
+
+       Written out rather than through `plain()` because two of these replace
+       earlier spellings and have to keep answering to them — see `aliases`.
+       Cut from twelve values to five on review; this used to be the dimension
+       that demonstrated the menu's search box, which `store` and
+       `merchandiser` still do. */
+    values: [
+      { id: "shelf", label: "Shelf" },
+      { id: "display", label: "Display" },
+      { id: "freezer", label: "Freezer", aliases: ["Cooler"] },
+      { id: "poster", label: "Poster", aliases: ["POSM"] },
+      { id: "bin", label: "Bin" },
+    ],
   },
 
   store: { id: "store", label: "Store", values: STORE_VALUES },
@@ -284,7 +289,16 @@ export function isDimId(value: string): value is DimId {
   return value in REGISTRY;
 }
 
-export function isSearchable(dim: CanonicalDim): boolean {
+/**
+ * Whether a dimension's menu earns a search box.
+ *
+ * Takes anything with a `values` array rather than a `CanonicalDim`, because
+ * both vocabularies ask this question: the global bar holds `CanonicalDim`s
+ * and a screen's own catalogue holds `FilterDimension`s. Widening it here is
+ * what lets `SEARCH_THRESHOLD` stay a single number — it had been copied as a
+ * bare `> 10` into `global-filter-bar.tsx` and drifted.
+ */
+export function isSearchable(dim: { values: readonly unknown[] }): boolean {
   return dim.values.length > SEARCH_THRESHOLD;
 }
 

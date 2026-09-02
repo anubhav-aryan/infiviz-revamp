@@ -219,8 +219,17 @@ export function Analytics() {
 
       {/* Supporting data, at the foot. The capture funnel qualifies every figure
           above it, but it is not what anyone opens the dashboard to see — it
-          answers "how much data is behind this?", which is a second question. */}
-      <DataHealthBand month={period} />
+          answers "how much data is behind this?", which is a second question.
+
+          Internal only: how much data reached the pipeline is an operator's
+          concern, and a client reading their own dashboard should not have to
+          discount the figures above by it. Gated on the same `locked` that
+          fixes the persona rather than a second `useRole()` — `locked` is
+          false until `ready`, so the band is in the prerendered markup and
+          leaves in the post-hydration pass. A bare `role !== "internal"` here
+          would be a hydration mismatch on this static route; see the note on
+          `ready` in `use-role.ts`. */}
+      {!locked ? <DataHealthBand month={period} /> : null}
     </>
   );
 }

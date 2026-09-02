@@ -48,8 +48,9 @@ export function applyFilters<T>(
  *
  * `applyFilters` fails a row whose dimension has no accessor, which is right
  * when a screen owns its own filter list — a filter you can see must do
- * something. It is wrong under a *global* filter bar, where a Photo-type filter
- * set on one screen travels to a table that has never heard of photo types and
+ * something. It is wrong under a *global* filter bar, where a Placement-type
+ * filter set on one screen travels to a table that has never heard of
+ * placement types and
  * would empty it. Narrowing first means each table answers for the dimensions
  * it carries and abstains on the rest, which is what lets one filter set span
  * screens that hold different facts.

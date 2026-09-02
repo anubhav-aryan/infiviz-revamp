@@ -6,7 +6,13 @@ import { DimensionMenu } from "./dimension-menu";
 import { dateLabel, isDefaultDate, type DateToken } from "./date-token";
 import { useGlobalFilters } from "./global-filter-context";
 import { filterKey, type ActiveFilter, type FilterDimension } from "./model";
-import { describeFilter, REGISTRY, valueLabel, type DimId } from "./registry";
+import {
+  describeFilter,
+  isSearchable,
+  REGISTRY,
+  valueLabel,
+  type DimId,
+} from "./registry";
 import { useFilterMenu } from "./use-filter-menu";
 import {
   CUSTOM_RANGE_MAX,
@@ -51,7 +57,7 @@ const CHIP_BUDGET = 3;
  * A scope that cannot answer one of these simply draws fewer dropdowns — see
  * `defaultsFor`. Activity has no brand dimension, so it keeps three.
  */
-export const DEFAULT_DIMS: DimId[] = ["photoType", "category", "retailer", "brand"];
+export const DEFAULT_DIMS: DimId[] = ["placementType", "category", "retailer", "brand"];
 
 /**
  * The defaults this scope can actually answer, in priority order.
@@ -87,7 +93,10 @@ function DefaultPicker({
      holds the checkable list. */
   const { open, toggle, rootRef, query, setQuery, matches } = useFilterMenu([]);
 
-  const searchable = registry.values.length > 10;
+  /* Through `isSearchable` rather than its own `> 10`: the threshold and the
+     reasoning behind it live in `registry.ts`, and two copies of the number
+     drifted apart once already. */
+  const searchable = isSearchable(registry);
   const shown = registry.values
     .filter((value) => (searchable ? matches(value.label) : true))
     .slice(0, 50);

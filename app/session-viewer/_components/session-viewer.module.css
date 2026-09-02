@@ -52,10 +52,19 @@
   transition: background var(--transition-snap), color var(--transition-snap);
 }
 
-button.toolButton:hover,
+button.toolButton:hover:not(:disabled),
 a.toolButton:hover {
   background: var(--surface-hover);
   color: var(--text-body);
+}
+
+/* Matches `.iconButton:disabled` above. Without it a disabled `.toolButton`
+   looked identical to a live one — its own background and colour override the
+   browser's default greying — so Reset and Planogram Export both read as
+   clickable while inert. */
+.toolButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .toolButton[data-active="true"],
@@ -902,13 +911,6 @@ a.toolButton:hover {
   font-weight: 600;
   color: var(--text-heading);
   cursor: pointer;
-}
-
-.stepper {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding-left: 4px;
 }
 
 /* Filled while closed — an outlined button on a white header was invisible,

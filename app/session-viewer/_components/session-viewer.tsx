@@ -60,7 +60,11 @@ export function SessionViewer({
   const [railOpen, setRailOpen] = useState(false);
   const [railTab, setRailTab] = useState<RailTab>("summary");
   const [qualityOpen, setQualityOpen] = useState(false);
-  const [timelineOpen, setTimelineOpen] = useState(true);
+  /* Collapsed by default. The timeline answers "when was each photo taken?",
+     which matters when a session looks wrong and almost never otherwise, so it
+     costs the stitch vertical space it has not earned on open. Its head row
+     and "Show" control stay visible either way, so it is still discoverable. */
+  const [timelineOpen, setTimelineOpen] = useState(false);
 
   const [hovered, setHovered] = useState<number | null>(null);
   const [selected, setSelected] = useState<number | null>(null);

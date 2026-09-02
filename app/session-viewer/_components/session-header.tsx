@@ -102,26 +102,6 @@ export function SessionHeader({
                 ))}
               </select>
             </label>
-            <span className={styles.stepper}>
-              <button
-                type="button"
-                className={styles.iconButton}
-                onClick={() => onSession(flatIndex - 1)}
-                disabled={flatIndex === 0}
-                aria-label="Previous session"
-              >
-                <Icon name="chevron-left" size={16} />
-              </button>
-              <button
-                type="button"
-                className={styles.iconButton}
-                onClick={() => onSession(flatIndex + 1)}
-                disabled={flatIndex === sessions.length - 1}
-                aria-label="Next session"
-              >
-                <Icon name="chevron-right" size={16} />
-              </button>
-            </span>
           </div>
 
           <button

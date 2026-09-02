@@ -2,7 +2,7 @@
 
 import { Hint } from "@/app/_components/hint";
 import { Icon } from "@/app/_components/icon";
-import { ACCURACY_AUTHOR, ACCURACY_OVERALL } from "../../_data/session-accuracy";
+import { ACCURACY_ASOF, ACCURACY_OVERALL } from "../../_data/session-accuracy";
 import { formatDelta, PREVIOUS_VISIT } from "../../_data/session-previous";
 import {
   EXTRA_COUNTS,
@@ -119,7 +119,7 @@ export function SummaryTab({
       <div className={styles.scopeRow}>
         <span className={styles.blockTitle}>Predicted vs actual</span>
         <span className={styles.countCaption} style={{ marginBottom: 0 }}>
-          {ACCURACY_AUTHOR}
+          {ACCURACY_ASOF}
         </span>
       </div>
 

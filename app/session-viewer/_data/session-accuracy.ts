@@ -59,7 +59,10 @@ export const ACCURACY_PAIRS: AccuracyPair[] = [
   ),
 ];
 
-export const ACCURACY_AUTHOR = "Actuals entered by Anand K · 05 Aug 2026";
+/* No name: who keyed the audit in is Infilect's own record, not something a
+   client reading their store's accuracy needs. The date stays — it is what
+   tells a reader how current the comparison below is. */
+export const ACCURACY_ASOF = "Actuals entered 05 Aug 2026";
 
 /** Per-brand recognition accuracy, for the eleven brands on this bay. */
 export const BRAND_ACCURACY: Record<string, number> = {

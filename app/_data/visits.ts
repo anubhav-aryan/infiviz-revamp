@@ -673,7 +673,8 @@ export function build(facts: Facts, filters: ActiveFilter[]): View {
     })),
     visitsLabel: `${group(visits)} visits`,
     /* `narrowFilters`, not `applyFilters`: under the global bar a filter this
-       screen never offered — Photo type, say — can arrive from another screen,
+       screen never offered — Placement type, say — can arrive from another
+       screen,
        and `applyFilters` fails a row on any dimension it cannot answer for. It
        would blank the list rather than ignore the filter. */
     visits: narrowFilters(facts.visitRows, filters, VISIT_ACCESSORS),

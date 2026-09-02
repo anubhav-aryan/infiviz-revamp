@@ -242,7 +242,8 @@ const CANONICAL_TO_DIM: Partial<Record<DimId, DimKey>> = {
 
 /**
  * Canonical filters → the shape this screen's machinery already understands.
- * Anything the spine cannot answer for (photo type, placement) is dropped here
+ * Anything the spine cannot answer for (placement type, shelf position) is
+ * dropped here
  * rather than passed on to fail a row inside `applyFilters`.
  */
 export function toAnalyticsFilters(filters: ActiveFilter[]): ActiveFilter[] {

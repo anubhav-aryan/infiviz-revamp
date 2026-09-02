@@ -2,7 +2,7 @@
 
 import { Icon } from "@/app/_components/icon";
 import { hasFilter, type ActiveFilter, type FilterDimension } from "./model";
-import { isDimId, SEARCH_THRESHOLD, valueLabel } from "./registry";
+import { isDimId, isSearchable, valueLabel } from "./registry";
 import { useFilterMenu } from "./use-filter-menu";
 import styles from "./global-filter-bar.module.css";
 
@@ -50,7 +50,7 @@ export function DimensionMenu({
   const label = (dim: FilterDimension, value: string) =>
     isDimId(dim.key) ? valueLabel(dim.key, value) : value;
 
-  const searchable = dimension ? dimension.values.length > SEARCH_THRESHOLD : false;
+  const searchable = dimension ? isSearchable(dimension) : false;
   const allMatching = dimension
     ? dimension.values.filter((value) => matches(label(dimension, value)))
     : [];
