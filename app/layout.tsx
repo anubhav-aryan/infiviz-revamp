@@ -46,7 +46,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
-      <body>{children}</body>
+      {/* And on `body` for the same reason, because the flag does not inherit:
+          `<html>` carrying it did nothing for extensions that stamp the body
+          instead, which ColorZilla does (`cz-shortcut-listen`), as do several
+          password managers. Still one element deep — the server sends `body`
+          with no attributes at all, so there is nothing of ours here to mask,
+          and a real mismatch anywhere inside `children` still reports. */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
