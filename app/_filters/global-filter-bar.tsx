@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Icon } from "@/app/_components/icon";
 import { DimensionMenu } from "./dimension-menu";
+import { ShareFiltersButton } from "./share-filters-button";
 import { dateLabel, isDefaultDate, type DateToken } from "./date-token";
 import { useGlobalFilters } from "./global-filter-context";
 import { filterKey, type ActiveFilter, type FilterDimension } from "./model";
@@ -405,6 +406,10 @@ export function GlobalFilterBar() {
 
       <div className={styles.barEnd}>
         <DimensionMenu catalogue={catalogue} filters={filters} onAdd={add} />
+        {/* After the add-filter control, because it acts on what is already
+            applied rather than adding to it — and before "Clear all", so the
+            destructive action stays last. */}
+        <ShareFiltersButton filters={filters} />
         {anything ? (
           <button type="button" className={styles.clearAll} onClick={clear}>
             Clear all

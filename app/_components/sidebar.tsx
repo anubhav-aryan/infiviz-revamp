@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { ROLES, useRole, type Role } from "@/app/_identity/use-role";
 import { DEMO_STATES, useDemoState } from "@/app/_landing/use-demo-state";
 import type { LandingStateId } from "@/app/_landing/_data/landing";
@@ -9,6 +11,91 @@ import { Icon } from "./icon";
 import { NAV_BY_ID, OTHER_APPS, OTHER_APPS_LABEL, type NavEntry } from "./nav";
 import { useSidebarCollapsed } from "./use-sidebar-collapsed";
 import styles from "./app-shell.module.css";
+
+/**
+ * One navigable row, plus its dropdown when it has children.
+ *
+ * The row stays a link and the chevron is a separate button beside it, so the
+ * label still navigates for anyone used to clicking it — a surface does not
+ * lose its destination by gaining children.
+ *
+ * Two deliberate choices about state:
+ *
+ * - **Open is seeded from `entry.state`, not the path.** Every page under
+ *   `/analytics/*` already passes `active="analytics"` down explicitly, which
+ *   is this file's convention for "where am I" — so the dropdown is open
+ *   exactly when you are somewhere inside it, with no routing dependency.
+ *   It is `useState`, not derived, so a reader can then close it and have that
+ *   respected while they stay on the section.
+ * - **`usePathname` is used only to mark the current child.** There is no prop
+ *   carrying which child is active, and a dropdown that highlights nothing
+ *   reads as broken. The comparison is exact rather than prefixed, because
+ *   `/analytics` is a prefix of `/analytics/shared` and would otherwise mark
+ *   Overview current on every page in the section.
+ */
+function NavRow({ entry, collapsed }: { entry: NavEntry; collapsed: boolean }) {
+  const item = NAV_BY_ID[entry.id];
+  const pathname = usePathname();
+  const [open, setOpen] = useState(entry.state === "active");
+
+  const children = item.children;
+
+  const link = (
+    <Link
+      href={item.href}
+      className={styles.navItem}
+      data-state={entry.state}
+      aria-current={entry.state === "active" ? "page" : undefined}
+      // Collapsed, the label is hidden, so the name has to come from
+      // somewhere. Expanded, it would only duplicate visible text.
+      title={collapsed ? item.title : undefined}
+    >
+      <Icon name={item.icon} />
+      <span className={styles.navLabel}>{item.label}</span>
+    </Link>
+  );
+
+  if (!children?.length) return link;
+
+  return (
+    <>
+      {/* The link and its chevron share a row but are separate controls, so
+          the row needs a wrapper the CSS can lay out without either one
+          swallowing the other's hit area. */}
+      <div className={styles.navRow}>
+        {link}
+        <button
+          type="button"
+          className={styles.navExpand}
+          onClick={() => setOpen((wasOpen) => !wasOpen)}
+          aria-expanded={open}
+          aria-label={`${open ? "Collapse" : "Expand"} ${item.title}`}
+        >
+          <Icon name={open ? "chevron-up" : "chevron-down"} size={14} />
+        </button>
+      </div>
+
+      {/* Collapsed, the rail is icons only and there is nowhere for a label to
+          go, so the dropdown is not rendered at all rather than hidden — the
+          same reasoning as `.navLabel`, which the collapsed rules hide. */}
+      {open && !collapsed ? (
+        <div className={styles.navChildren}>
+          {children.map((child) => (
+            <Link
+              key={child.href}
+              href={child.href}
+              className={styles.navChild}
+              data-state={pathname === child.href ? "active" : undefined}
+              aria-current={pathname === child.href ? "page" : undefined}
+            >
+              {child.label}
+            </Link>
+          ))}
+        </div>
+      ) : null}
+    </>
+  );
+}
 
 /**
  * The primary sidebar, used by both shells. Split out of `AppShell` purely so
@@ -84,19 +171,7 @@ export function Sidebar({
           }
 
           return (
-            <Link
-              key={entry.id}
-              href={item.href}
-              className={styles.navItem}
-              data-state={entry.state}
-              aria-current={entry.state === "active" ? "page" : undefined}
-              // Collapsed, the label is hidden, so the name has to come from
-              // somewhere. Expanded, it would only duplicate visible text.
-              title={collapsed ? item.title : undefined}
-            >
-              <Icon name={item.icon} />
-              <span className={styles.navLabel}>{item.label}</span>
-            </Link>
+            <NavRow key={entry.id} entry={entry} collapsed={collapsed} />
           );
         })}
 

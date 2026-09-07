@@ -16,6 +16,18 @@ export type NavId =
   | "infichat"
   | "admin";
 
+/**
+ * A row inside a nav item's dropdown.
+ *
+ * Deliberately *not* a `NavId`. A `NavId` is a product surface: it owns an
+ * icon, an entry in the collapsed rail, an `active` prop that every page in it
+ * passes down, and a line in `NAV_CAPTURING`. These are none of those — they
+ * are links in a disclosure, and widening `NavId` for them would force
+ * `NAV_BY_ID`, `fullNav` and both shells' `active` props to grow a case for a
+ * row that never appears in any of those places.
+ */
+export type NavChild = { label: string; href: string };
+
 export type NavItem = {
   id: NavId;
   label: string;
@@ -23,6 +35,16 @@ export type NavItem = {
   title: string;
   icon: IconName;
   href: string;
+  /**
+   * Sub-surfaces reached from a dropdown under this row. The item stays its
+   * own link — the chevron expands, the label still navigates — so adding
+   * children never takes a destination away from someone who had it.
+   *
+   * The first child is conventionally the item's own `href` under a plainer
+   * name ("Overview"), so the dropdown is a complete list of where it goes
+   * rather than a list of everywhere *except* the obvious place.
+   */
+  children?: NavChild[];
   /**
    * Internal tooling, not part of the client's product. Present here so it is a
    * valid `NavId` for the shells, but filtered out of both the sidebar and the
@@ -33,7 +55,18 @@ export type NavItem = {
 
 export const NAV: NavItem[] = [
   { id: "activity", label: "Activity", title: "Activity", icon: "activity", href: "/" },
-  { id: "analytics", label: "Analytics", title: "Analytics", icon: "bar-chart-3", href: "/analytics" },
+  {
+    id: "analytics",
+    label: "Analytics",
+    title: "Analytics",
+    icon: "bar-chart-3",
+    href: "/analytics",
+    children: [
+      { label: "Overview", href: "/analytics" },
+      { label: "Shared Analytics", href: "/analytics/shared" },
+      { label: "Boards", href: "/analytics/boards" },
+    ],
+  },
   { id: "session-viewer", label: "Session Viewer", title: "Session Viewer", icon: "image", href: "/session-viewer" },
   { id: "master-data", label: "Master data", title: "Master data", icon: "database", href: "/master-data" },
   { id: "catalog", label: "Catalog", title: "Catalog", icon: "package", href: "/catalog" },

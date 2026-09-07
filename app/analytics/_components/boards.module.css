@@ -1,0 +1,440 @@
+/* Boards — the list, the draft editor, and a saved board's own page.
+   Split out of `shared-analytics.module.css` when boards took their own route
+   tree; the shared-views inbox keeps that file. The page head, buttons and
+   section rhythm are duplicated rather than imported because CSS modules have
+   no inheritance and the two surfaces are now free to drift. */
+
+.screen {
+  padding: var(--space-5) var(--space-6) var(--space-8);
+  max-width: 1320px;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.headActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-heading);
+}
+
+.subtitle {
+  margin: 5px 0 0;
+  font-size: 12.5px;
+  color: var(--text-caption);
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: var(--space-3);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text-caption);
+}
+
+.crumb:hover {
+  color: var(--indigo-700);
+}
+
+/* ---------- buttons ---------- */
+
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--indigo-600);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-on-brand);
+  cursor: pointer;
+  transition: background var(--transition-snap);
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: var(--indigo-700);
+}
+
+.primaryButton:disabled {
+  background: var(--neutral-200);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.ghostButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 8px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: var(--surface-card);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-snap), color var(--transition-snap);
+}
+
+.ghostButton:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text-body);
+}
+
+.ghostButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dangerButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 8px 12px;
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  background: var(--surface-card);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--danger);
+  cursor: pointer;
+}
+
+.dangerButton:hover {
+  background: var(--danger);
+  color: var(--text-on-brand);
+}
+
+/* Inline confirm, the house pattern for a destructive action — a second click
+   in a changed row rather than a `window.confirm` the app never uses. */
+.confirmRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.confirmText {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+/* ---------- the list ---------- */
+
+.empty {
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  font-size: 12.5px;
+  color: var(--text-caption);
+}
+
+.boardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(212px, 1fr));
+  gap: var(--space-3);
+}
+
+.boardCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  text-decoration: none;
+  transition: border-color var(--transition-snap);
+}
+
+.boardCard:hover {
+  border-color: var(--indigo-400);
+}
+
+.boardName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.boardMeta {
+  font-size: 11px;
+  color: var(--text-caption);
+}
+
+/* ---------- the editor ---------- */
+
+/* Checklist beside a live preview. Stacks below 1100px, where two panes each
+   become too narrow to read a chart in — the checklist keeps its width and the
+   preview drops under it. */
+.editorPanes {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .editorPanes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.editorPane {
+  min-width: 0;
+}
+
+.paneLabel {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: var(--space-3);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-caption);
+}
+
+.paneCount {
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 11px;
+}
+
+/* The name field. A real form field with a visible label, not the heading-
+   shaped input the old in-place rename used — this sits in a form, and should
+   read as one. */
+.field {
+  display: block;
+  margin-bottom: var(--space-5);
+  max-width: 460px;
+}
+
+.fieldLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-card);
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--text-body);
+}
+
+.input:focus {
+  outline: 2px solid var(--indigo-300);
+  outline-offset: 1px;
+  border-color: var(--indigo-400);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--hairline);
+}
+
+/* ---------- the widget checklist ---------- */
+
+.catGroup {
+  margin-bottom: var(--space-4);
+}
+
+.catGroupLabel {
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-caption);
+}
+
+.catItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 5px;
+  padding: 9px 11px;
+  border: 1px solid var(--hairline);
+  border-radius: 9px;
+  background: var(--surface-card);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--transition-snap), background var(--transition-snap);
+}
+
+.catItem:hover {
+  border-color: var(--indigo-400);
+  background: var(--surface-hover);
+}
+
+.catItem[aria-checked="true"] {
+  border-color: var(--indigo-400);
+}
+
+/* The house checkbox: a button with `role="checkbox"` and a box coloured off
+   `data-on`. There is no checkbox primitive in this codebase on purpose — see
+   `session-viewer/_components/shelf-toggles.tsx` — so this is the same markup
+   the filter menus use, with its own geometry. */
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  flex: none;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface-card);
+  color: var(--text-on-brand);
+}
+
+.checkbox[data-on="true"] {
+  background: var(--indigo-600);
+  border-color: var(--indigo-600);
+}
+
+.catItemMain {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.catItemLabel {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.catItemBlurb {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text-caption);
+}
+
+/* ---------- the preview / the saved board ---------- */
+
+/* Empty state for both the editor's preview and a saved board with nothing on
+   it. A bordered area that says where something goes, rather than a blank
+   region that reads as a screen which failed to load. */
+.blankCanvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: var(--space-8) var(--space-5);
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  color: var(--neutral-400);
+  text-align: center;
+}
+
+.blankTitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.blankText {
+  margin: 0;
+  max-width: 420px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-caption);
+}
+
+/* ---------- one widget on a board ---------- */
+
+.widgetGap {
+  margin: 0;
+  padding: var(--space-3) 0;
+  font-size: 12px;
+  color: var(--text-caption);
+}
+
+.widgetGroupCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+  gap: 8px;
+}
+
+.widgetGroupCard {
+  padding: 10px;
+  border: 1px solid var(--hairline);
+  border-radius: 9px;
+}
+
+.widgetGroupName {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-caption);
+}
+
+.widgetGroupValue {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.widgetGroupDelta {
+  margin-top: 1px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.widgetGroupDelta[data-tone="up"] {
+  color: var(--success);
+}
+
+.widgetGroupDelta[data-tone="down"] {
+  color: var(--danger);
+}

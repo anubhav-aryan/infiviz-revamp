@@ -209,6 +209,73 @@
   flex: 1;
 }
 
+/* ---------- nav rows with a dropdown ----------
+   Only Analytics has children today. The link and the chevron are separate
+   controls sharing a row, so the row is a flex wrapper and the link keeps
+   `flex: 1` — clicking the label navigates, clicking the chevron does not. */
+
+.navRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.navRow .navItem {
+  flex: 1;
+  /* The wrapper owns the row's bottom spacing, otherwise the chevron sits
+     2px above the link's baseline box. */
+  margin-bottom: 0;
+}
+
+.navExpand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 2px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-caption);
+  cursor: pointer;
+  transition: background var(--transition-snap), color var(--transition-snap);
+}
+
+.navExpand:hover {
+  background: var(--surface-hover);
+  color: var(--text-body);
+}
+
+.navChildren {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2px;
+}
+
+/* Indented to sit under the parent's label rather than its icon: 12px of the
+   parent's padding, plus the 18px icon, plus its 11px gap. */
+.navChild {
+  padding: 6px 12px 6px 41px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--text-secondary);
+  transition: background var(--transition-snap), color var(--transition-snap);
+}
+
+.navChild:hover {
+  background: var(--surface-hover);
+  color: var(--text-body);
+}
+
+.navChild[data-state="active"],
+.navChild[data-state="active"]:hover {
+  color: var(--indigo-700);
+  font-weight: 600;
+}
+
 /* ---------- collapsed sidebar: the dark icon rail ----------
    One attribute drives the whole rail, so collapsing never swaps markup: the
    nav items keep their identity and React re-renders rather than remounting.
@@ -282,6 +349,25 @@
 .sidebar[data-collapsed="true"] .navItem:hover {
   background: var(--neutral-800);
   color: var(--neutral-100);
+}
+
+/* Collapsed, a row with children is just its icon like any other. `contents`
+   dissolves the flex wrapper so the icon square becomes a direct child of
+   `.nav` again and every rule above applies to it unchanged — the alternative
+   was duplicating the whole icon-rail treatment one level deeper. The chevron
+   goes entirely: there is no room for it, and nothing for it to reveal. */
+.sidebar[data-collapsed="true"] .navRow {
+  display: contents;
+}
+
+.sidebar[data-collapsed="true"] .navExpand {
+  display: none;
+}
+
+/* Re-asserted because `.navRow .navItem` zeroes it for the expanded row, and
+   that descendant selector still matches once the wrapper is `contents`. */
+.sidebar[data-collapsed="true"] .navRow .navItem {
+  margin-bottom: 6px;
 }
 
 .sidebar[data-collapsed="true"] .navItem[data-state="active"],
