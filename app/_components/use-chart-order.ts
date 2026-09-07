@@ -42,13 +42,39 @@ function read(pageKey: string, authored: string[]): string[] {
   }
 }
 
+/** Same ids in the same order. Cheap enough to run per snapshot read. */
+function sameOrder(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((id, i) => id === b[i]);
+}
+
+/**
+ * The cached order for a screen, repaired against what it is currently being
+ * asked to order.
+ *
+ * The repair is the load-bearing part. `authored` used to be consulted only on
+ * a cache miss, which was invisible for years because every caller passed a
+ * fixed set of cards — but a screen whose items change at runtime (a board
+ * gaining a widget) got a frozen order, and `ReorderableGrid` renders strictly
+ * from the order, so every addition after the first was silently dropped. Only
+ * a reload, which clears this `Map`, showed them.
+ *
+ * `getSnapshot` must return a referentially stable value between real changes
+ * or `useSyncExternalStore` re-renders forever, so an unchanged order hands
+ * back the *identical* array rather than an equal one. A genuine change
+ * replaces the entry once and the next read then compares equal, so this
+ * settles after a single render.
+ */
 function snapshot(pageKey: string, authored: string[]): string[] {
-  let hit = cache.get(pageKey);
+  const hit = cache.get(pageKey);
   if (!hit) {
-    hit = read(pageKey, authored);
-    cache.set(pageKey, hit);
+    const fresh = read(pageKey, authored);
+    cache.set(pageKey, fresh);
+    return fresh;
   }
-  return hit;
+  const repaired = reconcile(hit, authored);
+  if (sameOrder(repaired, hit)) return hit;
+  cache.set(pageKey, repaired);
+  return repaired;
 }
 
 function commit(pageKey: string, order: string[]): void {

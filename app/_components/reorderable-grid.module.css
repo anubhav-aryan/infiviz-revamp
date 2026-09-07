@@ -14,6 +14,30 @@
   flex-direction: column;
 }
 
+/* Two-across, for boards. Opt-in via `columns={2}` so every screen that
+   predates boards keeps the flex column above, untouched. `minmax(0, 1fr)`
+   rather than `1fr`: a wide table inside a cell would otherwise force the
+   column past its share and break the pairing. */
+.grid[data-columns="2"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+.grid[data-columns="2"] .cell[data-span="full"] {
+  grid-column: 1 / -1;
+}
+
+/* One column below the point where two would each be too narrow to read a
+   chart in. This is the only media query in the app — the rest of these
+   screens are built for a desktop viewport and say so by having none — but a
+   two-up grid is the one thing that cannot degrade on its own. */
+@media (max-width: 900px) {
+  .grid[data-columns="2"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .cell {
   position: relative;
   border-radius: var(--radius-lg);
